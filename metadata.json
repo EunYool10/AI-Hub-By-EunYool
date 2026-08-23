@@ -1,0 +1,6 @@
+{
+  "name": "AI Hub — by Yool",
+  "description": "AI 도구를 카테고리별로 탐색하고, 검색, 북마크, 추천 및 랜덤 추천을 제공하는 AI 모음집 디렉토리",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
