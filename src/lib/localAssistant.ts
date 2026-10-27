@@ -96,3 +96,73 @@ export function answerFromCatalog(query: string, tools: AITool[], lang: Language
 
   return `${intro}\n\n${top.map((tool, i) => toolLine(tool, i, lang)).join('\n')}${more}`;
 }
+
+/** What the chatbot's diagnostic snapshot holds (see fetchDiagnosticStats in AIChatbot). */
+export interface DiagnosticSnapshot {
+  online: boolean;
+  httpRttMs?: number;
+  apiStatus: string;
+  jsErrorsCount: number;
+  recentJsErrors: { type: string; message: string; source?: string; lineno?: number; timestamp: string }[];
+  viewport: string;
+  currentTheme: string;
+  performanceTiming?: { dnsTimeMs: number; connectTimeMs: number; responseStartMs: number; domContentLoadedMs: number; loadEventMs: number };
+}
+
+const DIAG_CONTEXT = /(사이트|웹사이트|페이지|현재|지금|site|page|website|current)/i;
+const DIAG_PING = /(핑|ping|rtt|지연|latency)/i;
+const DIAG_ERRORS = /(오류|에러|error)/i;
+const DIAG_PERF = /(성능|로딩|속도|performance|load)/i;
+const DIAG_STATUS = /(상태|점검|진단|status|health)/i;
+
+const grade = (ms: number | undefined, good: number, ok: number, ko: boolean) =>
+  ms === undefined ? '-' : `${ms}ms (${ms <= good ? (ko ? '빠름' : 'fast') : ms <= ok ? (ko ? '보통' : 'ok') : ko ? '느림' : 'slow'})`;
+
+/**
+ * Admin questions about the site itself ("지금 핑 얼마나 나와?", "현재 발생한 오류 보여줘") answered from the
+ * live snapshot. Returns null when the question is not about the site, so tool recommendations take over.
+ */
+export function answerDiagnostics(query: string, d: DiagnosticSnapshot, lang: Language): string | null {
+  const q = query.trim();
+  const isPing = DIAG_PING.test(q);
+  const isErrors = DIAG_ERRORS.test(q) && DIAG_CONTEXT.test(q);
+  const isPerf = DIAG_PERF.test(q) && DIAG_CONTEXT.test(q);
+  const isStatus = DIAG_STATUS.test(q) && DIAG_CONTEXT.test(q);
+  if (!isPing && !isErrors && !isPerf && !isStatus) return null;
+  const ko = lang === 'ko';
+
+  const pingPart = ko
+    ? `**네트워크:** ${d.online ? '온라인' : '오프라인'} · **응답 시간(RTT):** ${grade(d.httpRttMs, 150, 400, true)} · **사이트 응답:** ${d.apiStatus}`
+    : `**Network:** ${d.online ? 'online' : 'offline'} · **RTT:** ${grade(d.httpRttMs, 150, 400, false)} · **Site response:** ${d.apiStatus}`;
+
+  const errorPart = d.recentJsErrors.length
+    ? (ko ? `**최근 JavaScript 오류 ${d.jsErrorsCount}건** (최신순)\n\n` : `**${d.jsErrorsCount} recent JavaScript errors** (newest first)\n\n`) +
+      d.recentJsErrors
+        .map((e, i) => `${i + 1}. \`${e.type}\` ${e.message}${e.source ? ` — ${e.source.split('/').pop()}${e.lineno ? `:${e.lineno}` : ''}` : ''} _(${e.timestamp})_`)
+        .join('\n')
+    : ko
+      ? '**JavaScript 오류:** 이 페이지를 연 뒤로 잡힌 오류가 없어요. ✅'
+      : '**JavaScript errors:** none since this page was opened. ✅';
+
+  const t = d.performanceTiming;
+  const perfPart = t
+    ? (ko ? '**페이지 로딩 지표**\n\n' : '**Page load timing**\n\n') +
+      [
+        [ko ? 'DNS 조회' : 'DNS lookup', `${t.dnsTimeMs}ms`],
+        [ko ? '서버 연결' : 'Connect', `${t.connectTimeMs}ms`],
+        [ko ? '첫 응답' : 'First byte', grade(t.responseStartMs, 200, 600, ko)],
+        [ko ? '화면 준비 (DOMContentLoaded)' : 'DOMContentLoaded', grade(t.domContentLoadedMs, 1500, 3500, ko)],
+        [ko ? '전체 로딩' : 'Full load', grade(t.loadEventMs, 2500, 5000, ko)],
+      ]
+        .map(([k, v]) => `- ${k}: ${v}`)
+        .join('\n')
+    : ko
+      ? '**페이지 로딩 지표:** 이 브라우저에서는 측정값을 읽을 수 없어요.'
+      : '**Page load timing:** not available in this browser.';
+
+  if (isPing && !isErrors && !isPerf) return pingPart;
+  if (isErrors && !isPerf) return errorPart;
+  if (isPerf && !isErrors) return perfPart;
+  const env = ko ? `**화면:** ${d.viewport} · 테마 ${d.currentTheme}` : `**Viewport:** ${d.viewport} · theme ${d.currentTheme}`;
+  return `${ko ? '### 사이트 상태 점검' : '### Site check'}\n\n${pingPart}\n\n${errorPart}\n\n${perfPart}\n\n${env}`;
+}

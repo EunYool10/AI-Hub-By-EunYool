@@ -42,8 +42,8 @@ import {
   Loader2,
 } from 'lucide-react';
 import { safeFetchJson } from '../lib/api';
-import { IS_STATIC_SITE } from '../lib/runtime';
-import { answerFromCatalog } from '../lib/localAssistant';
+import { IS_STATIC_SITE, pingUrl } from '../lib/runtime';
+import { answerDiagnostics, answerFromCatalog } from '../lib/localAssistant';
 import { ActionRouter } from '../lib/actionRouter';
 import { ExecutionConfirmation } from './ExecutionConfirmation';
 import { Language, UI_TEXT, getCategoryLabel, getPriceLabel, getToolDescription } from '../lib/translations';
@@ -992,7 +992,7 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
 
     try {
       const start = performance.now();
-      const res = await fetch('/api/ping', { cache: 'no-store' });
+      const res = await fetch(pingUrl(), { cache: 'no-store' });
       const end = performance.now();
       httpRttMs = Math.round(end - start);
       if (!res.ok) apiStatus = `오류 (${res.status})`;
@@ -1046,6 +1046,11 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
 
   // Update initial welcome message
   const welcomeText = useMemo(() => {
+    if (isAdmin && IS_STATIC_SITE) {
+      return isKo
+        ? '👑 **관리자 진단 모드**입니다.\n\n아래 버튼이나 이런 질문으로 지금 사이트 상태를 바로 확인할 수 있어요:\n- **"현재 사이트 상태 점검해줘"**\n- **"지금 핑 얼마나 나와?"**\n- **"현재 발생한 오류 보여줘"**\n- **"페이지 성능 분석해줘"**\n\n그 밖의 질문에는 사이트의 도구 목록에서 맞는 AI를 추천해 드려요.'
+        : '👑 **Admin diagnostics mode**.\n\nUse the buttons below or ask things like **"check site status"**, **"current ping"**, **"show current errors"** or **"analyze page performance"**.\n\nOther questions get tool recommendations from the catalog.';
+    }
     if (isAdmin) {
       return isKo
         ? '👑 **관리자 전용 범용 AI 어시스턴트 & 사이트 운영 진단 도구**에 오신 것을 환영합니다!\n\n일반 지식, 프로그래밍, 코드 분석, 문서/이미지 분석 질문은 물론, 아래 명령으로 현재 사이트 상태를 실시간으로 확인할 수 있습니다:\n- **"현재 사이트 상태 확인해줘"**\n- **"지금 핑 얼마나 나와?"**\n- **"현재 발생한 오류 분석해줘"**\n- **"사이트 성능 분석해줘"**\n\n파일/이미지를 첨부하여 현재 사이트 상태와 함께 분석하는 것도 가능합니다.'
@@ -1525,7 +1530,7 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
         const botMsg: ChatMessage = {
           id: (Date.now() + 1).toString(),
           sender: 'bot',
-          text: answerFromCatalog(query, activeTools, lang),
+          text: (isAdmin && answerDiagnostics(query, await fetchDiagnosticStats(), lang)) || answerFromCatalog(query, activeTools, lang),
           timestamp: new Date().toLocaleTimeString(isKo ? 'ko-KR' : 'en-US', {
             hour: '2-digit',
             minute: '2-digit',

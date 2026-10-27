@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { pingUrl } from '../lib/runtime';
 import {
   Activity,
   Wifi,
@@ -88,7 +89,7 @@ export const AdminStatusPanel: React.FC<AdminStatusPanelProps> = ({
 
     try {
       const start = performance.now();
-      const res = await fetch('/api/ping', { cache: 'no-store' });
+      const res = await fetch(pingUrl(), { cache: 'no-store' });
       const end = performance.now();
       rtt = Math.round(end - start);
 
