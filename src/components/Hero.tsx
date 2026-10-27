@@ -1,11 +1,15 @@
 import React from 'react';
+import { X } from 'lucide-react';
 import { Language } from '../lib/translations';
 import { AITool, Category } from '../types';
 import { SearchBar, TRENDING_KEYWORDS } from './SearchBar';
+import { AIFavicon } from './AIFavicon';
 
 interface HeroProps {
   lang: Language;
   tools: AITool[];
+  recentTools: AITool[];
+  onClearRecent: () => void;
   onSelectTool: (tool: AITool) => void;
   onSelectCategory: (category: Category) => void;
   searchQuery: string;
@@ -18,6 +22,8 @@ interface HeroProps {
 export const Hero: React.FC<HeroProps> = ({
   lang,
   tools,
+  recentTools,
+  onClearRecent,
   onSelectTool,
   onSelectCategory,
   searchQuery,
@@ -95,6 +101,32 @@ export const Hero: React.FC<HeroProps> = ({
             </button>
           ))}
         </div>
+
+        {recentTools.length > 0 && (
+          <div className="mt-3 flex items-center justify-center flex-wrap gap-x-1.5 gap-y-2 text-sm">
+            <span className="text-subtle mr-1">{isKo ? '최근 본 도구' : 'Recently viewed'}</span>
+            {recentTools.slice(0, 6).map((tool) => (
+              <button
+                key={tool.id}
+                type="button"
+                onClick={() => onSelectTool(tool)}
+                className="inline-flex items-center gap-1.5 h-7 pl-1 pr-2.5 rounded-full border border-line bg-surface/60 text-fg-2 hover:text-fg hover:border-line-strong transition-colors"
+              >
+                <AIFavicon url={tool.url} name={tool.name} customIcon={tool.icon || tool.iconUrl || tool.logoUrl} className="w-5 h-5 rounded-full" />
+                <span className="max-w-[9rem] truncate">{tool.name}</span>
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={onClearRecent}
+              aria-label={isKo ? '최근 본 도구 지우기' : 'Clear recently viewed'}
+              title={isKo ? '최근 본 도구 지우기' : 'Clear recently viewed'}
+              className="w-7 h-7 inline-flex items-center justify-center rounded-full text-subtle hover:text-fg hover:bg-fg/[0.07] transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

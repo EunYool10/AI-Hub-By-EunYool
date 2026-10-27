@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Star, Copy, Check, Sparkles, Zap, Lightbulb, Users, Globe, ArrowUpRight, Link2 } from 'lucide-react';
+import { X, Star, Copy, Check, Sparkles, Zap, Lightbulb, Users, Globe, ArrowUpRight, Link2, Shapes, ChevronRight } from 'lucide-react';
 import { AITool, BadgeInfo } from '../types';
 import { BADGES } from '../data/aiToolsData';
 import { TOOL_DETAILS } from '../data/toolDetails';
@@ -18,6 +18,8 @@ interface AIDetailModalProps {
   isBookmarked: boolean;
   onToggleBookmark: (id: number) => void;
   onToast?: (message: string) => void;
+  similarTools?: AITool[];
+  onSelectTool?: (tool: AITool) => void;
   lang?: Language;
 }
 
@@ -222,6 +224,8 @@ export const AIDetailModal: React.FC<AIDetailModalProps> = ({
   isBookmarked,
   onToggleBookmark,
   onToast,
+  similarTools = [],
+  onSelectTool,
   lang = 'ko',
 }) => {
   const [copied, setCopied] = useState(false);
@@ -353,8 +357,8 @@ export const AIDetailModal: React.FC<AIDetailModalProps> = ({
         </div>
       </div>
 
-      {/* Body */}
-      <ModalBody className="px-5 sm:px-7 py-6 space-y-7">
+      {/* Body (keyed so a similar tool opens scrolled to the top) */}
+      <ModalBody key={tool.id} className="px-5 sm:px-7 py-6 space-y-7">
         {coreDesc && extraDetails.tagline && coreDesc !== extraDetails.tagline && (
           <p className="text-[0.9375rem] leading-relaxed text-fg-2">{coreDesc}</p>
         )}
@@ -416,6 +420,32 @@ export const AIDetailModal: React.FC<AIDetailModalProps> = ({
                 <span key={idx} className="inline-flex items-center h-8 px-3 rounded-full border border-line bg-surface-2 text-sm text-fg-2">
                   {target}
                 </span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {similarTools.length > 0 && onSelectTool && (
+          <section>
+            <h3 className={sectionTitle}>
+              <Shapes className="w-4 h-4 text-brand" />
+              {isKo ? '비슷한 도구' : 'Similar tools'}
+            </h3>
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {similarTools.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => onSelectTool(t)}
+                  className="group flex items-center gap-3 p-3 rounded-xl bg-surface-2 border border-line text-left hover:border-line-strong transition-colors"
+                >
+                  <AIFavicon url={t.url} name={t.name} customIcon={t.icon || t.iconUrl || t.logoUrl} className="w-9 h-9 rounded-lg shrink-0" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-fg">{t.name}</span>
+                    <span className="block truncate text-xs text-muted">{getToolDescription(t, currentLang)}</span>
+                  </span>
+                  <ChevronRight className="w-4 h-4 text-subtle group-hover:text-fg shrink-0" />
+                </button>
               ))}
             </div>
           </section>

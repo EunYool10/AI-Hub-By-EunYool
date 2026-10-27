@@ -457,3 +457,18 @@ export function getToolFeatureTags(tool: AITool, lang: Language = 'ko'): string[
 
   return isEn ? ['AI Tool', 'Smart Utility'] : ['AI 도구', '스마트 유틸리티'];
 }
+
+/** Tools most like this one: same category counts most, then each shared feature tag. */
+export function getSimilarTools(tool: AITool, tools: AITool[], count = 4): AITool[] {
+  const tags = new Set(getToolFeatureTags(tool));
+  return tools
+    .filter((t) => t.id !== tool.id)
+    .map((t) => ({
+      t,
+      score: (t.category === tool.category ? 3 : 0) + getToolFeatureTags(t).filter((tag) => tags.has(tag)).length * 2,
+    }))
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score || a.t.id - b.t.id)
+    .slice(0, count)
+    .map((x) => x.t);
+}

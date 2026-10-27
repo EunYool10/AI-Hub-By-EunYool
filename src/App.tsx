@@ -24,6 +24,7 @@ import { getStoredSettings, updateStoredSettings, UserSettings } from './lib/set
 import { safeFetchJson } from './lib/api';
 import { IS_STATIC_SITE } from './lib/runtime';
 import { toolMatches } from './lib/search';
+import { getSimilarTools } from './lib/toolTags';
 import { finishKakaoLogin, listNotices, loadBookmarks, saveBookmarks, signOutHub, watchSession } from './lib/firebase';
 import { LoginModal } from './components/LoginModal';
 import { TermsModal, TermsTab } from './components/TermsModal';
@@ -35,6 +36,9 @@ import { getCategoryLabel } from './lib/translations';
 
 // Uid of the account whose bookmarks this browser holds; unset for bookmarks made while signed out.
 const BOOKMARK_OWNER_KEY = 'aiBookmarksOwner';
+// Last tools opened in the detail window, newest first (this browser only).
+const RECENT_KEY = 'aiRecentTools';
+const RECENT_LIMIT = 8;
 
 // #tool=<id> opens that tool's detail window, so a tool can be shared by link.
 const toolIdFromHash = () => {
@@ -131,6 +135,15 @@ export default function App() {
       console.error('Failed to parse bookmarks:', e);
     }
     return [];
+  });
+
+  const [recentIds, setRecentIds] = useState<number[]>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+      return Array.isArray(saved) ? saved : [];
+    } catch {
+      return [];
+    }
   });
 
   // Filter states
@@ -432,6 +445,32 @@ export default function App() {
     return aiTools.filter((item) => !item.status || item.status === 'active' || item.status === 'renamed' || item.status === 'temporarily_unavailable');
   }, [aiTools]);
 
+  const saveRecentIds = (ids: number[]) => {
+    setRecentIds(ids);
+    try {
+      if (ids.length) localStorage.setItem(RECENT_KEY, JSON.stringify(ids));
+      else localStorage.removeItem(RECENT_KEY);
+    } catch (e) {
+      console.error('Failed to save recently viewed tools:', e);
+    }
+  };
+
+  useEffect(() => {
+    if (!detailModalTool) return;
+    const id = detailModalTool.id;
+    if (recentIds[0] !== id) saveRecentIds([id, ...recentIds.filter((r) => r !== id)].slice(0, RECENT_LIMIT));
+  }, [detailModalTool]);
+
+  const recentTools = useMemo(
+    () => recentIds.map((id) => activeTools.find((t) => t.id === id)).filter((t): t is AITool => Boolean(t)),
+    [recentIds, activeTools]
+  );
+
+  const similarTools = useMemo(
+    () => (detailModalTool ? getSimilarTools(detailModalTool, activeTools) : []),
+    [detailModalTool, activeTools]
+  );
+
   const activeBookmarksCount = useMemo(() => {
     return bookmarks.filter((id) => activeTools.some((t) => t.id === id)).length;
   }, [bookmarks, activeTools]);
@@ -660,6 +699,8 @@ export default function App() {
         <Hero
           lang={lang}
           tools={activeTools}
+          recentTools={recentTools}
+          onClearRecent={() => saveRecentIds([])}
           onSelectTool={openToolDetail}
           onSelectCategory={(category) => {
             setSelectedCategory(category);
@@ -811,6 +852,8 @@ export default function App() {
         isBookmarked={detailModalTool ? bookmarks.includes(detailModalTool.id) : false}
         onToggleBookmark={handleToggleBookmark}
         onToast={showToast}
+        similarTools={similarTools}
+        onSelectTool={openToolDetail}
         lang={lang}
       />
 
