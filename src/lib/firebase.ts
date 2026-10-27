@@ -41,8 +41,9 @@ const app = initializeApp({
 const auth = getAuth(app);
 const db = getFirestore(app, 'ai-studio-aihubbyyool-2181b7bf-b2a5-4f18-9c43-11428d556435');
 
-// Kakao Developers → 앱 키 → REST API 키. Empty until the Kakao app is registered; the button then says "준비 중".
-export const KAKAO_REST_API_KEY = '';
+// Kakao Developers → 앱 → 플랫폼 키 → REST API 키 "AI Hub 웹" (client secret off, redirect URI = the Pages URL).
+// Empty means the button says "준비 중".
+export const KAKAO_REST_API_KEY = 'a8392d5aa02499f47ed62258771d575e';
 export const isKakaoReady = () => Boolean(KAKAO_REST_API_KEY);
 
 export type Provider = 'google' | 'kakao';
