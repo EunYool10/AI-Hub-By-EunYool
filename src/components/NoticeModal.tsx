@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { X, Megaphone, Calendar, ArrowLeft, User, Sparkles, AlertCircle, ChevronRight, Bell } from 'lucide-react';
+import { Megaphone, ArrowLeft, ChevronRight, Bell, Pin, Loader2 } from 'lucide-react';
 import { NoticeItem } from '../types';
 import { safeFetchJson } from '../lib/api';
+import { cn } from '../lib/cn';
+import { Modal, ModalBody, ModalHeader } from './ui/Modal';
+import { Button, IconButton } from './ui/Button';
 
 interface NoticeModalProps {
   isOpen: boolean;
@@ -11,18 +14,27 @@ interface NoticeModalProps {
   onOpenAdminModal?: () => void;
 }
 
-export const NoticeModal: React.FC<NoticeModalProps> = ({
-  isOpen,
-  onClose,
-  lang,
-  isAdmin,
-  onOpenAdminModal,
-}) => {
+const CATEGORY_META: Record<NoticeItem['category'], { ko: string; en: string; cls: string }> = {
+  IMPORTANT: { ko: '중요', en: 'Important', cls: 'text-rose-400 bg-rose-400/12' },
+  UPDATE: { ko: '업데이트', en: 'Update', cls: 'text-mint bg-mint/12' },
+  NOTICE: { ko: '안내', en: 'Notice', cls: 'text-amber-400 bg-amber-400/12' },
+};
+
+const CategoryBadge: React.FC<{ category: NoticeItem['category']; lang: 'ko' | 'en' }> = ({ category, lang }) => {
+  const meta = CATEGORY_META[category] || CATEGORY_META.NOTICE;
+  return (
+    <span className={cn('inline-flex items-center h-5 px-1.5 rounded text-[0.6875rem] font-bold', meta.cls)}>
+      {lang === 'ko' ? meta.ko : meta.en}
+    </span>
+  );
+};
+
+export const NoticeModal: React.FC<NoticeModalProps> = ({ isOpen, onClose, lang, isAdmin, onOpenAdminModal }) => {
+  const isKo = lang === 'ko';
   const [notices, setNotices] = useState<NoticeItem[]>([]);
   const [selectedNotice, setSelectedNotice] = useState<NoticeItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load notices from API / LocalStorage
   const loadNotices = async () => {
     setIsLoading(true);
     const result = await safeFetchJson<{ notices: NoticeItem[] }>('/api/notices');
@@ -38,9 +50,7 @@ export const NoticeModal: React.FC<NoticeModalProps> = ({
       const local = localStorage.getItem('ai_hub_notices');
       if (local) {
         const parsed = JSON.parse(local);
-        if (Array.isArray(parsed)) {
-          setNotices(parsed);
-        }
+        if (Array.isArray(parsed)) setNotices(parsed);
       } else {
         setNotices([]);
       }
@@ -53,244 +63,120 @@ export const NoticeModal: React.FC<NoticeModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
       setSelectedNotice(null);
       loadNotices();
-      return () => {
-        document.body.style.overflow = prev;
-      };
     }
   }, [isOpen]);
 
-  // Listen to custom notice update event
   useEffect(() => {
-    const handleNoticeUpdate = () => {
-      loadNotices();
-    };
+    const handleNoticeUpdate = () => loadNotices();
     window.addEventListener('ai_hub_notice_updated', handleNoticeUpdate);
     return () => window.removeEventListener('ai_hub_notice_updated', handleNoticeUpdate);
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        if (selectedNotice) {
-          setSelectedNotice(null);
-        } else {
-          onClose();
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, selectedNotice, onClose]);
-
-  if (!isOpen) return null;
-
-  const getCategoryBadge = (cat: 'IMPORTANT' | 'UPDATE' | 'NOTICE') => {
-    switch (cat) {
-      case 'IMPORTANT':
-        return {
-          labelKo: '중요 공지',
-          labelEn: 'IMPORTANT',
-          style: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
-        };
-      case 'UPDATE':
-        return {
-          labelKo: '신규 업데이트',
-          labelEn: 'NEW UPDATE',
-          style: 'bg-[#00d4aa]/20 text-[#00d4aa] border-[#00d4aa]/40',
-        };
-      default:
-        return {
-          labelKo: '일반 안내',
-          labelEn: 'NOTICE',
-          style: 'bg-amber-400/20 text-amber-300 border-amber-400/40',
-        };
-    }
+  // Escape / backdrop: step back from a notice first, then close
+  const handleDismiss = () => {
+    if (selectedNotice) setSelectedNotice(null);
+    else onClose();
   };
 
+  const sorted = [...notices].sort((a, b) => Number(Boolean(b.isPinned)) - Number(Boolean(a.isPinned)));
+
   return (
-    <div className="fixed inset-0 z-[230] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-[#13151f] border border-white/20 rounded-3xl p-6 sm:p-7 max-w-xl w-full shadow-2xl shadow-black relative my-auto animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[85vh]">
-        {/* Top Accent Gradient Bar */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-[#00d4aa] to-[#6c63ff]" />
-
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 text-gray-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer z-10"
-          title={lang === 'ko' ? '닫기' : 'Close'}
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        {/* MODE 1: Detail View for Selected Notice */}
-        {selectedNotice ? (
-          <div className="flex flex-col flex-1 overflow-hidden animate-in fade-in duration-150">
-            {/* Top Navigation */}
-            <div className="flex items-center justify-between pb-3 mb-4 border-b border-white/10 shrink-0 pr-8">
-              <button
-                onClick={() => setSelectedNotice(null)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1d2a] hover:bg-[#252a3d] text-gray-300 hover:text-white rounded-xl text-xs font-semibold transition-all cursor-pointer border border-white/10"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>{lang === 'ko' ? '목록으로 돌아가기' : 'Back to Notice List'}</span>
-              </button>
-
-              <span className="text-[11px] font-mono text-gray-400 flex items-center gap-1">
-                <Calendar className="w-3 h-3 text-gray-500" />
-                {selectedNotice.createdAt}
-              </span>
+    <Modal isOpen={isOpen} onClose={handleDismiss} size="lg" zIndex={230} labelledBy="notice-title">
+      {selectedNotice ? (
+        <>
+          <div className="flex items-center gap-2 px-3 sm:px-4 pt-3 sm:pt-4 pb-3 border-b border-line shrink-0">
+            <IconButton label={isKo ? '목록으로' : 'Back to list'} onClick={() => setSelectedNotice(null)}>
+              <ArrowLeft className="w-[18px] h-[18px]" />
+            </IconButton>
+            <span className="text-sm font-medium text-muted">{isKo ? '공지사항' : 'Announcements'}</span>
+          </div>
+          <ModalBody className="px-5 sm:px-8 py-6 animate-in fade-in duration-150">
+            <div className="flex items-center gap-2 flex-wrap text-xs text-muted">
+              <CategoryBadge category={selectedNotice.category} lang={lang} />
+              <time className="tabular-nums">{selectedNotice.createdAt}</time>
+              <span aria-hidden="true">·</span>
+              <span>{selectedNotice.author || (isKo ? '관리자' : 'Admin')}</span>
             </div>
-
-            {/* Notice Title & Meta */}
-            <div className="space-y-3 mb-4 shrink-0">
-              <div className="flex items-center gap-2">
-                {(() => {
-                  const badge = getCategoryBadge(selectedNotice.category);
-                  return (
-                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${badge.style}`}>
-                      {lang === 'ko' ? badge.labelKo : badge.labelEn}
-                    </span>
-                  );
-                })()}
-                <span className="text-xs text-gray-400 flex items-center gap-1">
-                  <User className="w-3 h-3 text-amber-400" />
-                  <span>{selectedNotice.author || '관리자'}</span>
-                </span>
-              </div>
-
-              <h2 className="text-lg sm:text-xl font-bold text-white leading-snug">
-                {selectedNotice.title}
-              </h2>
-            </div>
-
-            {/* Notice Content Card */}
-            <div className="overflow-y-auto flex-1 bg-[#0c0e14]/70 p-4 sm:p-5 rounded-2xl border border-white/10 text-xs sm:text-sm text-gray-200 leading-relaxed space-y-3 font-normal whitespace-pre-wrap no-scrollbar">
+            <h2 id="notice-title" className="mt-3 text-xl sm:text-2xl font-bold tracking-tight text-fg leading-snug">
+              {selectedNotice.title}
+            </h2>
+            <div className="mt-5 pt-5 border-t border-line text-[0.9375rem] leading-[1.75] text-fg-2 whitespace-pre-wrap">
               {selectedNotice.content}
             </div>
-
-            {/* Detail Footer */}
-            <div className="pt-4 mt-3 border-t border-white/10 flex items-center justify-between gap-3 shrink-0">
-              <span className="text-xs text-gray-400 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#00d4aa]" />
-                <span>AI Hub Official Notice</span>
-              </span>
-
-              <button
-                onClick={() => setSelectedNotice(null)}
-                className="px-4 py-2 bg-[#1a1d2a] hover:bg-[#252a3d] border border-white/10 text-white font-bold text-xs rounded-xl transition-all cursor-pointer"
-              >
-                {lang === 'ko' ? '목록 보기' : 'Show All Notices'}
-              </button>
-            </div>
-          </div>
-        ) : (
-          /* MODE 2: Notice List View */
-          <div className="flex flex-col flex-1 overflow-hidden">
-            {/* Header Title */}
-            <div className="flex items-center gap-3 mb-5 shrink-0 pr-8">
-              <div className="p-2.5 rounded-2xl bg-amber-400/15 border border-amber-400/30 text-amber-400">
-                <Megaphone className="w-6 h-6 animate-bounce" />
+          </ModalBody>
+        </>
+      ) : (
+        <>
+          <ModalHeader
+            id="notice-title"
+            icon={<Megaphone className="w-5 h-5" />}
+            title={isKo ? '공지사항' : 'Announcements'}
+            description={isKo ? 'AI Hub의 새 소식과 업데이트를 확인하세요.' : 'News and updates from AI Hub.'}
+            onClose={onClose}
+            closeLabel={isKo ? '닫기' : 'Close'}
+          />
+          <ModalBody className="px-3 sm:px-4 py-3">
+            {isLoading && notices.length === 0 ? (
+              <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                {isKo ? '불러오는 중…' : 'Loading…'}
               </div>
-              <div>
-                <h2 className="font-['Space_Grotesk'] text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-                  <span>{lang === 'ko' ? '공지사항 & 소식' : 'Announcements'}</span>
-                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40">
-                    OFFICIAL
-                  </span>
-                </h2>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {lang === 'ko'
-                    ? '클릭하시면 공지사항의 자세한 내용을 확인하실 수 있습니다.'
-                    : 'Click any announcement to view full details.'}
-                </p>
-              </div>
-            </div>
-
-            {/* Notice Items List OR Empty State */}
-            {notices.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center py-12 px-4 text-center bg-[#1a1d2a]/40 rounded-2xl border border-white/5 my-auto space-y-3">
-                <div className="p-4 rounded-2xl bg-gray-800/50 border border-white/10 text-gray-400">
-                  <Bell className="w-8 h-8 opacity-60" />
+            ) : sorted.length === 0 ? (
+              <div className="flex flex-col items-center text-center py-14 px-6">
+                <div className="w-12 h-12 rounded-2xl bg-fg/[0.06] flex items-center justify-center text-muted">
+                  <Bell className="w-6 h-6" />
                 </div>
-                <h3 className="text-sm sm:text-base font-bold text-white">
-                  {lang === 'ko' ? '등록된 공지사항이 없습니다.' : 'No Announcements Registered.'}
+                <h3 className="mt-4 text-base font-semibold text-fg">
+                  {isKo ? '등록된 공지사항이 없어요' : 'No announcements yet'}
                 </h3>
-                <p className="text-xs text-gray-400 max-w-sm leading-relaxed">
-                  {lang === 'ko'
-                    ? '관리자가 작성한 새로운 소식이나 업데이트 공지글이 여기에 작성되면 실시간으로 확인하실 수 있습니다.'
-                    : 'Official notices published by the administrator will appear here in real time.'}
+                <p className="mt-1.5 text-sm text-muted max-w-xs leading-relaxed">
+                  {isKo ? '새 소식이 올라오면 여기에서 가장 먼저 알려드릴게요.' : 'New posts from the team will show up here.'}
                 </p>
-
                 {isAdmin && onOpenAdminModal && (
-                  <button
+                  <Button
+                    variant="warn"
+                    size="sm"
+                    className="mt-5"
                     onClick={() => {
                       onClose();
                       onOpenAdminModal();
                     }}
-                    className="mt-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-extrabold text-xs rounded-xl shadow-md cursor-pointer hover:scale-105 transition-all"
                   >
-                    👑 공지사항 작성하러 가기 (관리자)
-                  </button>
+                    {isKo ? '공지 작성하기 (관리자)' : 'Write a notice (admin)'}
+                  </Button>
                 )}
               </div>
             ) : (
-              <div className="overflow-y-auto no-scrollbar space-y-3 pr-1 flex-1">
-                {notices.map((item) => {
-                  const badge = getCategoryBadge(item.category);
-                  return (
-                    <div
-                      key={item.id}
+              <ul className="space-y-1">
+                {sorted.map((item) => (
+                  <li key={item.id}>
+                    <button
+                      type="button"
                       onClick={() => setSelectedNotice(item)}
-                      className="bg-[#1a1d2a] p-4.5 rounded-2xl border border-white/10 hover:border-amber-400/50 transition-all space-y-2 group cursor-pointer active:scale-[0.99]"
+                      className="group w-full flex items-start gap-3 p-3 sm:p-4 rounded-xl text-left hover:bg-fg/[0.04] transition-colors"
                     >
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${badge.style}`}>
-                          {lang === 'ko' ? badge.labelKo : badge.labelEn}
-                        </span>
-
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px] text-gray-400 font-mono flex items-center gap-1">
-                            <Calendar className="w-3 h-3 text-gray-500" />
-                            {item.createdAt}
-                          </span>
-                          <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-amber-400 group-hover:translate-x-1 transition-all" />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 text-xs text-muted">
+                          {item.isPinned && <Pin className="w-3.5 h-3.5 text-brand" aria-label={isKo ? '고정됨' : 'Pinned'} />}
+                          <CategoryBadge category={item.category} lang={lang} />
+                          <time className="tabular-nums">{item.createdAt}</time>
                         </div>
+                        <h3 className="mt-1.5 text-[0.9375rem] font-semibold text-fg line-clamp-1 group-hover:text-brand transition-colors">
+                          {item.title}
+                        </h3>
+                        <p className="mt-1 text-sm text-muted leading-relaxed line-clamp-2">{item.content}</p>
                       </div>
-
-                      <h3 className="font-bold text-sm sm:text-base text-white group-hover:text-amber-300 transition-colors line-clamp-1">
-                        {item.title}
-                      </h3>
-
-                      <p className="text-xs text-gray-400 leading-relaxed font-normal line-clamp-2">
-                        {item.content}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
+                      <ChevronRight className="w-4 h-4 mt-1 text-subtle shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
-
-            {/* Modal Footer */}
-            <div className="pt-4 mt-3 border-t border-white/10 flex items-center justify-between gap-3 shrink-0">
-              <span className="text-xs text-gray-400 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#00d4aa]" />
-                <span>AI Hub by Yool</span>
-              </span>
-
-              <button
-                onClick={onClose}
-                className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold text-xs rounded-xl transition-all shadow-md cursor-pointer"
-              >
-                {lang === 'ko' ? '확인 및 닫기' : 'Acknowledge & Close'}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+          </ModalBody>
+        </>
+      )}
+    </Modal>
   );
 };

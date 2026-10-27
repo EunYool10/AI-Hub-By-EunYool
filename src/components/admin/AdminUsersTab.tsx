@@ -158,20 +158,20 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-[#16192b] to-[#121422] border border-indigo-400/20">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-surface-2 to-surface border border-indigo-400/20">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 text-[11px] font-extrabold uppercase rounded bg-indigo-400/20 text-indigo-300 border border-indigo-400/30">
+            <span className="px-2 py-0.5 text-xs font-extrabold uppercase rounded bg-indigo-400/20 text-indigo-300 border border-indigo-400/30">
               USER MANAGEMENT
             </span>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-muted">
               {isKo ? '사용자 계정 상태 및 권한 제어' : 'User Account & Roles Control'}
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black text-white mt-1">
+          <h2 className="text-xl sm:text-2xl font-black text-fg mt-1">
             {isKo ? '사용자 계정 및 프로필 관리' : 'User Profiles & Accounts'}
           </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-muted mt-0.5">
             {isKo
               ? `총 ${totalUsers}명 (활성 ${activeUsers}명, 정지 ${suspendedUsers}명, 관리자 ${adminUsers}명)`
               : `Total ${totalUsers} (Active: ${activeUsers}, Suspended: ${suspendedUsers}, Admins: ${adminUsers})`}
@@ -181,34 +181,34 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className="px-3.5 py-2 bg-[#1f2338] hover:bg-[#282d47] border border-white/10 text-white rounded-xl text-xs font-bold transition-all shadow cursor-pointer inline-flex items-center gap-2 self-start sm:self-auto"
+          className="px-3.5 py-2 bg-surface-3 hover:bg-surface-3 border border-line text-fg rounded-xl text-xs font-bold transition-all shadow cursor-pointer inline-flex items-center gap-2 self-start sm:self-auto"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-indigo-400' : 'text-gray-300'}`} />
+          <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-indigo-400' : 'text-fg-2'}`} />
           <span>{isKo ? '새로고침' : 'Refresh'}</span>
         </button>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-3 bg-[#121424] p-4 rounded-2xl border border-white/10">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3 bg-surface p-4 rounded-2xl border border-line">
         {/* Search Input */}
         <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={isKo ? '이름, 닉네임 또는 이메일 검색...' : 'Search by name, nickname, or email...'}
-            className="w-full pl-9 pr-3.5 py-2 bg-[#171a2e] border border-white/10 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-indigo-400"
+            className="w-full pl-9 pr-3.5 py-2 bg-surface-2 border border-line rounded-xl text-xs text-fg placeholder:text-subtle focus:outline-none focus:border-indigo-400"
           />
         </div>
 
         {/* Filter Pills */}
         <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-          <div className="flex items-center bg-[#171a2e] p-1 rounded-xl border border-white/10 text-xs">
+          <div className="flex items-center bg-surface-2 p-1 rounded-xl border border-line text-xs">
             <button
               onClick={() => setStatusFilter('ALL')}
               className={`px-3 py-1 rounded-lg font-bold transition-colors cursor-pointer ${
-                statusFilter === 'ALL' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'
+                statusFilter === 'ALL' ? 'bg-indigo-600 text-white' : 'text-muted hover:text-fg'
               }`}
             >
               {isKo ? '전체 상태' : 'All Status'}
@@ -216,7 +216,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
             <button
               onClick={() => setStatusFilter('ACTIVE')}
               className={`px-3 py-1 rounded-lg font-bold transition-colors cursor-pointer ${
-                statusFilter === 'ACTIVE' ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-white'
+                statusFilter === 'ACTIVE' ? 'bg-emerald-600 text-white' : 'text-muted hover:text-fg'
               }`}
             >
               {isKo ? '정상 활성' : 'Active'}
@@ -224,18 +224,18 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
             <button
               onClick={() => setStatusFilter('SUSPENDED')}
               className={`px-3 py-1 rounded-lg font-bold transition-colors cursor-pointer ${
-                statusFilter === 'SUSPENDED' ? 'bg-rose-600 text-white' : 'text-gray-400 hover:text-white'
+                statusFilter === 'SUSPENDED' ? 'bg-rose-600 text-white' : 'text-muted hover:text-fg'
               }`}
             >
               {isKo ? '이용 정지' : 'Suspended'}
             </button>
           </div>
 
-          <div className="flex items-center bg-[#171a2e] p-1 rounded-xl border border-white/10 text-xs">
+          <div className="flex items-center bg-surface-2 p-1 rounded-xl border border-line text-xs">
             <button
               onClick={() => setRoleFilter('ALL')}
               className={`px-3 py-1 rounded-lg font-bold transition-colors cursor-pointer ${
-                roleFilter === 'ALL' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'
+                roleFilter === 'ALL' ? 'bg-indigo-600 text-white' : 'text-muted hover:text-fg'
               }`}
             >
               {isKo ? '전체 역할' : 'All Roles'}
@@ -243,7 +243,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
             <button
               onClick={() => setRoleFilter('ADMIN')}
               className={`px-3 py-1 rounded-lg font-bold transition-colors cursor-pointer ${
-                roleFilter === 'ADMIN' ? 'bg-amber-600 text-white' : 'text-gray-400 hover:text-white'
+                roleFilter === 'ADMIN' ? 'bg-amber-600 text-white' : 'text-muted hover:text-fg'
               }`}
             >
               {isKo ? '관리자' : 'Admins'}
@@ -251,7 +251,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
             <button
               onClick={() => setRoleFilter('USER')}
               className={`px-3 py-1 rounded-lg font-bold transition-colors cursor-pointer ${
-                roleFilter === 'USER' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'
+                roleFilter === 'USER' ? 'bg-indigo-600 text-white' : 'text-muted hover:text-fg'
               }`}
             >
               {isKo ? '일반' : 'Users'}
@@ -261,10 +261,10 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
       </div>
 
       {/* Users Table */}
-      <div className="bg-[#121424] rounded-2xl border border-white/10 overflow-hidden shadow-xl">
+      <div className="bg-surface rounded-2xl border border-line overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#16192d] text-gray-400 font-bold border-b border-white/10 uppercase text-[10px]">
+            <thead className="bg-surface-2 text-muted font-bold border-b border-line uppercase text-[0.6875rem]">
               <tr>
                 <th className="py-3 px-4">{isKo ? '사용자 프로필' : 'User Profile'}</th>
                 <th className="py-3 px-4">{isKo ? '권한' : 'Role'}</th>
@@ -273,16 +273,16 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                 <th className="py-3 px-4 text-right">{isKo ? '계정 관리' : 'Actions'}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-line">
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-gray-500">
+                  <td colSpan={5} className="py-8 text-center text-subtle">
                     {isKo ? '등록된 사용자가 없습니다.' : 'No registered users found.'}
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-gray-500">
+                  <td colSpan={5} className="py-8 text-center text-subtle">
                     {isKo ? '검색 조건과 일치하는 사용자가 없습니다.' : 'No users match the search criteria.'}
                   </td>
                 </tr>
@@ -297,11 +297,11 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                   const isSuspended = user.status === 'SUSPENDED';
 
                   return (
-                    <tr key={user.email} className="hover:bg-white/[0.02] transition-colors">
+                    <tr key={user.email} className="hover:bg-fg/[0.02] transition-colors">
                       {/* User Profile */}
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl overflow-hidden bg-[#202438] border border-white/15 flex items-center justify-center font-bold text-white text-xs shrink-0">
+                          <div className="w-9 h-9 rounded-xl overflow-hidden bg-surface-3 border border-line flex items-center justify-center font-bold text-fg text-xs shrink-0">
                             {user.photoURL ? (
                               <img
                                 src={user.photoURL}
@@ -319,24 +319,24 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                             )}
                           </div>
                           <div>
-                            <div className="font-bold text-white flex items-center gap-1.5 flex-wrap">
+                            <div className="font-bold text-fg flex items-center gap-1.5 flex-wrap">
                               <span>{user.nickname || user.displayName || (isKo ? '이름 없음' : 'No name')}</span>
                               {user.nickname && user.displayName && (
-                                <span className="text-[10px] text-gray-400 font-normal">({user.displayName})</span>
+                                <span className="text-[0.6875rem] text-muted font-normal">({user.displayName})</span>
                               )}
                               {isCurrentAdmin && (
-                                <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                                <span className="px-1.5 py-0.2 rounded text-[0.6875rem] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
                                   {isKo ? '본인' : 'You'}
                                 </span>
                               )}
                               {isProtected && (
-                                <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-blue-500/20 text-blue-300 border border-blue-400/30 flex items-center gap-0.5" title="핵심 운영자 보호 계정">
+                                <span className="px-1.5 py-0.2 rounded text-[0.6875rem] font-extrabold bg-blue-500/20 text-blue-300 border border-blue-400/30 flex items-center gap-0.5" title="핵심 운영자 보호 계정">
                                   <Lock className="w-2.5 h-2.5" /> {isKo ? '보호됨' : 'Protected'}
                                 </span>
                               )}
                             </div>
-                            <div className="text-gray-400 font-mono text-[11px] flex items-center gap-1 mt-0.5">
-                              <Mail className="w-3 h-3 text-gray-500" />
+                            <div className="text-muted font-mono text-xs flex items-center gap-1 mt-0.5">
+                              <Mail className="w-3 h-3 text-subtle" />
                               <span>{user.email}</span>
                             </div>
                           </div>
@@ -346,11 +346,11 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                       {/* Role Badge */}
                       <td className="py-3 px-4">
                         {user.role === 'ADMIN' ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-400/40">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.6875rem] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-400/40">
                             <Crown className="w-3 h-3 text-amber-400 fill-amber-400" /> ADMIN
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-300 border border-indigo-400/20">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.6875rem] font-bold bg-indigo-500/10 text-indigo-300 border border-indigo-400/20">
                             USER
                           </span>
                         )}
@@ -359,18 +359,18 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                       {/* Status Badge */}
                       <td className="py-3 px-4">
                         {isSuspended ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6875rem] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
                             <UserX className="w-3 h-3" /> {isKo ? '이용 정지' : 'Suspended'}
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6875rem] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                             <UserCheck className="w-3 h-3" /> {isKo ? '정상 활성' : 'Active'}
                           </span>
                         )}
                       </td>
 
                       {/* Dates */}
-                      <td className="py-3 px-4 text-gray-400 text-[11px] font-mono">
+                      <td className="py-3 px-4 text-muted text-xs font-mono">
                         <div>
                           {isKo ? '가입' : 'Joined'}:{' '}
                           {user.role === 'ADMIN' || user.isAdmin || user.email.toLowerCase() === 'deer123424@gmail.com' || user.joinedAt === '-'
@@ -379,7 +379,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                             ? (isNaN(Date.parse(user.joinedAt)) ? user.joinedAt : new Date(user.joinedAt).toLocaleDateString())
                             : (isKo ? '가입일 정보 없음' : 'N/A')}
                         </div>
-                        <div className="text-gray-500 text-[10px]">{isKo ? '최근' : 'Active'}: {user.lastActiveAt ? new Date(user.lastActiveAt).toLocaleDateString() : (isKo ? '기록 없음' : 'N/A')}</div>
+                        <div className="text-subtle text-[0.6875rem]">{isKo ? '최근' : 'Active'}: {user.lastActiveAt ? new Date(user.lastActiveAt).toLocaleDateString() : (isKo ? '기록 없음' : 'N/A')}</div>
                       </td>
 
                       {/* Actions */}
@@ -388,7 +388,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                           {/* View Detail Profile */}
                           <button
                             onClick={() => setSelectedUserDetail(user)}
-                            className="p-1.5 bg-[#1a1d2e] hover:bg-[#252a42] text-gray-300 hover:text-white rounded-lg border border-white/10 transition-colors cursor-pointer"
+                            className="p-1.5 bg-surface-2 hover:bg-surface-3 text-fg-2 hover:text-fg rounded-lg border border-line transition-colors cursor-pointer"
                             title={isKo ? '프로필 상세 정보' : 'View Profile Details'}
                           >
                             <Eye className="w-3.5 h-3.5" />
@@ -430,7 +430,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                               })
                             }
                             disabled={isCurrentAdmin || isProtected}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-bold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition-all cursor-pointer ${
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold bg-fg/5 hover:bg-fg/10 text-fg-2 border border-line transition-all cursor-pointer ${
                               isCurrentAdmin || isProtected ? 'opacity-40 cursor-not-allowed' : ''
                             }`}
                             title={
@@ -457,26 +457,26 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
       {/* User Details Drawer Modal */}
       {selectedUserDetail && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-lg bg-[#141624] border border-white/15 rounded-3xl p-6 shadow-2xl space-y-5">
+          <div className="w-full max-w-lg bg-surface border border-line rounded-3xl p-6 shadow-2xl space-y-5">
             {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+            <div className="flex items-center justify-between pb-3 border-b border-line">
               <div className="flex items-center gap-2">
                 <UserIcon className="w-5 h-5 text-indigo-400" />
-                <h3 className="text-base font-bold text-white">
+                <h3 className="text-base font-bold text-fg">
                   {isKo ? '사용자 상세 프로필' : 'User Profile Details'}
                 </h3>
               </div>
               <button
                 onClick={() => setSelectedUserDetail(null)}
-                className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                className="p-1.5 text-muted hover:text-fg rounded-lg hover:bg-fg/10 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Profile Summary Card */}
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#191c2e] border border-white/10">
-              <div className="w-14 h-14 rounded-2xl overflow-hidden bg-[#202438] border border-white/20 flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-surface-2 border border-line">
+              <div className="w-14 h-14 rounded-2xl overflow-hidden bg-surface-3 border border-line-strong flex items-center justify-center shrink-0">
                 {selectedUserDetail.photoURL ? (
                   <img
                     src={selectedUserDetail.photoURL}
@@ -492,23 +492,23 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h4 className="text-base font-bold text-white truncate">
+                  <h4 className="text-base font-bold text-fg truncate">
                     {selectedUserDetail.displayName}
                   </h4>
                   {selectedUserDetail.role === 'ADMIN' ? (
-                    <span className="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                    <span className="px-2 py-0.5 text-[0.6875rem] font-extrabold rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
                       ADMIN
                     </span>
                   ) : (
-                    <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-indigo-400/20 text-indigo-300 border border-indigo-400/30">
+                    <span className="px-2 py-0.5 text-[0.6875rem] font-bold rounded-full bg-indigo-400/20 text-indigo-300 border border-indigo-400/30">
                       USER
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-gray-400 font-mono mt-0.5 truncate">{selectedUserDetail.email}</p>
+                <p className="text-xs text-muted font-mono mt-0.5 truncate">{selectedUserDetail.email}</p>
                 {selectedUserDetail.nickname && (
                   <p className="text-xs text-indigo-300 mt-1">
-                    {isKo ? '활동 닉네임' : 'Nickname'}: <span className="font-semibold text-white">{selectedUserDetail.nickname}</span>
+                    {isKo ? '활동 닉네임' : 'Nickname'}: <span className="font-semibold text-fg">{selectedUserDetail.nickname}</span>
                   </p>
                 )}
               </div>
@@ -516,11 +516,11 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
 
             {/* Bio / Description */}
             {selectedUserDetail.bio && (
-              <div className="p-3.5 bg-[#191c2e] border border-white/5 rounded-2xl">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
+              <div className="p-3.5 bg-surface-2 border border-line rounded-2xl">
+                <span className="text-[0.6875rem] font-bold text-muted uppercase tracking-wider block mb-1">
                   {isKo ? '자기소개 (Bio)' : 'Biography'}
                 </span>
-                <p className="text-xs text-gray-300 leading-relaxed italic">
+                <p className="text-xs text-fg-2 leading-relaxed italic">
                   "{selectedUserDetail.bio}"
                 </p>
               </div>
@@ -528,21 +528,21 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
 
             {/* Account Metrics Grid */}
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-[#171a2a] rounded-xl border border-white/5">
-                <span className="text-[10px] text-gray-400 block">{isKo ? '계정 상태' : 'Account Status'}</span>
+              <div className="p-3 bg-surface-2 rounded-xl border border-line">
+                <span className="text-[0.6875rem] text-muted block">{isKo ? '계정 상태' : 'Account Status'}</span>
                 <span className={`font-bold mt-1 inline-block ${selectedUserDetail.status === 'SUSPENDED' ? 'text-rose-400' : 'text-emerald-400'}`}>
                   {selectedUserDetail.status === 'SUSPENDED' ? (isKo ? '이용 정지' : 'Suspended') : (isKo ? '정상 활성' : 'Active')}
                 </span>
               </div>
-              <div className="p-3 bg-[#171a2a] rounded-xl border border-white/5">
-                <span className="text-[10px] text-gray-400 block">{isKo ? '총 로그인 횟수' : 'Login Count'}</span>
-                <span className="font-bold text-white mt-1 inline-block font-mono">
+              <div className="p-3 bg-surface-2 rounded-xl border border-line">
+                <span className="text-[0.6875rem] text-muted block">{isKo ? '총 로그인 횟수' : 'Login Count'}</span>
+                <span className="font-bold text-fg mt-1 inline-block font-mono">
                   {selectedUserDetail.loginCount || 1} 회
                 </span>
               </div>
-              <div className="p-3 bg-[#171a2a] rounded-xl border border-white/5">
-                <span className="text-[10px] text-gray-400 block">{isKo ? '최초 가입일시' : 'Joined Date'}</span>
-                <span className="font-mono text-gray-300 mt-1 inline-block text-[11px]">
+              <div className="p-3 bg-surface-2 rounded-xl border border-line">
+                <span className="text-[0.6875rem] text-muted block">{isKo ? '최초 가입일시' : 'Joined Date'}</span>
+                <span className="font-mono text-fg-2 mt-1 inline-block text-xs">
                   {selectedUserDetail.role === 'ADMIN' || selectedUserDetail.isAdmin || selectedUserDetail.email.toLowerCase() === 'deer123424@gmail.com' || selectedUserDetail.joinedAt === '-'
                     ? '-'
                     : selectedUserDetail.joinedAt
@@ -550,9 +550,9 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                     : (isKo ? '가입일 정보 없음' : 'N/A')}
                 </span>
               </div>
-              <div className="p-3 bg-[#171a2a] rounded-xl border border-white/5">
-                <span className="text-[10px] text-gray-400 block">{isKo ? '최근 접속일시' : 'Last Active'}</span>
-                <span className="font-mono text-gray-300 mt-1 inline-block text-[11px]">
+              <div className="p-3 bg-surface-2 rounded-xl border border-line">
+                <span className="text-[0.6875rem] text-muted block">{isKo ? '최근 접속일시' : 'Last Active'}</span>
+                <span className="font-mono text-fg-2 mt-1 inline-block text-xs">
                   {selectedUserDetail.lastActiveAt ? new Date(selectedUserDetail.lastActiveAt).toLocaleString() : (isKo ? '기록 없음' : 'N/A')}
                 </span>
               </div>
@@ -561,7 +561,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
             <div className="flex justify-end pt-2">
               <button
                 onClick={() => setSelectedUserDetail(null)}
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                className="px-4 py-2 bg-fg/10 hover:bg-fg/20 text-fg rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
                 {isKo ? '닫기' : 'Close'}
               </button>
@@ -573,10 +573,10 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
       {/* Confirmation Modal */}
       {confirmAction && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md bg-[#16192d] border border-amber-400/40 rounded-2xl p-6 shadow-2xl space-y-4">
+          <div className="w-full max-w-md bg-surface-2 border border-amber-400/40 rounded-2xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3 text-amber-400">
               <AlertTriangle className="w-6 h-6 shrink-0" />
-              <h3 className="text-base font-bold text-white">
+              <h3 className="text-base font-bold text-fg">
                 {confirmAction.type === 'STATUS'
                   ? confirmAction.nextValue === 'SUSPENDED'
                     ? (isKo ? '계정 이용 정지 확인' : 'Confirm Account Suspension')
@@ -585,8 +585,8 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
               </h3>
             </div>
 
-            <p className="text-xs text-gray-300 leading-relaxed">
-              {isKo ? '대상 계정' : 'Target Account'}: <span className="font-bold text-white">{confirmAction.user.email}</span>
+            <p className="text-xs text-fg-2 leading-relaxed">
+              {isKo ? '대상 계정' : 'Target Account'}: <span className="font-bold text-fg">{confirmAction.user.email}</span>
               <br />
               {confirmAction.type === 'STATUS'
                 ? confirmAction.nextValue === 'SUSPENDED'
@@ -600,7 +600,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 onClick={() => setConfirmAction(null)}
-                className="px-4 py-2 bg-white/10 hover:bg-white/15 text-gray-300 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                className="px-4 py-2 bg-fg/10 hover:bg-fg/15 text-fg-2 rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
                 {isKo ? '취소' : 'Cancel'}
               </button>

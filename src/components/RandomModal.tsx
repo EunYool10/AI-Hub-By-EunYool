@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { X, ExternalLink, Dices, Sparkles } from 'lucide-react';
+import { X, Dices, ArrowUpRight, Sparkles } from 'lucide-react';
 import { AITool } from '../types';
 import { BADGES } from '../data/aiToolsData';
 import { getCategoryLabel, getToolDescription, Language, UI_TEXT } from '../lib/translations';
+import { getCategoryVisual } from '../lib/categories';
+import { cn } from '../lib/cn';
 import { AIFavicon } from './AIFavicon';
+import { Modal } from './ui/Modal';
+import { Button, IconButton, LinkButton } from './ui/Button';
+import { PriceBadge, ToolBadge } from './ui/Badges';
 
 interface RandomModalProps {
   isOpen: boolean;
@@ -12,135 +17,91 @@ interface RandomModalProps {
   lang?: Language;
 }
 
-export const RandomModal: React.FC<RandomModalProps> = ({
-  isOpen,
-  onClose,
-  tools,
-  lang = 'ko',
-}) => {
+export const RandomModal: React.FC<RandomModalProps> = ({ isOpen, onClose, tools, lang = 'ko' }) => {
+  const isKo = lang === 'ko';
   const [selectedTool, setSelectedTool] = useState<AITool | null>(null);
   const [isRolling, setIsRolling] = useState(false);
+  const [rollKey, setRollKey] = useState(0);
 
   const rollRandom = () => {
-    const activeCandidates = (tools || []).filter(
+    const candidates = (tools || []).filter(
       (t) => !t.status || t.status === 'active' || t.status === 'renamed' || t.status === 'temporarily_unavailable'
     );
-    if (activeCandidates.length === 0) return;
+    if (candidates.length === 0) return;
     setIsRolling(true);
-    const randomIndex = Math.floor(Math.random() * activeCandidates.length);
-    setSelectedTool(activeCandidates[randomIndex]);
-
-    setTimeout(() => {
-      setIsRolling(false);
-    }, 400);
+    let next = candidates[Math.floor(Math.random() * candidates.length)];
+    if (candidates.length > 1 && selectedTool && next.id === selectedTool.id) {
+      next = candidates[(candidates.indexOf(next) + 1) % candidates.length];
+    }
+    setSelectedTool(next);
+    setRollKey((k) => k + 1);
+    window.setTimeout(() => setIsRolling(false), 450);
   };
 
   useEffect(() => {
-    if (isOpen) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      rollRandom();
-      return () => {
-        document.body.style.overflow = prev;
-      };
-    }
+    if (isOpen) rollRandom();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen || !selectedTool) return null;
+  if (!selectedTool) return null;
 
   const badge = BADGES[selectedTool.id];
-
-  const getPriceLabel = (price: string) => {
-    if (price === '무료') return 'FREE';
-    if (price === '유료') return 'PAID';
-    return 'FREE+';
-  };
+  const { Icon, text } = getCategoryVisual(selectedTool.category);
 
   return (
-    <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-[#13151f] border border-white/20 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl shadow-black relative animate-in zoom-in-95 duration-200">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors"
-          title={lang === 'ko' ? '닫기' : 'Close'}
-        >
+    <Modal isOpen={isOpen} onClose={onClose} size="sm" zIndex={200} labelledBy="random-title">
+      <div className="relative overflow-hidden rounded-t-2xl">
+        <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-accent/20 to-transparent pointer-events-none" aria-hidden="true" />
+        <IconButton label={isKo ? '닫기' : 'Close'} onClick={onClose} className="absolute right-3 top-3 z-10">
           <X className="w-5 h-5" />
-        </button>
+        </IconButton>
 
-        <div className="flex flex-col items-center text-center">
-          <div
-            className={`w-16 h-16 rounded-2xl bg-gradient-to-br from-[#6c63ff] to-[#00d4aa] flex items-center justify-center text-3xl shadow-lg shadow-[#6c63ff]/30 mb-3 ${
-              isRolling ? 'animate-spin' : ''
-            }`}
-          >
-            <Dices className="w-8 h-8 text-white" />
-          </div>
-
-          <div className="flex items-center gap-1.5 text-xs text-amber-400 font-bold uppercase tracking-widest font-['Space_Grotesk'] mb-3">
+        <div className="relative px-6 sm:px-8 pt-8 pb-6 text-center">
+          <p id="random-title" className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>{UI_TEXT.randomModal.todayRecommend[lang]}</span>
-          </div>
+            {UI_TEXT.randomModal.todayRecommend[lang]}
+          </p>
 
-          <h2 className="font-['Space_Grotesk'] text-2xl font-bold text-white mb-1.5 flex items-center justify-center gap-2.5">
+          <div key={rollKey} className="mt-5 flex flex-col items-center animate-in fade-in zoom-in-95 duration-300">
             <AIFavicon
               url={selectedTool.url}
               name={selectedTool.name}
               customIcon={selectedTool.icon || selectedTool.iconUrl || selectedTool.logoUrl}
-              className="w-7 h-7 rounded-lg border border-white/10"
+              className="w-20 h-20 rounded-[22px] shadow-card"
             />
-            <span>{selectedTool.name}</span>
-          </h2>
-
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#1a1d2a] border border-white/10 text-gray-300">
-              {getCategoryLabel(selectedTool.category, lang)}
-            </span>
-            {badge && (
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                {badge.label}
+            <div className="mt-4 flex items-center gap-2">
+              <h2 className="text-2xl font-bold tracking-tight text-fg">{selectedTool.name}</h2>
+              {badge && <ToolBadge badge={badge} lang={lang} />}
+            </div>
+            <div className="mt-2.5 flex items-center justify-center gap-1.5 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 h-6 px-2 rounded-md bg-fg/[0.06] text-xs font-medium text-fg-2">
+                <Icon className={cn('w-3.5 h-3.5', text)} />
+                {getCategoryLabel(selectedTool.category, lang)}
               </span>
-            )}
-            <span className="text-xs font-bold text-[#00d4aa] uppercase font-['Space_Grotesk']">
-              {getPriceLabel(selectedTool.price)}
-            </span>
-          </div>
-
-          <p className="text-xs sm:text-sm text-gray-300 leading-relaxed mb-6 bg-[#1a1d2a]/60 p-4 rounded-xl border border-white/5">
-            {getToolDescription(selectedTool, lang)}
-          </p>
-
-          <div className="flex items-center gap-3 w-full">
-            <a
-              href={selectedTool.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#6c63ff] hover:bg-[#5b52e0] text-white font-bold text-xs sm:text-sm font-['Space_Grotesk'] rounded-xl transition-all shadow-lg shadow-[#6c63ff]/25"
-            >
-              <span>{UI_TEXT.randomModal.visit[lang]}</span>
-              <ExternalLink className="w-4 h-4" />
-            </a>
-
-            <button
-              onClick={rollRandom}
-              disabled={isRolling}
-              className="flex items-center justify-center gap-1.5 px-4 py-3 bg-[#1a1d2a] hover:bg-white/10 border border-white/10 text-white font-semibold text-xs sm:text-sm font-['Space_Grotesk'] rounded-xl transition-all cursor-pointer"
-            >
-              <Dices className="w-4 h-4 text-[#00d4aa]" />
-              <span>{UI_TEXT.randomModal.reroll[lang]}</span>
-            </button>
+              <PriceBadge price={selectedTool.price} lang={lang} />
+            </div>
+            <p className="mt-4 text-sm leading-relaxed text-fg-2 max-w-xs">{getToolDescription(selectedTool, lang)}</p>
           </div>
         </div>
       </div>
-    </div>
+
+      <div className="flex items-center gap-2 px-6 sm:px-8 pt-2 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:pb-7">
+        <Button variant="secondary" size="lg" onClick={rollRandom} disabled={isRolling} className="flex-1">
+          <Dices className={cn('w-[18px] h-[18px] text-mint', isRolling && 'animate-spin')} />
+          {UI_TEXT.randomModal.reroll[lang]}
+        </Button>
+        <LinkButton
+          href={selectedTool.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          variant="primary"
+          size="lg"
+          className="flex-1"
+        >
+          {isKo ? '바로가기' : 'Visit'}
+          <ArrowUpRight className="w-4 h-4" />
+        </LinkButton>
+      </div>
+    </Modal>
   );
 };

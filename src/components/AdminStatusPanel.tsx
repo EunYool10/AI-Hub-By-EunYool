@@ -169,7 +169,7 @@ export const AdminStatusPanel: React.FC<AdminStatusPanelProps> = ({
   }
 
   return (
-    <div className="fixed top-20 right-4 z-[60] w-[calc(100vw-2rem)] sm:w-full max-w-sm max-h-[calc(100vh-6rem)] bg-[#0c0e18]/95 backdrop-blur-xl border border-amber-400/40 rounded-2xl shadow-2xl shadow-amber-500/10 text-gray-100 font-sans overflow-y-auto transition-all duration-300 animate-in fade-in slide-in-from-top-4">
+    <div className="fixed top-20 right-4 z-[60] w-[calc(100vw-2rem)] sm:w-full max-w-sm max-h-[calc(100vh-6rem)] bg-bg/95 backdrop-blur-xl border border-amber-400/40 rounded-2xl shadow-2xl shadow-amber-500/10 text-fg font-sans overflow-y-auto transition-all duration-300 animate-in fade-in slide-in-from-top-4">
       {/* Panel Top Header Bar */}
       <div className="bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-indigo-500/20 px-3.5 py-2.5 border-b border-amber-400/30 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -181,7 +181,7 @@ export const AdminStatusPanel: React.FC<AdminStatusPanelProps> = ({
               <span>ADMIN STATUS OVERLAY</span>
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
             </div>
-            <p className="text-[10px] text-gray-400 font-mono">
+            <p className="text-[0.6875rem] text-muted font-mono">
               {isKo ? '실시간 웹사이트 상태 및 진단 데이터' : 'Real-time Site Diagnostics & Health'}
             </p>
           </div>
@@ -191,7 +191,7 @@ export const AdminStatusPanel: React.FC<AdminStatusPanelProps> = ({
           <button
             onClick={onRefresh || measurePing}
             disabled={isRefreshing || isMeasuring}
-            className="p-1.5 hover:bg-white/10 rounded-lg text-gray-300 hover:text-white transition-colors cursor-pointer"
+            className="p-1.5 hover:bg-fg/10 rounded-lg text-fg-2 hover:text-fg transition-colors cursor-pointer"
             title={isKo ? '수동 측정' : 'Manual Refresh'}
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing || isMeasuring ? 'animate-spin text-amber-300' : ''}`} />
@@ -199,7 +199,7 @@ export const AdminStatusPanel: React.FC<AdminStatusPanelProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-rose-500/20 text-gray-400 hover:text-rose-300 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 hover:bg-rose-500/20 text-muted hover:text-rose-300 rounded-lg transition-colors cursor-pointer"
             title={isKo ? '닫기' : 'Close Overlay'}
           >
             <X className="w-4 h-4" />
@@ -211,8 +211,8 @@ export const AdminStatusPanel: React.FC<AdminStatusPanelProps> = ({
       <div className="p-3 space-y-2.5 text-xs font-mono">
         <div className="grid grid-cols-2 gap-2">
           {/* Network Connection */}
-          <div className="bg-[#121526] p-2.5 rounded-xl border border-white/10 flex flex-col justify-between">
-            <span className="text-[10px] text-gray-400 flex items-center gap-1 font-sans">
+          <div className="bg-surface p-2.5 rounded-xl border border-line flex flex-col justify-between">
+            <span className="text-[0.6875rem] text-muted flex items-center gap-1 font-sans">
               {activeStats.online ? (
                 <Wifi className="w-3 h-3 text-emerald-400" />
               ) : (
@@ -228,8 +228,8 @@ export const AdminStatusPanel: React.FC<AdminStatusPanelProps> = ({
           </div>
 
           {/* HTTP Latency (RTT) */}
-          <div className="bg-[#121526] p-2.5 rounded-xl border border-white/10 flex flex-col justify-between">
-            <span className="text-[10px] text-gray-400 flex items-center gap-1 font-sans">
+          <div className="bg-surface p-2.5 rounded-xl border border-line flex flex-col justify-between">
+            <span className="text-[0.6875rem] text-muted flex items-center gap-1 font-sans">
               <Clock className="w-3 h-3 text-amber-400" />
               <span>HTTP Ping RTT</span>
             </span>
@@ -237,13 +237,13 @@ export const AdminStatusPanel: React.FC<AdminStatusPanelProps> = ({
               <span className={rttColor}>
                 {rtt !== undefined ? `${rtt} ms` : '측정중...'}
               </span>
-              <span className="text-[9px] text-gray-400 font-sans">({rttLabel})</span>
+              <span className="text-[0.6875rem] text-muted font-sans">({rttLabel})</span>
             </div>
           </div>
 
           {/* Backend API Health */}
-          <div className="bg-[#121526] p-2.5 rounded-xl border border-white/10 flex flex-col justify-between">
-            <span className="text-[10px] text-gray-400 flex items-center gap-1 font-sans">
+          <div className="bg-surface p-2.5 rounded-xl border border-line flex flex-col justify-between">
+            <span className="text-[0.6875rem] text-muted flex items-center gap-1 font-sans">
               <Server className="w-3 h-3 text-indigo-400" />
               <span>API 상태</span>
             </span>
@@ -253,8 +253,8 @@ export const AdminStatusPanel: React.FC<AdminStatusPanelProps> = ({
           </div>
 
           {/* Runtime JS Errors */}
-          <div className="bg-[#121526] p-2.5 rounded-xl border border-white/10 flex flex-col justify-between">
-            <span className="text-[10px] text-gray-400 flex items-center gap-1 font-sans">
+          <div className="bg-surface p-2.5 rounded-xl border border-line flex flex-col justify-between">
+            <span className="text-[0.6875rem] text-muted flex items-center gap-1 font-sans">
               <Bug className="w-3 h-3 text-rose-400" />
               <span>JS Error 수</span>
             </span>
@@ -265,7 +265,7 @@ export const AdminStatusPanel: React.FC<AdminStatusPanelProps> = ({
               {activeStats.jsErrorsCount > 0 && (
                 <button
                   onClick={() => setShowErrorLogs(!showErrorLogs)}
-                  className="text-[9px] text-rose-300 underline cursor-pointer"
+                  className="text-[0.6875rem] text-rose-300 underline cursor-pointer"
                 >
                   {showErrorLogs ? '숨기기' : '상세보기'}
                 </button>
@@ -276,24 +276,24 @@ export const AdminStatusPanel: React.FC<AdminStatusPanelProps> = ({
 
         {/* Collapsible JS Error Log Details */}
         {showErrorLogs && activeStats.recentJsErrors.length > 0 && (
-          <div className="bg-rose-950/30 border border-rose-500/30 rounded-xl p-2 space-y-1 max-h-32 overflow-y-auto text-[10px] font-mono">
+          <div className="bg-rose-950/30 border border-rose-500/30 rounded-xl p-2 space-y-1 max-h-32 overflow-y-auto text-[0.6875rem] font-mono">
             <div className="font-bold text-rose-300 mb-1 flex items-center gap-1">
               <ShieldAlert className="w-3 h-3 text-rose-400" />
               <span>최근 감지된 JavaScript 오류</span>
             </div>
             {activeStats.recentJsErrors.map((err, idx) => (
-              <div key={idx} className="bg-black/40 p-1.5 rounded border border-rose-500/20 text-rose-200 break-words">
+              <div key={idx} className="bg-inset p-1.5 rounded border border-rose-500/20 text-rose-200 break-words">
                 <div className="font-bold text-rose-300">[{err.timestamp}] {err.type}</div>
-                <div className="text-[9.5px] opacity-90">{err.message}</div>
+                <div className="text-[0.6875rem] opacity-90">{err.message}</div>
               </div>
             ))}
           </div>
         )}
 
         {/* Environment & Viewport Info */}
-        <div className="bg-[#121526] p-2.5 rounded-xl border border-white/10 space-y-1 text-[10px] text-gray-300">
+        <div className="bg-surface p-2.5 rounded-xl border border-line space-y-1 text-[0.6875rem] text-fg-2">
           <div className="flex items-center justify-between">
-            <span className="text-gray-400 flex items-center gap-1 font-sans">
+            <span className="text-muted flex items-center gap-1 font-sans">
               <Globe className="w-3 h-3 text-cyan-400" />
               <span>페이지 경로:</span>
             </span>
@@ -301,15 +301,15 @@ export const AdminStatusPanel: React.FC<AdminStatusPanelProps> = ({
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-gray-400 flex items-center gap-1 font-sans">
+            <span className="text-muted flex items-center gap-1 font-sans">
               <Monitor className="w-3 h-3 text-purple-400" />
               <span>해상도 / 시간대:</span>
             </span>
-            <span className="text-gray-200">{activeStats.viewport || 'N/A'} | {activeStats.timeZone || 'KST'}</span>
+            <span className="text-fg-2">{activeStats.viewport || 'N/A'} | {activeStats.timeZone || 'KST'}</span>
           </div>
 
           {activeStats.performanceTiming && (
-            <div className="pt-1.5 border-t border-white/5 grid grid-cols-2 gap-1 text-[9px] text-gray-400">
+            <div className="pt-1.5 border-t border-line grid grid-cols-2 gap-1 text-[0.6875rem] text-muted">
               <div>TTFB: <span className="text-amber-300 font-bold">{activeStats.performanceTiming.responseStartMs || 0}ms</span></div>
               <div>DOM Load: <span className="text-emerald-300 font-bold">{activeStats.performanceTiming.domContentLoadedMs || 0}ms</span></div>
             </div>
@@ -317,20 +317,20 @@ export const AdminStatusPanel: React.FC<AdminStatusPanelProps> = ({
         </div>
 
         {/* Action Controls Footer */}
-        <div className="flex items-center justify-between pt-1 text-[10px] font-sans">
-          <label className="flex items-center gap-1.5 text-gray-400 cursor-pointer select-none">
+        <div className="flex items-center justify-between pt-1 text-[0.6875rem] font-sans">
+          <label className="flex items-center gap-1.5 text-muted cursor-pointer select-none">
             <input
               type="checkbox"
               checked={autoRefresh}
               onChange={(e) => setAutoRefresh(e.target.checked)}
-              className="rounded bg-gray-800 border-gray-600 text-amber-500 focus:ring-0"
+              className="rounded bg-surface-3 border-gray-600 text-amber-500 focus:ring-0"
             />
             <span>5초 자동 갱신</span>
           </label>
 
           <button
             onClick={handleCopyDiagnostics}
-            className="px-2 py-1 bg-white/10 hover:bg-white/20 text-gray-200 rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+            className="px-2 py-1 bg-fg/10 hover:bg-fg/20 text-fg-2 rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
           >
             {isCopied ? (
               <>
@@ -339,7 +339,7 @@ export const AdminStatusPanel: React.FC<AdminStatusPanelProps> = ({
               </>
             ) : (
               <>
-                <Copy className="w-3 h-3 text-gray-400" />
+                <Copy className="w-3 h-3 text-muted" />
                 <span>진단 JSON 복사</span>
               </>
             )}

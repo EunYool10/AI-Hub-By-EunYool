@@ -329,20 +329,20 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-[#16192b] to-[#121422] border border-amber-400/20">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-surface-2 to-surface border border-amber-400/20">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 text-[11px] font-extrabold uppercase rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
+            <span className="px-2 py-0.5 text-xs font-extrabold uppercase rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
               AI TOOLS CATALOG
             </span>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-muted">
               {isKo ? '전체 도구 데이터베이스 관리 및 실시간 동기화' : 'Catalog Manager & Live Sync'}
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black text-white mt-1">
+          <h2 className="text-xl sm:text-2xl font-black text-fg mt-1">
             {isKo ? 'AI 도구 카탈로그 관리' : 'AI Tools Management'}
           </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-muted mt-0.5">
             {isKo
               ? `등록 도구: 총 ${tools.length}개 (활성: ${tools.filter((t) => !t.isDeleted && t.status !== 'inactive').length}개)`
               : `Total Tools: ${tools.length} (Active: ${tools.filter((t) => !t.isDeleted && t.status !== 'inactive').length})`}
@@ -352,7 +352,7 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={handleExportJSON}
-            className="px-3 py-2 bg-[#1f2338] hover:bg-[#282d47] border border-white/10 text-gray-200 rounded-xl text-xs font-bold transition-all shadow cursor-pointer inline-flex items-center gap-1.5"
+            className="px-3 py-2 bg-surface-3 hover:bg-surface-3 border border-line text-fg-2 rounded-xl text-xs font-bold transition-all shadow cursor-pointer inline-flex items-center gap-1.5"
             title="JSON 백업 다운로드"
           >
             <Download className="w-3.5 h-3.5 text-cyan-400" />
@@ -370,17 +370,17 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
       </div>
 
       {/* Search & Multi-Filter Controls */}
-      <div className="p-4 rounded-2xl bg-[#121424] border border-white/10 space-y-3">
+      <div className="p-4 rounded-2xl bg-surface border border-line space-y-3">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
           {/* Search Box */}
           <div className="md:col-span-5 relative">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={isKo ? '도구 이름, 설명, 태그 검색...' : 'Search tools, tags, url...'}
-              className="w-full pl-9 pr-3.5 py-2 bg-[#171a2e] border border-white/10 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+              className="w-full pl-9 pr-3.5 py-2 bg-surface-2 border border-line rounded-xl text-xs text-fg placeholder:text-subtle focus:outline-none focus:border-amber-400"
             />
           </div>
 
@@ -389,7 +389,7 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full px-3 py-2 bg-[#171a2e] border border-white/10 rounded-xl text-xs text-gray-200 focus:outline-none focus:border-amber-400 cursor-pointer"
+              className="w-full px-3 py-2 bg-surface-2 border border-line rounded-xl text-xs text-fg-2 focus:outline-none focus:border-amber-400 cursor-pointer"
             >
               {CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -404,7 +404,7 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
             <select
               value={selectedPrice}
               onChange={(e) => setSelectedPrice(e.target.value)}
-              className="w-full px-3 py-2 bg-[#171a2e] border border-white/10 rounded-xl text-xs text-gray-200 focus:outline-none focus:border-amber-400 cursor-pointer"
+              className="w-full px-3 py-2 bg-surface-2 border border-line rounded-xl text-xs text-fg-2 focus:outline-none focus:border-amber-400 cursor-pointer"
             >
               <option value="all">{isKo ? '전체 가격' : 'All Prices'}</option>
               <option value="free">{isKo ? '무료' : 'Free'}</option>
@@ -418,7 +418,7 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="w-full px-3 py-2 bg-[#171a2e] border border-white/10 rounded-xl text-xs text-gray-200 focus:outline-none focus:border-amber-400 cursor-pointer"
+              className="w-full px-3 py-2 bg-surface-2 border border-line rounded-xl text-xs text-fg-2 focus:outline-none focus:border-amber-400 cursor-pointer"
             >
               <option value="ALL">{isKo ? '전체 상태' : 'All Status'}</option>
               <option value="ACTIVE">{isKo ? '활성 (Active)' : 'Active'}</option>
@@ -428,7 +428,7 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-xs text-gray-400 pt-1">
+        <div className="flex items-center justify-between text-xs text-muted pt-1">
           <span>
             {isKo ? '검색 결과:' : 'Filtered:'} <span className="text-amber-300 font-bold">{filteredTools.length}</span>개
           </span>
@@ -449,10 +449,10 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
       </div>
 
       {/* Tools Table */}
-      <div className="bg-[#121424] rounded-2xl border border-white/10 overflow-hidden shadow-xl">
+      <div className="bg-surface rounded-2xl border border-line overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#16192d] text-gray-400 font-bold border-b border-white/10 uppercase text-[10px]">
+            <thead className="bg-surface-2 text-muted font-bold border-b border-line uppercase text-[0.6875rem]">
               <tr>
                 <th className="py-3 px-4 w-12">ID</th>
                 <th className="py-3 px-4">AI 도구 명 (Name)</th>
@@ -462,10 +462,10 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
                 <th className="py-3 px-4 text-right">관리 제어 (Actions)</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-line">
               {filteredTools.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-gray-500">
+                  <td colSpan={6} className="py-8 text-center text-subtle">
                     {isKo ? '조건에 맞는 AI 도구가 없습니다.' : 'No tools match the criteria.'}
                   </td>
                 </tr>
@@ -477,19 +477,19 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
                   return (
                     <tr
                       key={tool.id}
-                      className={`hover:bg-white/[0.02] transition-colors ${
+                      className={`hover:bg-fg/[0.02] transition-colors ${
                         isDeleted ? 'opacity-50 bg-rose-950/10' : isInactive ? 'opacity-70 bg-amber-950/10' : ''
                       }`}
                     >
-                      <td className="py-3 px-4 font-mono text-gray-400">#{tool.id}</td>
+                      <td className="py-3 px-4 font-mono text-muted">#{tool.id}</td>
 
                       {/* Tool Name & Desc */}
                       <td className="py-3 px-4">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-white text-sm">{tool.name}</span>
+                            <span className="font-bold text-fg text-sm">{tool.name}</span>
                             {tool.isCustom && (
-                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                              <span className="px-1.5 py-0.5 rounded text-[0.6875rem] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                                 CUSTOM
                               </span>
                             )}
@@ -497,13 +497,13 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
                               href={tool.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-gray-400 hover:text-white"
+                              className="text-muted hover:text-fg"
                               title="웹사이트 열기"
                             >
                               <ExternalLink className="w-3 h-3" />
                             </a>
                           </div>
-                          <p className="text-[11px] text-gray-400 line-clamp-1 mt-0.5 max-w-md">
+                          <p className="text-xs text-muted line-clamp-1 mt-0.5 max-w-md">
                             {tool.description}
                           </p>
                         </div>
@@ -511,7 +511,7 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
 
                       {/* Category */}
                       <td className="py-3 px-4">
-                        <span className="inline-block px-2 py-0.5 rounded-lg bg-white/5 text-gray-300 font-medium text-[11px]">
+                        <span className="inline-block px-2 py-0.5 rounded-lg bg-fg/5 text-fg-2 font-medium text-xs">
                           {tool.category}
                         </span>
                       </td>
@@ -519,7 +519,7 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
                       {/* Price */}
                       <td className="py-3 px-4">
                         <span
-                          className={`font-semibold text-[11px] ${
+                          className={`font-semibold text-xs ${
                             tool.price === '무료'
                               ? 'text-emerald-400'
                               : tool.price === '유료'
@@ -534,15 +534,15 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
                       {/* Status */}
                       <td className="py-3 px-4">
                         {isDeleted ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6875rem] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
                             삭제됨 (Deleted)
                           </span>
                         ) : isInactive ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6875rem] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
                             비활성 (Inactive)
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6875rem] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                             활성 (Active)
                           </span>
                         )}
@@ -554,7 +554,7 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
                           {/* Toggle Active/Inactive */}
                           <button
                             onClick={() => handleToggleStatus(tool)}
-                            className="p-1.5 hover:bg-white/10 rounded-lg text-gray-300 hover:text-white transition-colors cursor-pointer"
+                            className="p-1.5 hover:bg-fg/10 rounded-lg text-fg-2 hover:text-fg transition-colors cursor-pointer"
                             title={isInactive ? '활성화하기' : '비활성화하기'}
                           >
                             {isInactive ? (
@@ -567,7 +567,7 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
                           {/* Edit Button */}
                           <button
                             onClick={() => handleOpenEdit(tool)}
-                            className="p-1.5 hover:bg-indigo-500/20 rounded-lg text-gray-300 hover:text-indigo-300 transition-colors cursor-pointer"
+                            className="p-1.5 hover:bg-indigo-500/20 rounded-lg text-fg-2 hover:text-indigo-300 transition-colors cursor-pointer"
                             title="수정하기"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -585,7 +585,7 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
                           ) : (
                             <button
                               onClick={() => setDeleteConfirmId(tool.id)}
-                              className="p-1.5 hover:bg-rose-500/20 rounded-lg text-gray-400 hover:text-rose-400 transition-colors cursor-pointer"
+                              className="p-1.5 hover:bg-rose-500/20 rounded-lg text-muted hover:text-rose-400 transition-colors cursor-pointer"
                               title="삭제하기"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -605,17 +605,17 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
       {/* Add / Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in overflow-y-auto">
-          <div className="w-full max-w-2xl bg-[#16192d] border border-amber-400/30 rounded-2xl p-6 shadow-2xl space-y-4 my-8">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="w-full max-w-2xl bg-surface-2 border border-amber-400/30 rounded-2xl p-6 shadow-2xl space-y-4 my-8">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div className="flex items-center gap-2 text-amber-400">
                 <Wrench className="w-5 h-5" />
-                <h3 className="text-base font-bold text-white">
+                <h3 className="text-base font-bold text-fg">
                   {editingTool ? `AI 도구 정보 수정: ${editingTool.name}` : '신규 AI 도구 등록'}
                 </h3>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white cursor-pointer"
+                className="p-1.5 hover:bg-fg/10 rounded-lg text-muted hover:text-fg cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -624,7 +624,7 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
             <form onSubmit={handleSaveTool} className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-gray-300 font-bold mb-1">
+                  <label className="block text-fg-2 font-bold mb-1">
                     도구 이름 (Tool Name) <span className="text-rose-400">*</span>
                   </label>
                   <input
@@ -633,18 +633,18 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="예: ChatGPT, Claude, Midjourney"
-                    className="w-full px-3 py-2 bg-[#121424] border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-fg focus:outline-none focus:border-amber-400"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 font-bold mb-1">
+                  <label className="block text-fg-2 font-bold mb-1">
                     카테고리 (Category) <span className="text-rose-400">*</span>
                   </label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#121424] border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-400 cursor-pointer"
+                    className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-fg focus:outline-none focus:border-amber-400 cursor-pointer"
                   >
                     {CATEGORIES.filter((c) => c !== '전체').map((cat) => (
                       <option key={cat} value={cat}>
@@ -655,13 +655,13 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 font-bold mb-1">
+                  <label className="block text-fg-2 font-bold mb-1">
                     가격 정책 (Price) <span className="text-rose-400">*</span>
                   </label>
                   <select
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#121424] border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-400 cursor-pointer"
+                    className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-fg focus:outline-none focus:border-amber-400 cursor-pointer"
                   >
                     <option value="무료">무료 (Free)</option>
                     <option value="무료/유료">무료/유료 (Freemium)</option>
@@ -670,7 +670,7 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 font-bold mb-1">
+                  <label className="block text-fg-2 font-bold mb-1">
                     웹사이트 URL (URL) <span className="text-rose-400">*</span>
                   </label>
                   <input
@@ -679,13 +679,13 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
                     value={formData.url}
                     onChange={(e) => setFormData({ ...formData, url: e.target.value })}
                     placeholder="https://example.com"
-                    className="w-full px-3 py-2 bg-[#121424] border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-fg focus:outline-none focus:border-amber-400"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-gray-300 font-bold mb-1">
+                <label className="block text-fg-2 font-bold mb-1">
                   한국어 설명 (Korean Description) <span className="text-rose-400">*</span>
                 </label>
                 <textarea
@@ -694,61 +694,61 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="AI 도구에 대한 핵심 소개 문장을 작성하세요."
-                  className="w-full px-3 py-2 bg-[#121424] border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-fg focus:outline-none focus:border-amber-400"
                 />
               </div>
 
               <div>
-                <label className="block text-gray-300 font-bold mb-1">영어 설명 (English Description)</label>
+                <label className="block text-fg-2 font-bold mb-1">영어 설명 (English Description)</label>
                 <textarea
                   rows={2}
                   value={formData.descriptionEn}
                   onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
                   placeholder="English summary for international users."
-                  className="w-full px-3 py-2 bg-[#121424] border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-fg focus:outline-none focus:border-amber-400"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-gray-300 font-bold mb-1">태그 (쉼표로 구분)</label>
+                  <label className="block text-fg-2 font-bold mb-1">태그 (쉼표로 구분)</label>
                   <input
                     type="text"
                     value={formData.tags}
                     onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
                     placeholder="예: LLM, 생성AI, 글쓰기, 기획"
-                    className="w-full px-3 py-2 bg-[#121424] border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-fg focus:outline-none focus:border-amber-400"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 font-bold mb-1">추천 활용 사례 (Use Cases)</label>
+                  <label className="block text-fg-2 font-bold mb-1">추천 활용 사례 (Use Cases)</label>
                   <input
                     type="text"
                     value={formData.useCases}
                     onChange={(e) => setFormData({ ...formData, useCases: e.target.value })}
                     placeholder="예: 기획서 초안, 마케팅 문구 작성"
-                    className="w-full px-3 py-2 bg-[#121424] border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-fg focus:outline-none focus:border-amber-400"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-gray-300 font-bold mb-1">주요 기능 (한 줄에 하나씩 입력)</label>
+                <label className="block text-fg-2 font-bold mb-1">주요 기능 (한 줄에 하나씩 입력)</label>
                 <textarea
                   rows={2}
                   value={formData.keyFeatures}
                   onChange={(e) => setFormData({ ...formData, keyFeatures: e.target.value })}
                   placeholder="고급 문맥 추론 지원&#10;멀티모달 이미지 분석&#10;실시간 웹 검색 통합"
-                  className="w-full px-3 py-2 bg-[#121424] border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-400 font-mono"
+                  className="w-full px-3 py-2 bg-surface border border-line rounded-xl text-fg focus:outline-none focus:border-amber-400 font-mono"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-line">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-white/10 hover:bg-white/15 text-gray-300 rounded-xl text-xs font-bold cursor-pointer"
+                  className="px-4 py-2 bg-fg/10 hover:bg-fg/15 text-fg-2 rounded-xl text-xs font-bold cursor-pointer"
                 >
                   취소 (Cancel)
                 </button>
@@ -767,16 +767,16 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
       {/* Delete Confirmation Modal */}
       {deleteConfirmId !== null && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md bg-[#16192d] border border-rose-500/40 rounded-2xl p-6 shadow-2xl space-y-4">
+          <div className="w-full max-w-md bg-surface-2 border border-rose-500/40 rounded-2xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3 text-rose-400">
               <AlertCircle className="w-6 h-6 shrink-0" />
-              <h3 className="text-base font-bold text-white">도구 삭제 확인</h3>
+              <h3 className="text-base font-bold text-fg">도구 삭제 확인</h3>
             </div>
 
-            <p className="text-xs text-gray-300 leading-relaxed">
+            <p className="text-xs text-fg-2 leading-relaxed">
               선택한 AI 도구를 카탈로그에서 삭제하시겠습니까?
               <br />
-              <span className="text-gray-400">
+              <span className="text-muted">
                 '보관(소프트 삭제)'을 선택하면 카탈로그에서 숨겨지며 언제든 복구할 수 있습니다.
               </span>
             </p>
@@ -784,7 +784,7 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 onClick={() => setDeleteConfirmId(null)}
-                className="px-3.5 py-2 bg-white/10 hover:bg-white/15 text-gray-300 rounded-xl text-xs font-bold cursor-pointer"
+                className="px-3.5 py-2 bg-fg/10 hover:bg-fg/15 text-fg-2 rounded-xl text-xs font-bold cursor-pointer"
               >
                 취소
               </button>

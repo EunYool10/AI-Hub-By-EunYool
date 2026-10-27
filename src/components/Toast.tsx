@@ -1,17 +1,24 @@
 import React from 'react';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 interface ToastProps {
   message: string | null;
 }
 
-export const Toast: React.FC<ToastProps> = ({ message }) => {
-  if (!message) return null;
-
-  return (
-    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] bg-[#1a1d2a] border border-white/20 text-white px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium shadow-2xl shadow-black/80 flex items-center gap-2 animate-in slide-in-from-bottom-5 fade-in duration-200">
-      <CheckCircle className="w-4 h-4 text-[#00d4aa]" />
-      <span>{message}</span>
-    </div>
-  );
-};
+export const Toast: React.FC<ToastProps> = ({ message }) => (
+  <div
+    role="status"
+    aria-live="polite"
+    className="fixed inset-x-0 bottom-[max(1.5rem,env(safe-area-inset-bottom))] z-[9999] flex justify-center px-4 pointer-events-none"
+  >
+    {message && (
+      <div
+        key={message}
+        className="pointer-events-auto max-w-md inline-flex items-center gap-2.5 pl-3.5 pr-4 py-2.5 rounded-xl border border-line-strong bg-surface-2/95 backdrop-blur-xl text-sm font-medium text-fg shadow-pop animate-in fade-in slide-in-from-bottom-4 duration-200"
+      >
+        <CheckCircle2 className="w-4 h-4 text-mint shrink-0" />
+        <span>{message}</span>
+      </div>
+    )}
+  </div>
+);

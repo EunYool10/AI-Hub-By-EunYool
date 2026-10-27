@@ -260,23 +260,23 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-[#13151f] border border-amber-400/30 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
+      <div className="bg-surface border border-amber-400/30 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/10">
+        <div className="flex items-center justify-between pb-4 border-b border-line">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-black font-bold shadow-lg shadow-amber-500/20">
               <Crown className="w-6 h-6 fill-current" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="font-['Space_Grotesk'] text-xl font-extrabold text-white">
+                <h2 className="font-display text-xl font-extrabold text-fg">
                   최고 관리자 대시보드
                 </h2>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40">
+                <span className="text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40">
                   ADMIN ONLY
                 </span>
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-muted">
                 로그인 계정: <strong className="text-amber-300">{currentUser.email}</strong>
               </p>
             </div>
@@ -299,7 +299,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
             <button
               onClick={onClose}
-              className="p-1.5 text-gray-400 hover:text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+              className="p-1.5 text-muted hover:text-fg rounded-full hover:bg-fg/10 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -313,7 +313,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'inquiries'
                 ? 'bg-amber-400 text-black shadow-md shadow-amber-400/20'
-                : 'bg-[#1a1d2a] text-gray-400 hover:text-white border border-white/5'
+                : 'bg-surface-2 text-muted hover:text-fg border border-line'
             }`}
           >
             <MessageSquare className="w-4 h-4" />
@@ -325,7 +325,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'addTool'
                 ? 'bg-amber-400 text-black shadow-md shadow-amber-400/20'
-                : 'bg-[#1a1d2a] text-gray-400 hover:text-white border border-white/5'
+                : 'bg-surface-2 text-muted hover:text-fg border border-line'
             }`}
           >
             <Plus className="w-4 h-4" />
@@ -337,7 +337,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'addNotice'
                 ? 'bg-amber-400 text-black shadow-md shadow-amber-400/20'
-                : 'bg-[#1a1d2a] text-gray-400 hover:text-white border border-white/5'
+                : 'bg-surface-2 text-muted hover:text-fg border border-line'
             }`}
           >
             <Megaphone className="w-4 h-4" />
@@ -349,7 +349,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'stats'
                 ? 'bg-amber-400 text-black shadow-md shadow-amber-400/20'
-                : 'bg-[#1a1d2a] text-gray-400 hover:text-white border border-white/5'
+                : 'bg-surface-2 text-muted hover:text-fg border border-line'
             }`}
           >
             <BarChart2 className="w-4 h-4" />
@@ -360,11 +360,11 @@ export const AdminModal: React.FC<AdminModalProps> = ({
         {/* Tab 1: Inquiries List */}
         {activeTab === 'inquiries' && (
           <div className="flex-1 overflow-y-auto space-y-3 pr-1 no-scrollbar">
-            <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+            <div className="flex items-center justify-between text-xs text-muted mb-1">
               <span>수신처: deer123424@gmail.com</span>
               <button
                 onClick={fetchInquiries}
-                className="flex items-center gap-1 text-[#00d4aa] hover:underline cursor-pointer"
+                className="flex items-center gap-1 text-mint hover:underline cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
                 <span>새로고침</span>
@@ -372,9 +372,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({
             </div>
 
             {inquiries.length === 0 ? (
-              <div className="text-center py-10 bg-[#1a1d2a]/50 rounded-2xl border border-white/5">
+              <div className="text-center py-10 bg-surface-2/50 rounded-2xl border border-line">
                 <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-2 opacity-60" />
-                <p className="text-xs text-gray-400 font-medium">
+                <p className="text-xs text-muted font-medium">
                   현재 대기 중인 문의사항이 없습니다.
                 </p>
               </div>
@@ -382,34 +382,34 @@ export const AdminModal: React.FC<AdminModalProps> = ({
               inquiries.map((inq) => (
                 <div
                   key={inq.id}
-                  className="bg-[#1a1d2a] border border-white/10 rounded-2xl p-4 space-y-2 hover:border-amber-400/50 transition-all"
+                  className="bg-surface-2 border border-line rounded-2xl p-4 space-y-2 hover:border-amber-400/50 transition-all"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-[#6c63ff]/20 text-[#6c63ff] border border-[#6c63ff]/30">
+                      <span className="px-2 py-0.5 rounded-lg text-[0.6875rem] font-bold bg-accent/20 text-brand border border-accent/30">
                         {inq.type}
                       </span>
-                      <h4 className="text-xs sm:text-sm font-bold text-white">
+                      <h4 className="text-xs sm:text-sm font-bold text-fg">
                         {inq.title}
                       </h4>
                     </div>
 
                     <button
                       onClick={() => handleDeleteInquiry(inq.id)}
-                      className="p-1 text-gray-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer shrink-0"
+                      className="p-1 text-muted hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer shrink-0"
                       title="문의 삭제"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <p className="text-xs text-gray-300 leading-relaxed bg-[#13151f] p-3 rounded-xl border border-white/5 whitespace-pre-wrap">
+                  <p className="text-xs text-fg-2 leading-relaxed bg-surface p-3 rounded-xl border border-line whitespace-pre-wrap">
                     {inq.message}
                   </p>
 
-                  <div className="flex items-center justify-between text-[11px] text-gray-400 pt-1 border-t border-white/5">
+                  <div className="flex items-center justify-between text-xs text-muted pt-1 border-t border-line">
                     <div className="flex items-center gap-2">
-                      <span>작성자: <strong className="text-gray-200">{inq.name}</strong></span>
+                      <span>작성자: <strong className="text-fg-2">{inq.name}</strong></span>
                       <span>•</span>
                       <button
                         onClick={() => handleCopyEmail(inq.email)}
@@ -420,7 +420,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                         <Copy className="w-2.5 h-2.5" />
                       </button>
                     </div>
-                    <span className="text-gray-500">
+                    <span className="text-subtle">
                       {new Date(inq.createdAt).toLocaleString('ko-KR')}
                     </span>
                   </div>
@@ -440,7 +440,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-fg-2 mb-1">
                   AI 도구명 *
                 </label>
                 <input
@@ -449,18 +449,18 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                   value={toolName}
                   onChange={(e) => setToolName(e.target.value)}
                   placeholder="예: Claude 3.5 Sonnet"
-                  className="w-full bg-[#1a1d2a] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                  className="w-full bg-surface-2 border border-line rounded-xl px-3 py-2 text-xs text-fg placeholder:text-subtle focus:outline-none focus:border-amber-400"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-fg-2 mb-1">
                   카테고리
                 </label>
                 <select
                   value={toolCategory}
                   onChange={(e) => setToolCategory(e.target.value)}
-                  className="w-full bg-[#1a1d2a] border border-white/10 rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
+                  className="w-full bg-surface-2 border border-line rounded-xl px-2.5 py-2 text-xs text-fg focus:outline-none focus:border-amber-400"
                 >
                   <option value="기획/글쓰기">기획/글쓰기</option>
                   <option value="디자인/이미지">디자인/이미지</option>
@@ -475,7 +475,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-fg-2 mb-1">
                   웹사이트 URL
                 </label>
                 <input
@@ -483,18 +483,18 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                   value={toolUrl}
                   onChange={(e) => setToolUrl(e.target.value)}
                   placeholder="https://claude.ai"
-                  className="w-full bg-[#1a1d2a] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                  className="w-full bg-surface-2 border border-line rounded-xl px-3 py-2 text-xs text-fg placeholder:text-subtle focus:outline-none focus:border-amber-400"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-fg-2 mb-1">
                   가격 정책
                 </label>
                 <select
                   value={toolPrice}
                   onChange={(e) => setToolPrice(e.target.value)}
-                  className="w-full bg-[#1a1d2a] border border-white/10 rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
+                  className="w-full bg-surface-2 border border-line rounded-xl px-2.5 py-2 text-xs text-fg focus:outline-none focus:border-amber-400"
                 >
                   <option value="무료">무료 (Free)</option>
                   <option value="유료">유료 (Paid)</option>
@@ -504,7 +504,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-300 mb-1">
+              <label className="block text-xs font-semibold text-fg-2 mb-1">
                 도구 설명 *
               </label>
               <textarea
@@ -513,7 +513,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                 value={toolDesc}
                 onChange={(e) => setToolDesc(e.target.value)}
                 placeholder="AI 도구의 핵심 기능과 주요 활용 사례를 간략히 설명하세요."
-                className="w-full bg-[#1a1d2a] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 resize-none"
+                className="w-full bg-surface-2 border border-line rounded-xl px-3 py-2 text-xs text-fg placeholder:text-subtle focus:outline-none focus:border-amber-400 resize-none"
               />
             </div>
 
@@ -530,18 +530,18 @@ export const AdminModal: React.FC<AdminModalProps> = ({
         {activeTab === 'addNotice' && (
           <div className="space-y-4 flex-1 overflow-y-auto pr-1 no-scrollbar">
             {/* Create Notice Form */}
-            <form onSubmit={handleCreateNotice} className="bg-[#1a1d2a] p-4 rounded-2xl border border-white/10 space-y-3">
+            <form onSubmit={handleCreateNotice} className="bg-surface-2 p-4 rounded-2xl border border-line space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                   <Megaphone className="w-4 h-4 text-amber-400" />
                   <span>새로운 공식 공지사항 작성</span>
                 </span>
-                <span className="text-[10px] text-gray-400">작성 즉시 공지사항 모달에 게재됩니다</span>
+                <span className="text-[0.6875rem] text-muted">작성 즉시 공지사항 모달에 게재됩니다</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-gray-300 mb-1">
+                  <label className="block text-xs font-semibold text-fg-2 mb-1">
                     공지사항 제목 *
                   </label>
                   <input
@@ -550,18 +550,18 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     value={noticeTitle}
                     onChange={(e) => setNoticeTitle(e.target.value)}
                     placeholder="예: [안내] AI Hub 서비스 점검 및 기능 업데이트 안내"
-                    className="w-full bg-[#13151f] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+                    className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-xs text-fg placeholder:text-subtle focus:outline-none focus:border-amber-400"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-300 mb-1">
+                  <label className="block text-xs font-semibold text-fg-2 mb-1">
                     분류 태그
                   </label>
                   <select
                     value={noticeCategory}
                     onChange={(e) => setNoticeCategory(e.target.value as any)}
-                    className="w-full bg-[#13151f] border border-white/10 rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
+                    className="w-full bg-surface border border-line rounded-xl px-2.5 py-2 text-xs text-fg focus:outline-none focus:border-amber-400"
                   >
                     <option value="NOTICE">일반 안내 (NOTICE)</option>
                     <option value="UPDATE">신규 업데이트 (UPDATE)</option>
@@ -571,7 +571,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-fg-2 mb-1">
                   공지사항 본문 내용 *
                 </label>
                 <textarea
@@ -580,7 +580,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                   value={noticeContent}
                   onChange={(e) => setNoticeContent(e.target.value)}
                   placeholder="사용자들에게 전달할 공지사항 상세 내용을 입력하세요."
-                  className="w-full bg-[#13151f] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 resize-none"
+                  className="w-full bg-surface border border-line rounded-xl px-3 py-2 text-xs text-fg placeholder:text-subtle focus:outline-none focus:border-amber-400 resize-none"
                 />
               </div>
 
@@ -593,37 +593,37 @@ export const AdminModal: React.FC<AdminModalProps> = ({
             </form>
 
             {/* Existing Notice List */}
-            <div className="space-y-2 pt-2 border-t border-white/10">
-              <div className="flex items-center justify-between text-xs text-gray-300 font-bold">
+            <div className="space-y-2 pt-2 border-t border-line">
+              <div className="flex items-center justify-between text-xs text-fg-2 font-bold">
                 <span>등록된 공지사항 목록 ({notices.length}개)</span>
               </div>
 
               {notices.length === 0 ? (
-                <div className="text-center py-6 bg-[#1a1d2a]/50 rounded-xl border border-white/5 text-xs text-gray-400">
+                <div className="text-center py-6 bg-surface-2/50 rounded-xl border border-line text-xs text-muted">
                   현재 등록된 공지사항이 없습니다. 위 서식에서 새 공지사항을 작성해보세요.
                 </div>
               ) : (
                 notices.map((item) => (
                   <div
                     key={item.id}
-                    className="bg-[#1a1d2a] border border-white/10 p-3.5 rounded-xl space-y-1.5 flex items-start justify-between gap-3"
+                    className="bg-surface-2 border border-line p-3.5 rounded-xl space-y-1.5 flex items-start justify-between gap-3"
                   >
                     <div className="space-y-1 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                        <span className="text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
                           {item.category}
                         </span>
-                        <span className="text-[11px] text-gray-400">{item.createdAt}</span>
+                        <span className="text-xs text-muted">{item.createdAt}</span>
                       </div>
-                      <h4 className="text-xs font-bold text-white">{item.title}</h4>
-                      <p className="text-[11px] text-gray-300 line-clamp-2 leading-relaxed bg-[#13151f] p-2 rounded-lg border border-white/5">
+                      <h4 className="text-xs font-bold text-fg">{item.title}</h4>
+                      <p className="text-xs text-fg-2 line-clamp-2 leading-relaxed bg-surface p-2 rounded-lg border border-line">
                         {item.content}
                       </p>
                     </div>
 
                     <button
                       onClick={() => handleDeleteNotice(item.id)}
-                      className="p-1.5 text-gray-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer shrink-0"
+                      className="p-1.5 text-muted hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer shrink-0"
                       title="공지 삭제"
                     >
                       <Trash2 className="w-4 h-4" />

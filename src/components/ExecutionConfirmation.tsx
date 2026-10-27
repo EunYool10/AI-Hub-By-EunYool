@@ -42,7 +42,7 @@ export const ExecutionConfirmation: React.FC<ExecutionConfirmationProps> = ({
   };
 
   const content = (
-    <div className="p-4 bg-[#1c1613] border border-amber-500/50 rounded-2xl shadow-2xl space-y-3 max-w-md w-full text-left font-sans">
+    <div className="p-4 bg-surface-2 border border-amber-500/50 rounded-2xl shadow-2xl space-y-3 max-w-md w-full text-left font-sans">
       <div className="flex items-center gap-2.5 border-b border-amber-500/25 pb-2.5">
         <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0">
           <ShieldAlert className="w-4 h-4 text-amber-400" />
@@ -51,16 +51,16 @@ export const ExecutionConfirmation: React.FC<ExecutionConfirmationProps> = ({
           <h4 className="font-bold text-amber-200 text-xs">
             {lang === 'ko' ? '⚠ 관리자 실행 승인 확인' : '⚠ Admin Execution Confirmation'}
           </h4>
-          <p className="text-[10px] text-amber-400/80 font-mono">Server Authorization Enforced</p>
+          <p className="text-[0.6875rem] text-amber-400/80 font-mono">Server Authorization Enforced</p>
         </div>
       </div>
 
       <div className="space-y-1.5">
-        <div className="text-xs font-bold text-white flex items-center gap-1.5">
+        <div className="text-xs font-bold text-fg flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
           <span>{actionInfo.title}</span>
         </div>
-        <p className="text-[11.5px] text-amber-100/90 leading-relaxed bg-black/50 p-2.5 rounded-xl border border-amber-500/20">
+        <p className="text-xs text-amber-100/90 leading-relaxed bg-inset p-2.5 rounded-xl border border-amber-500/20">
           {description || (lang === 'ko' ? '시스템 상태가 재설정됩니다. 계속 진행하시겠습니까?' : 'System state will be updated. Do you wish to proceed?')}
         </p>
       </div>
@@ -87,7 +87,7 @@ export const ExecutionConfirmation: React.FC<ExecutionConfirmationProps> = ({
         <button
           onClick={onCancel}
           disabled={isExecuting}
-          className="flex-1 py-2 px-3 bg-white/10 hover:bg-white/20 disabled:opacity-50 text-gray-300 hover:text-white rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1.5 border border-white/10 cursor-pointer"
+          className="flex-1 py-2 px-3 bg-fg/10 hover:bg-fg/20 disabled:opacity-50 text-fg-2 hover:text-fg rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1.5 border border-line cursor-pointer"
         >
           <X className="w-3.5 h-3.5" />
           <span>{lang === 'ko' ? '취소' : 'Cancel'}</span>

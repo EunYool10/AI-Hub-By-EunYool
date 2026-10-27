@@ -317,13 +317,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
       <div
-        className="relative w-full max-w-2xl bg-[#12141c] border border-white/20 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] box-border"
+        className="relative w-full max-w-2xl bg-surface border border-line-strong rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] box-border"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header (Fixed) */}
-        <div className="bg-[#161924] px-4 py-3.5 sm:px-6 sm:py-4 border-b border-white/10 flex items-center justify-between shrink-0">
+        <div className="bg-surface-2 px-4 py-3.5 sm:px-6 sm:py-4 border-b border-line flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#6c63ff] to-[#00d4aa] flex items-center justify-center text-white shadow-md shadow-[#6c63ff]/20 shrink-0">
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-accent to-mint flex items-center justify-center text-white shadow-md shadow-accent/20 shrink-0">
               {activeTab === 'profile' ? (
                 <User className="w-5 h-5" />
               ) : (
@@ -332,17 +332,17 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                <h2 className="text-base sm:text-lg font-bold text-fg tracking-tight">
                   {lang === 'ko' ? '설정 및 프로필' : 'Settings & Profile'}
                 </h2>
                 {currentUser?.isAdmin && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-400/20 border border-amber-400/40 text-amber-300 inline-flex items-center gap-1">
+                  <span className="px-2 py-0.5 rounded-full text-[0.6875rem] font-extrabold bg-amber-400/20 border border-amber-400/40 text-amber-300 inline-flex items-center gap-1">
                     <Crown className="w-3 h-3" />
                     ADMIN
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-400 font-normal mt-0.5">
+              <p className="text-xs text-muted font-normal mt-0.5">
                 {lang === 'ko'
                   ? '프로필 정보, 테마, 음성 합성 및 시스템 환경을 설정합니다.'
                   : 'Manage profile details, theme, voice synthesis, and preferences.'}
@@ -356,28 +356,28 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               onClose();
             }}
             aria-label="Close"
-            className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
+            className="p-2 text-muted hover:text-fg hover:bg-fg/10 rounded-xl transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="bg-[#0c0e14] px-4 py-2 border-b border-white/10 flex gap-2 overflow-x-auto no-scrollbar shrink-0">
+        <div className="bg-bg px-4 py-2 border-b border-line flex gap-2 overflow-x-auto no-scrollbar shrink-0">
           {/* Profile Tab */}
           <button
             type="button"
             onClick={() => setActiveTab('profile')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
               activeTab === 'profile'
-                ? 'bg-[#6c63ff] text-white shadow-md shadow-[#6c63ff]/30'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                ? 'bg-accent text-white shadow-md shadow-accent/30'
+                : 'text-muted hover:text-fg hover:bg-fg/5'
             }`}
           >
             <User className="w-3.5 h-3.5" />
             <span>{lang === 'ko' ? '내 프로필' : 'Profile'}</span>
             {!currentUser && (
-              <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/10 text-gray-400">
+              <span className="text-[0.6875rem] px-1.5 py-0.2 rounded bg-fg/10 text-muted">
                 {lang === 'ko' ? '로그인 필요' : 'Login'}
               </span>
             )}
@@ -389,8 +389,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             onClick={() => setActiveTab('general')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
               activeTab === 'general'
-                ? 'bg-[#6c63ff] text-white shadow-md shadow-[#6c63ff]/30'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                ? 'bg-accent text-white shadow-md shadow-accent/30'
+                : 'text-muted hover:text-fg hover:bg-fg/5'
             }`}
           >
             <Globe className="w-3.5 h-3.5" />
@@ -403,8 +403,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             onClick={() => setActiveTab('chatbot')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
               activeTab === 'chatbot'
-                ? 'bg-[#6c63ff] text-white shadow-md shadow-[#6c63ff]/30'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                ? 'bg-accent text-white shadow-md shadow-accent/30'
+                : 'text-muted hover:text-fg hover:bg-fg/5'
             }`}
           >
             <Volume2 className="w-3.5 h-3.5" />
@@ -417,8 +417,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             onClick={() => setActiveTab('accessibility')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
               activeTab === 'accessibility'
-                ? 'bg-[#6c63ff] text-white shadow-md shadow-[#6c63ff]/30'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                ? 'bg-accent text-white shadow-md shadow-accent/30'
+                : 'text-muted hover:text-fg hover:bg-fg/5'
             }`}
           >
             <Eye className="w-3.5 h-3.5" />
@@ -459,7 +459,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                           <h4 className="text-xs font-bold text-amber-200">
                             {lang === 'ko' ? '시스템 관리자 권한 활성화' : 'Administrator Privileges Active'}
                           </h4>
-                          <p className="text-[11px] text-amber-300/80">
+                          <p className="text-xs text-amber-300/80">
                             {lang === 'ko'
                               ? 'AI Hub 전체 시스템 및 사용자 관리 콘솔에 대한 모든 권한이 부여되어 있습니다.'
                               : 'You have full access to the AI Hub system and user management console.'}
@@ -483,16 +483,16 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   )}
 
                   {/* Profile Picture Card */}
-                  <div className="p-4 bg-[#181b26] border border-white/10 rounded-2xl space-y-4">
+                  <div className="p-4 bg-surface-2 border border-line rounded-2xl space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-gray-300 uppercase tracking-wider">
+                      <span className="text-xs font-bold text-fg-2 uppercase tracking-wider">
                         {lang === 'ko' ? '프로필 이미지' : 'Profile Image'}
                       </span>
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => setShowAvatarPicker(!showAvatarPicker)}
-                          className="text-xs text-[#6c63ff] hover:text-[#827bff] font-semibold transition-colors cursor-pointer"
+                          className="text-xs text-brand hover:text-brand font-semibold transition-colors cursor-pointer"
                         >
                           {showAvatarPicker
                             ? lang === 'ko'
@@ -502,11 +502,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                             ? '아바타 프리셋'
                             : 'Preset Avatars'}
                         </button>
-                        <span className="text-gray-600">|</span>
+                        <span className="text-subtle">|</span>
                         <button
                           type="button"
                           onClick={handleRestoreDefaultPhoto}
-                          className="text-xs text-gray-400 hover:text-white font-medium transition-colors cursor-pointer inline-flex items-center gap-1"
+                          className="text-xs text-muted hover:text-fg font-medium transition-colors cursor-pointer inline-flex items-center gap-1"
                         >
                           <RefreshCw className="w-3 h-3" />
                           {lang === 'ko' ? '기본값 복원' : 'Reset'}
@@ -516,7 +516,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
                       <div className="relative group">
-                        <div className="w-20 h-20 rounded-2xl overflow-hidden bg-[#202434] border-2 border-white/20 shadow-md flex items-center justify-center shrink-0">
+                        <div className="w-20 h-20 rounded-2xl overflow-hidden bg-surface-3 border-2 border-line-strong shadow-md flex items-center justify-center shrink-0">
                           {photoURL ? (
                             <img
                               src={photoURL}
@@ -528,7 +528,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                               }}
                             />
                           ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-[#6c63ff] to-[#00d4aa] flex items-center justify-center text-white text-2xl font-bold">
+                            <div className="w-full h-full bg-gradient-to-br from-accent to-mint flex items-center justify-center text-white text-2xl font-bold">
                               {(currentUser.displayName || currentUser.email).charAt(0).toUpperCase()}
                             </div>
                           )}
@@ -537,7 +537,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                         <button
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
-                          className="absolute -bottom-1.5 -right-1.5 p-1.5 bg-[#6c63ff] hover:bg-[#7b72ff] text-white rounded-lg shadow-md transition-transform active:scale-95 cursor-pointer"
+                          className="absolute -bottom-1.5 -right-1.5 p-1.5 bg-accent hover:bg-accent text-white rounded-lg shadow-md transition-transform active:scale-95 cursor-pointer"
                           title="사진 파일 업로드"
                         >
                           <Camera className="w-3.5 h-3.5" />
@@ -556,7 +556,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                           <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="px-3 py-1.5 bg-white/10 hover:bg-white/15 border border-white/15 text-gray-200 hover:text-white rounded-lg text-xs font-semibold transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                            className="px-3 py-1.5 bg-fg/10 hover:bg-fg/15 border border-line text-fg-2 hover:text-fg rounded-lg text-xs font-semibold transition-all inline-flex items-center gap-1.5 cursor-pointer"
                           >
                             <Upload className="w-3.5 h-3.5" />
                             {lang === 'ko' ? '사진 파일 선택 (최대 2MB)' : 'Upload File (Max 2MB)'}
@@ -570,7 +570,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                             value={customUrlInput}
                             onChange={(e) => setCustomUrlInput(e.target.value)}
                             placeholder={lang === 'ko' ? '직접 이미지 URL 입력 (https://...)' : 'Image URL (https://...)'}
-                            className="flex-1 bg-[#12141c] border border-white/15 rounded-lg px-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#6c63ff]"
+                            className="flex-1 bg-surface border border-line rounded-lg px-3 py-1.5 text-xs text-fg placeholder:text-subtle focus:outline-none focus:border-accent"
                           />
                           <button
                             type="button"
@@ -580,7 +580,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                                 setCustomUrlInput('');
                               }
                             }}
-                            className="px-3 py-1.5 bg-[#6c63ff]/20 hover:bg-[#6c63ff]/30 border border-[#6c63ff]/40 text-[#6c63ff] hover:text-white rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap"
+                            className="px-3 py-1.5 bg-accent/20 hover:bg-accent/30 border border-accent/40 text-brand hover:text-fg rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap"
                           >
                             {lang === 'ko' ? '적용' : 'Apply'}
                           </button>
@@ -590,8 +590,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
                     {/* Preset Avatar Selection Grid */}
                     {showAvatarPicker && (
-                      <div className="pt-3 border-t border-white/10 animate-in fade-in">
-                        <p className="text-[11px] text-gray-400 mb-2">
+                      <div className="pt-3 border-t border-line animate-in fade-in">
+                        <p className="text-xs text-muted mb-2">
                           {lang === 'ko' ? '원하는 아바타 아이콘을 선택하세요:' : 'Select an avatar preset:'}
                         </p>
                         <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
@@ -600,10 +600,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                               key={idx}
                               type="button"
                               onClick={() => setPhotoURL(url)}
-                              className={`p-1 rounded-xl border transition-all cursor-pointer aspect-square flex items-center justify-center bg-[#202434] hover:scale-105 ${
+                              className={`p-1 rounded-xl border transition-all cursor-pointer aspect-square flex items-center justify-center bg-surface-3 hover:scale-105 ${
                                 photoURL === url
-                                  ? 'border-[#6c63ff] ring-2 ring-[#6c63ff]/40'
-                                  : 'border-white/10 hover:border-white/30'
+                                  ? 'border-accent ring-2 ring-accent/40'
+                                  : 'border-line hover:border-line-strong'
                               }`}
                             >
                               <img src={url} alt={`Preset ${idx}`} className="w-full h-full object-contain" />
@@ -619,13 +619,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     {/* Display Name */}
                     <div>
                       <div className="flex justify-between items-center mb-1">
-                        <label className="text-xs font-bold text-gray-300">
+                        <label className="text-xs font-bold text-fg-2">
                           {lang === 'ko' ? '이름 (Display Name)' : 'Display Name'} <span className="text-rose-400">*</span>
                         </label>
-                        <span className="text-[10px] text-gray-500">{displayName.length}/50</span>
+                        <span className="text-[0.6875rem] text-subtle">{displayName.length}/50</span>
                       </div>
                       <div className="relative">
-                        <User className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <User className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
                         <input
                           type="text"
                           required
@@ -633,7 +633,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                           value={displayName}
                           onChange={(e) => setDisplayName(e.target.value)}
                           placeholder={lang === 'ko' ? '사용자 이름을 입력하세요' : 'Enter your name'}
-                          className="w-full bg-[#181b26] border border-white/15 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#6c63ff] transition-all"
+                          className="w-full bg-surface-2 border border-line rounded-xl pl-9 pr-3 py-2 text-xs text-fg placeholder:text-subtle focus:outline-none focus:border-accent transition-all"
                         />
                       </div>
                     </div>
@@ -641,13 +641,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     {/* Nickname / Alias */}
                     <div>
                       <div className="flex justify-between items-center mb-1">
-                        <label className="text-xs font-bold text-gray-300">
+                        <label className="text-xs font-bold text-fg-2">
                           {lang === 'ko' ? '닉네임 (별칭)' : 'Nickname (Alias)'}
                         </label>
-                        <span className="text-[10px] text-gray-500">{nickname.length}/30</span>
+                        <span className="text-[0.6875rem] text-subtle">{nickname.length}/30</span>
                       </div>
                       <div className="relative">
-                        <Sparkles className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <Sparkles className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" />
                         <input
                           type="text"
                           maxLength={30}
@@ -658,7 +658,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                               ? '커뮤니티 및 대화에 표시될 닉네임 (선택사항)'
                               : 'Nickname or alias (optional)'
                           }
-                          className="w-full bg-[#181b26] border border-white/15 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#6c63ff] transition-all"
+                          className="w-full bg-surface-2 border border-line rounded-xl pl-9 pr-3 py-2 text-xs text-fg placeholder:text-subtle focus:outline-none focus:border-accent transition-all"
                         />
                       </div>
                     </div>
@@ -666,13 +666,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     {/* Bio */}
                     <div>
                       <div className="flex justify-between items-center mb-1">
-                        <label className="text-xs font-bold text-gray-300">
+                        <label className="text-xs font-bold text-fg-2">
                           {lang === 'ko' ? '한 줄 소개 (Bio)' : 'Bio / Introduction'}
                         </label>
-                        <span className="text-[10px] text-gray-500">{bio.length}/250</span>
+                        <span className="text-[0.6875rem] text-subtle">{bio.length}/250</span>
                       </div>
                       <div className="relative">
-                        <Edit3 className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+                        <Edit3 className="w-4 h-4 text-muted absolute left-3 top-3" />
                         <textarea
                           maxLength={250}
                           rows={3}
@@ -683,37 +683,37 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                               ? '자신을 소개하는 간단한 문구를 작성하세요.'
                               : 'Write a short description about yourself.'
                           }
-                          className="w-full bg-[#181b26] border border-white/15 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#6c63ff] transition-all resize-none"
+                          className="w-full bg-surface-2 border border-line rounded-xl pl-9 pr-3 py-2 text-xs text-fg placeholder:text-subtle focus:outline-none focus:border-accent transition-all resize-none"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Read-Only Account Security & Metadata */}
-                  <div className="p-4 bg-[#181b26] border border-white/10 rounded-2xl space-y-3">
-                    <span className="text-xs font-bold text-gray-300 uppercase tracking-wider block">
+                  <div className="p-4 bg-surface-2 border border-line rounded-2xl space-y-3">
+                    <span className="text-xs font-bold text-fg-2 uppercase tracking-wider block">
                       {lang === 'ko' ? '계정 및 인증 정보' : 'Account & Authentication Info'}
                     </span>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                       {/* Authenticated Email */}
-                      <div className="p-2.5 bg-[#12141c] border border-white/10 rounded-xl">
-                        <span className="text-[11px] text-gray-400 flex items-center gap-1.5 mb-1">
-                          <Mail className="w-3.5 h-3.5 text-gray-400" />
+                      <div className="p-2.5 bg-surface border border-line rounded-xl">
+                        <span className="text-xs text-muted flex items-center gap-1.5 mb-1">
+                          <Mail className="w-3.5 h-3.5 text-muted" />
                           {lang === 'ko' ? '인증된 이메일' : 'Verified Email'}
                           <span title="수정 불가" className="ml-auto flex items-center">
-                            <Lock className="w-3 h-3 text-gray-500" />
+                            <Lock className="w-3 h-3 text-subtle" />
                           </span>
                         </span>
-                        <span className="font-mono text-gray-200 font-semibold break-all">
+                        <span className="font-mono text-fg-2 font-semibold break-all">
                           {currentUser.email}
                         </span>
                       </div>
 
                       {/* Account Status */}
-                      <div className="p-2.5 bg-[#12141c] border border-white/10 rounded-xl">
-                        <span className="text-[11px] text-gray-400 flex items-center gap-1.5 mb-1">
-                          <Shield className="w-3.5 h-3.5 text-gray-400" />
+                      <div className="p-2.5 bg-surface border border-line rounded-xl">
+                        <span className="text-xs text-muted flex items-center gap-1.5 mb-1">
+                          <Shield className="w-3.5 h-3.5 text-muted" />
                           {lang === 'ko' ? '계정 상태' : 'Account Status'}
                         </span>
                         <div className="flex items-center gap-1.5">
@@ -725,12 +725,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       </div>
 
                       {/* Joined At */}
-                      <div className="p-2.5 bg-[#12141c] border border-white/10 rounded-xl">
-                        <span className="text-[11px] text-gray-400 flex items-center gap-1.5 mb-1">
-                          <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                      <div className="p-2.5 bg-surface border border-line rounded-xl">
+                        <span className="text-xs text-muted flex items-center gap-1.5 mb-1">
+                          <Calendar className="w-3.5 h-3.5 text-muted" />
                           {lang === 'ko' ? '계정 생성일' : 'Joined Date'}
                         </span>
-                        <span className="text-gray-300 font-medium">
+                        <span className="text-fg-2 font-medium">
                           {(currentUser.isAdmin || currentUser.role === 'ADMIN' || currentUser.email?.toLowerCase() === 'deer123424@gmail.com' || currentUser.joinedAt === '-')
                             ? '-'
                             : (currentUser.joinedAt || (lang === 'ko' ? '가입일 정보 없음' : 'N/A'))}
@@ -738,12 +738,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       </div>
 
                       {/* Last Active */}
-                      <div className="p-2.5 bg-[#12141c] border border-white/10 rounded-xl">
-                        <span className="text-[11px] text-gray-400 flex items-center gap-1.5 mb-1">
-                          <Clock className="w-3.5 h-3.5 text-gray-400" />
+                      <div className="p-2.5 bg-surface border border-line rounded-xl">
+                        <span className="text-xs text-muted flex items-center gap-1.5 mb-1">
+                          <Clock className="w-3.5 h-3.5 text-muted" />
                           {lang === 'ko' ? '최근 접속일' : 'Last Active'}
                         </span>
-                        <span className="text-gray-300 font-medium">
+                        <span className="text-fg-2 font-medium">
                           {currentUser.lastActiveAt || (lang === 'ko' ? '기록 없음' : 'N/A')}
                         </span>
                       </div>
@@ -756,7 +756,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       type="button"
                       onClick={onClose}
                       disabled={isSaving}
-                      className="px-4 py-2 bg-white/10 hover:bg-white/15 text-gray-300 hover:text-white rounded-xl text-xs font-semibold transition-all cursor-pointer"
+                      className="px-4 py-2 bg-fg/10 hover:bg-fg/15 text-fg-2 hover:text-fg rounded-xl text-xs font-semibold transition-all cursor-pointer"
                     >
                       {lang === 'ko' ? '취소' : 'Cancel'}
                     </button>
@@ -764,7 +764,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     <button
                       type="submit"
                       disabled={isSaving}
-                      className="px-5 py-2 bg-[#6c63ff] hover:bg-[#7b72ff] text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-[#6c63ff]/20 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      className="px-5 py-2 bg-accent hover:bg-accent text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-accent/20 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                     >
                       {isSaving ? (
                         <>
@@ -781,15 +781,15 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   </div>
                 </form>
               ) : (
-                <div className="p-8 text-center bg-[#181b26] border border-white/10 rounded-2xl space-y-4">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#6c63ff] to-[#00d4aa] flex items-center justify-center mx-auto text-white shadow-lg">
+                <div className="p-8 text-center bg-surface-2 border border-line rounded-2xl space-y-4">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-mint flex items-center justify-center mx-auto text-white shadow-lg">
                     <User className="w-7 h-7" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-white">
+                    <h3 className="text-base font-bold text-fg">
                       {lang === 'ko' ? '로그인이 필요한 서비스입니다' : 'Sign in Required'}
                     </h3>
-                    <p className="text-xs text-gray-400 mt-1 max-w-sm mx-auto">
+                    <p className="text-xs text-muted mt-1 max-w-sm mx-auto">
                       {lang === 'ko'
                         ? 'Google 계정으로 로그인하여 나만의 커스텀 프로필 아바타와 닉네임을 설정해보세요.'
                         : 'Sign in with your Google account to customize your personal avatar and profile nickname.'}
@@ -803,7 +803,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                         onClose();
                         onOpenLoginModal();
                       }}
-                      className="px-5 py-2.5 bg-[#6c63ff] hover:bg-[#5b52e0] text-white font-bold text-xs rounded-xl shadow-lg shadow-[#6c63ff]/30 transition-all inline-flex items-center gap-2 cursor-pointer"
+                      className="px-5 py-2.5 bg-accent hover:bg-accent-hover text-white font-bold text-xs rounded-xl shadow-lg shadow-accent/30 transition-all inline-flex items-center gap-2 cursor-pointer"
                     >
                       <LogIn className="w-4 h-4" />
                       <span>{lang === 'ko' ? 'Google 로그인하기' : 'Sign in with Google'}</span>
@@ -818,9 +818,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           {activeTab === 'general' && (
             <div className="space-y-5 animate-in fade-in">
               {/* Language Switch */}
-              <div className="bg-[#181b26] p-4.5 rounded-2xl border border-white/10 space-y-3">
-                <label className="text-xs font-bold text-gray-200 block flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-[#00d4aa]" />
+              <div className="bg-surface-2 p-4.5 rounded-2xl border border-line space-y-3">
+                <label className="text-xs font-bold text-fg-2 block flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-mint" />
                   <span>{UI_TEXT.settings.languageLabel[lang]}</span>
                 </label>
                 <div className="grid grid-cols-2 gap-2.5">
@@ -829,12 +829,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     onClick={() => handleToggleLanguage('ko')}
                     className={`px-3.5 py-2.5 rounded-xl text-xs font-bold border flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       settings.language === 'ko'
-                        ? 'bg-[#6c63ff]/20 border-[#6c63ff] text-white shadow-md'
-                        : 'bg-[#12141c] border-white/10 text-gray-400 hover:text-white'
+                        ? 'bg-accent/20 border-accent text-fg shadow-md'
+                        : 'bg-surface border-line text-muted hover:text-fg'
                     }`}
                   >
                     <span>🇰🇷 {UI_TEXT.settings.languageKo[lang]}</span>
-                    {settings.language === 'ko' && <Check className="w-4 h-4 text-[#00d4aa]" />}
+                    {settings.language === 'ko' && <Check className="w-4 h-4 text-mint" />}
                   </button>
 
                   <button
@@ -842,20 +842,20 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     onClick={() => handleToggleLanguage('en')}
                     className={`px-3.5 py-2.5 rounded-xl text-xs font-bold border flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       settings.language === 'en'
-                        ? 'bg-[#6c63ff]/20 border-[#6c63ff] text-white shadow-md'
-                        : 'bg-[#12141c] border-white/10 text-gray-400 hover:text-white'
+                        ? 'bg-accent/20 border-accent text-fg shadow-md'
+                        : 'bg-surface border-line text-muted hover:text-fg'
                     }`}
                   >
                     <span>🇺🇸 {UI_TEXT.settings.languageEn[lang]}</span>
-                    {settings.language === 'en' && <Check className="w-4 h-4 text-[#00d4aa]" />}
+                    {settings.language === 'en' && <Check className="w-4 h-4 text-mint" />}
                   </button>
                 </div>
               </div>
 
               {/* Theme Settings */}
-              <div className="bg-[#181b26] p-4.5 rounded-2xl border border-white/10 space-y-3">
-                <label className="text-xs font-bold text-gray-200 block flex items-center gap-2">
-                  <Palette className="w-4 h-4 text-[#6c63ff]" />
+              <div className="bg-surface-2 p-4.5 rounded-2xl border border-line space-y-3">
+                <label className="text-xs font-bold text-fg-2 block flex items-center gap-2">
+                  <Palette className="w-4 h-4 text-brand" />
                   <span>{UI_TEXT.settings.themeLabel[lang]}</span>
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -864,12 +864,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     onClick={() => handleUpdateSettings((p) => ({ ...p, theme: 'dark' }))}
                     className={`p-3 rounded-xl text-xs font-bold border flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                       settings.theme === 'dark'
-                        ? 'bg-[#6c63ff]/20 border-[#6c63ff] text-white shadow-md'
-                        : 'bg-[#12141c] border-white/10 text-gray-400 hover:text-white'
+                        ? 'bg-accent/20 border-accent text-fg shadow-md'
+                        : 'bg-surface border-line text-muted hover:text-fg'
                     }`}
                   >
-                    <Moon className="w-4 h-4 text-[#6c63ff]" />
-                    <span className="text-[11px]">{UI_TEXT.settings.themeDark[lang]}</span>
+                    <Moon className="w-4 h-4 text-brand" />
+                    <span className="text-xs">{UI_TEXT.settings.themeDark[lang]}</span>
                   </button>
 
                   <button
@@ -878,11 +878,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     className={`p-3 rounded-xl text-xs font-bold border flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                       settings.theme === 'light'
                         ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-md font-bold'
-                        : 'bg-[#12141c] border-white/10 text-gray-400 hover:text-white'
+                        : 'bg-surface border-line text-muted hover:text-fg'
                     }`}
                   >
                     <Sun className="w-4 h-4 text-amber-400" />
-                    <span className="text-[11px]">{UI_TEXT.settings.themeLight[lang]}</span>
+                    <span className="text-xs">{UI_TEXT.settings.themeLight[lang]}</span>
                   </button>
 
                   <button
@@ -890,12 +890,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     onClick={() => handleUpdateSettings((p) => ({ ...p, theme: 'rainbow' }))}
                     className={`p-3 rounded-xl text-xs font-bold border flex flex-col items-center gap-1.5 transition-all cursor-pointer relative overflow-hidden ${
                       settings.theme === 'rainbow'
-                        ? 'bg-gradient-to-r from-red-500/20 via-green-500/20 to-purple-500/20 border-purple-400 text-white shadow-lg ring-1 ring-purple-400/50'
-                        : 'bg-[#12141c] border-white/10 text-gray-400 hover:text-white'
+                        ? 'bg-gradient-to-r from-red-500/20 via-green-500/20 to-purple-500/20 border-purple-400 text-fg shadow-lg ring-1 ring-purple-400/50'
+                        : 'bg-surface border-line text-muted hover:text-fg'
                     }`}
                   >
                     <Palette className="w-4 h-4 text-pink-400 animate-pulse" />
-                    <span className="text-[11px] bg-gradient-to-r from-red-400 via-green-400 to-purple-400 bg-clip-text text-transparent font-extrabold">
+                    <span className="text-xs bg-gradient-to-r from-red-400 via-green-400 to-purple-400 bg-clip-text text-transparent font-extrabold">
                       {UI_TEXT.settings.themeRainbow[lang]}
                     </span>
                   </button>
@@ -905,12 +905,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     onClick={() => handleUpdateSettings((p) => ({ ...p, theme: 'system' }))}
                     className={`p-3 rounded-xl text-xs font-bold border flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                       settings.theme === 'system'
-                        ? 'bg-[#00d4aa]/20 border-[#00d4aa] text-[#00d4aa] shadow-md'
-                        : 'bg-[#12141c] border-white/10 text-gray-400 hover:text-white'
+                        ? 'bg-mint/20 border-mint text-mint shadow-md'
+                        : 'bg-surface border-line text-muted hover:text-fg'
                     }`}
                   >
-                    <Sparkles className="w-4 h-4 text-[#00d4aa]" />
-                    <span className="text-[11px]">{UI_TEXT.settings.themeSystem[lang]}</span>
+                    <Sparkles className="w-4 h-4 text-mint" />
+                    <span className="text-xs">{UI_TEXT.settings.themeSystem[lang]}</span>
                   </button>
                 </div>
               </div>
@@ -921,13 +921,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           {activeTab === 'chatbot' && (
             <div className="space-y-5 animate-in fade-in">
               {/* TTS Enable Toggle */}
-              <div className="bg-[#181b26] p-4.5 rounded-2xl border border-white/10 flex items-center justify-between">
+              <div className="bg-surface-2 p-4.5 rounded-2xl border border-line flex items-center justify-between">
                 <div>
-                  <h4 className="text-xs font-bold text-white flex items-center gap-2">
-                    <Volume2 className="w-4 h-4 text-[#00d4aa]" />
+                  <h4 className="text-xs font-bold text-fg flex items-center gap-2">
+                    <Volume2 className="w-4 h-4 text-mint" />
                     <span>{UI_TEXT.settings.ttsEnableLabel[lang]}</span>
                   </h4>
-                  <p className="text-[11px] text-gray-400 mt-0.5">
+                  <p className="text-xs text-muted mt-0.5">
                     {lang === 'ko'
                       ? 'AI 답변을 사람의 목소리로 생생하게 읽어줍니다.'
                       : 'Read AI responses aloud with natural voice.'}
@@ -943,7 +943,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     }))
                   }
                   className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer p-0.5 ${
-                    settings.tts.enabled ? 'bg-[#00d4aa]' : 'bg-gray-700'
+                    settings.tts.enabled ? 'bg-mint' : 'bg-line-strong'
                   }`}
                 >
                   <div
@@ -956,9 +956,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
               {/* TTS Voice Selector & Sliders */}
               {settings.tts.enabled && (
-                <div className="bg-[#181b26] p-4.5 rounded-2xl border border-white/10 space-y-4">
+                <div className="bg-surface-2 p-4.5 rounded-2xl border border-line space-y-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-200 block">
+                    <label className="text-xs font-bold text-fg-2 block">
                       {UI_TEXT.settings.ttsVoiceLabel[lang]}
                     </label>
                     {availableVoices.length > 0 ? (
@@ -970,7 +970,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                             tts: { ...p.tts, voice: e.target.value },
                           }))
                         }
-                        className="w-full bg-[#12141c] border border-white/15 focus:border-[#6c63ff] text-white rounded-xl px-3 py-2 text-xs focus:outline-none"
+                        className="w-full bg-surface border border-line focus:border-accent text-fg rounded-xl px-3 py-2 text-xs focus:outline-none"
                       >
                         <option value="">
                           {lang === 'ko' ? '기본 브라우저 권장 음성' : 'Default Browser Recommended Voice'}
@@ -990,9 +990,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
                   {/* Speed Rate Slider */}
                   <div className="space-y-1.5">
-                    <div className="flex justify-between items-center text-xs font-semibold text-gray-300">
+                    <div className="flex justify-between items-center text-xs font-semibold text-fg-2">
                       <span>{UI_TEXT.settings.ttsRateLabel[lang]}</span>
-                      <span className="text-[#00d4aa] font-mono font-bold">{settings.tts.rate.toFixed(1)}x</span>
+                      <span className="text-mint font-mono font-bold">{settings.tts.rate.toFixed(1)}x</span>
                     </div>
                     <input
                       type="range"
@@ -1008,7 +1008,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       }
                       className="w-full accent-[#00d4aa] cursor-pointer"
                     />
-                    <div className="flex justify-between text-[10px] text-gray-500 font-mono">
+                    <div className="flex justify-between text-[0.6875rem] text-subtle font-mono">
                       <span>0.75x (Slow)</span>
                       <span>1.0x (Normal)</span>
                       <span>2.0x (Fast)</span>
@@ -1017,9 +1017,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
                   {/* Pitch Slider */}
                   <div className="space-y-1.5">
-                    <div className="flex justify-between items-center text-xs font-semibold text-gray-300">
+                    <div className="flex justify-between items-center text-xs font-semibold text-fg-2">
                       <span>{UI_TEXT.settings.ttsPitchLabel[lang]}</span>
-                      <span className="text-[#6c63ff] font-mono font-bold">{settings.tts.pitch.toFixed(1)}</span>
+                      <span className="text-brand font-mono font-bold">{settings.tts.pitch.toFixed(1)}</span>
                     </div>
                     <input
                       type="range"
@@ -1038,14 +1038,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   </div>
 
                   {/* Voice Preview Button */}
-                  <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 max-w-full">
+                  <div className="pt-2 border-t border-line flex flex-wrap items-center justify-between gap-2 max-w-full">
                     <button
                       type="button"
                       onClick={handlePreviewVoice}
                       className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-md shrink-0 ${
                         isPreviewPlaying
                           ? 'bg-rose-500 text-white animate-pulse'
-                          : 'bg-[#6c63ff] hover:bg-[#5b52e0] text-white'
+                          : 'bg-accent hover:bg-accent-hover text-white'
                       }`}
                     >
                       {isPreviewPlaying ? (
@@ -1061,7 +1061,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       )}
                     </button>
 
-                    <span className="text-[11px] text-gray-400 italic break-words [word-break:break-word] min-w-0 max-w-full">
+                    <span className="text-xs text-muted italic break-words [word-break:break-word] min-w-0 max-w-full">
                       "{UI_TEXT.settings.ttsPreviewText[lang]}"
                     </span>
                   </div>
@@ -1069,12 +1069,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               )}
 
               {/* Auto Read Toggle */}
-              <div className="bg-[#181b26] p-4.5 rounded-2xl border border-white/10 flex items-center justify-between">
+              <div className="bg-surface-2 p-4.5 rounded-2xl border border-line flex items-center justify-between">
                 <div>
-                  <h4 className="text-xs font-bold text-white">
+                  <h4 className="text-xs font-bold text-fg">
                     {UI_TEXT.settings.ttsAutoPlayLabel[lang]}
                   </h4>
-                  <p className="text-[11px] text-gray-400 mt-0.5">
+                  <p className="text-xs text-muted mt-0.5">
                     {lang === 'ko'
                       ? 'AI 답변이 생성되면 자동으로 음성을 재생합니다.'
                       : 'Automatically play voice upon receiving AI response.'}
@@ -1090,7 +1090,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     }))
                   }
                   className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer p-0.5 ${
-                    settings.tts.autoPlay ? 'bg-[#6c63ff]' : 'bg-gray-700'
+                    settings.tts.autoPlay ? 'bg-accent' : 'bg-line-strong'
                   }`}
                 >
                   <div
@@ -1106,13 +1106,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           {/* TAB 4: ACCESSIBILITY */}
           {activeTab === 'accessibility' && (
             <div className="space-y-5 animate-in fade-in">
-              <div className="bg-[#181b26] p-4.5 rounded-2xl border border-white/10 flex items-center justify-between">
+              <div className="bg-surface-2 p-4.5 rounded-2xl border border-line flex items-center justify-between">
                 <div>
-                  <h4 className="text-xs font-bold text-white flex items-center gap-2">
+                  <h4 className="text-xs font-bold text-fg flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-amber-400" />
                     <span>{UI_TEXT.settings.animationLabel[lang]}</span>
                   </h4>
-                  <p className="text-[11px] text-gray-400 mt-0.5">
+                  <p className="text-xs text-muted mt-0.5">
                     {lang === 'ko'
                       ? '화면 전환 및 호버 애니메이션 효과를 활성화합니다.'
                       : 'Enable smooth UI motion and hover effects.'}
@@ -1131,7 +1131,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     }))
                   }
                   className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer p-0.5 ${
-                    settings.accessibility.animations ? 'bg-[#00d4aa]' : 'bg-gray-700'
+                    settings.accessibility.animations ? 'bg-mint' : 'bg-line-strong'
                   }`}
                 >
                   <div
@@ -1146,13 +1146,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         </div>
 
         {/* Footer Controls (Fixed) */}
-        <div className="bg-[#161924] px-4 py-3.5 sm:px-6 sm:py-4 border-t border-white/10 flex items-center justify-between shrink-0">
+        <div className="bg-surface-2 px-4 py-3.5 sm:px-6 sm:py-4 border-t border-line flex items-center justify-between shrink-0">
           {activeTab !== 'profile' ? (
             <>
               <button
                 type="button"
                 onClick={() => setShowResetConfirm(true)}
-                className="text-xs font-semibold text-gray-400 hover:text-rose-400 transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="text-xs font-semibold text-muted hover:text-rose-400 transition-colors flex items-center gap-1.5 cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>{UI_TEXT.settings.resetBtn[lang]}</span>
@@ -1164,18 +1164,18 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   if (isPreviewPlaying) ttsManager.stop();
                   onClose();
                 }}
-                className="px-5 py-2 bg-[#6c63ff] hover:bg-[#5b52e0] text-white font-bold rounded-xl text-xs shadow-md shadow-[#6c63ff]/20 transition-all cursor-pointer"
+                className="px-5 py-2 bg-accent hover:bg-accent-hover text-white font-bold rounded-xl text-xs shadow-md shadow-accent/20 transition-all cursor-pointer"
               >
                 {UI_TEXT.settings.saveBtn[lang]}
               </button>
             </>
           ) : (
-            <div className="w-full flex items-center justify-between text-xs text-gray-400">
+            <div className="w-full flex items-center justify-between text-xs text-muted">
               <span>{currentUser ? `${currentUser.displayName || currentUser.email}` : (lang === 'ko' ? '비로그인 사용자' : 'Guest')}</span>
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-1.5 bg-white/10 hover:bg-white/15 text-gray-200 hover:text-white rounded-xl font-semibold transition-all cursor-pointer"
+                className="px-4 py-1.5 bg-fg/10 hover:bg-fg/15 text-fg-2 hover:text-fg rounded-xl font-semibold transition-all cursor-pointer"
               >
                 {lang === 'ko' ? '닫기' : 'Close'}
               </button>
@@ -1186,18 +1186,18 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         {/* Reset Confirmation Overlay */}
         {showResetConfirm && (
           <div className="absolute inset-0 bg-black/90 backdrop-blur-md z-[50] flex items-center justify-center p-6 animate-in fade-in box-border">
-            <div className="bg-[#181b26] border border-rose-500/30 rounded-2xl p-5 max-w-sm w-full space-y-4 text-center">
+            <div className="bg-surface-2 border border-rose-500/30 rounded-2xl p-5 max-w-sm w-full space-y-4 text-center">
               <ShieldAlert className="w-10 h-10 text-rose-400 mx-auto animate-bounce" />
               <div>
-                <h3 className="text-sm font-bold text-white">{UI_TEXT.settings.resetConfirmTitle[lang]}</h3>
-                <p className="text-xs text-gray-400 mt-1">{UI_TEXT.settings.resetConfirmDesc[lang]}</p>
+                <h3 className="text-sm font-bold text-fg">{UI_TEXT.settings.resetConfirmTitle[lang]}</h3>
+                <p className="text-xs text-muted mt-1">{UI_TEXT.settings.resetConfirmDesc[lang]}</p>
               </div>
 
               <div className="flex gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowResetConfirm(false)}
-                  className="flex-1 py-2 bg-white/10 hover:bg-white/20 text-gray-300 font-semibold rounded-xl text-xs transition-colors cursor-pointer"
+                  className="flex-1 py-2 bg-fg/10 hover:bg-fg/20 text-fg-2 font-semibold rounded-xl text-xs transition-colors cursor-pointer"
                 >
                   {UI_TEXT.settings.cancelBtn[lang]}
                 </button>

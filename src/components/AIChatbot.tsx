@@ -42,6 +42,8 @@ import {
   Loader2,
 } from 'lucide-react';
 import { safeFetchJson } from '../lib/api';
+import { IS_STATIC_SITE } from '../lib/runtime';
+import { answerFromCatalog } from '../lib/localAssistant';
 import { ActionRouter } from '../lib/actionRouter';
 import { ExecutionConfirmation } from './ExecutionConfirmation';
 import { Language, UI_TEXT, getCategoryLabel, getPriceLabel, getToolDescription } from '../lib/translations';
@@ -98,33 +100,33 @@ const FormattedMarkdown: React.FC<{ text: string }> = ({ text }) => {
   if (!text) return null;
 
   return (
-    <div className="max-w-full text-xs text-gray-200 leading-relaxed [word-break:break-word] overflow-hidden">
+    <div className="max-w-full text-xs text-fg-2 leading-relaxed [word-break:break-word] overflow-hidden">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
           p: ({ children }) => <p className="mb-1.5 last:mb-0 leading-relaxed break-words [word-break:break-word]">{children}</p>,
-          h1: ({ children }) => <h1 className="font-bold text-sm text-white mt-2 mb-1">{children}</h1>,
-          h2: ({ children }) => <h2 className="font-bold text-xs text-white mt-2 mb-1">{children}</h2>,
+          h1: ({ children }) => <h1 className="font-bold text-sm text-fg mt-2 mb-1">{children}</h1>,
+          h2: ({ children }) => <h2 className="font-bold text-xs text-fg mt-2 mb-1">{children}</h2>,
           h3: ({ children }) => <h3 className="font-semibold text-xs text-indigo-300 mt-1.5 mb-1">{children}</h3>,
-          h4: ({ children }) => <h4 className="font-semibold text-[11px] text-indigo-300 mt-1 mb-0.5">{children}</h4>,
+          h4: ({ children }) => <h4 className="font-semibold text-xs text-indigo-300 mt-1 mb-0.5">{children}</h4>,
           strong: ({ children }) => <strong className="font-bold text-amber-300">{children}</strong>,
-          em: ({ children }) => <em className="italic text-gray-300">{children}</em>,
-          ul: ({ children }) => <ul className="list-disc list-inside my-1 space-y-0.5 text-gray-200 pl-1">{children}</ul>,
-          ol: ({ children }) => <ol className="list-decimal list-inside my-1 space-y-0.5 text-gray-200 pl-1">{children}</ol>,
+          em: ({ children }) => <em className="italic text-fg-2">{children}</em>,
+          ul: ({ children }) => <ul className="list-disc list-inside my-1 space-y-0.5 text-fg-2 pl-1">{children}</ul>,
+          ol: ({ children }) => <ol className="list-decimal list-inside my-1 space-y-0.5 text-fg-2 pl-1">{children}</ol>,
           li: ({ children }) => <li className="my-0.5 leading-relaxed">{children}</li>,
           a: ({ href, children }) => (
             <a
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#00d4aa] hover:underline inline-flex items-center gap-0.5 font-medium cursor-pointer"
+              className="text-mint hover:underline inline-flex items-center gap-0.5 font-medium cursor-pointer"
             >
               <span>{children}</span>
               <ExternalLink className="w-2.5 h-2.5 inline shrink-0" />
             </a>
           ),
           blockquote: ({ children }) => (
-            <blockquote className="border-l-2 border-[#00d4aa] pl-2 py-0.5 my-1.5 text-gray-300 italic bg-black/20 rounded-r-md">
+            <blockquote className="border-l-2 border-mint pl-2 py-0.5 my-1.5 text-fg-2 italic bg-inset rounded-r-md">
               {children}
             </blockquote>
           ),
@@ -136,8 +138,8 @@ const FormattedMarkdown: React.FC<{ text: string }> = ({ text }) => {
             if (match || isMultiLine) {
               const langName = match ? match[1] : 'javascript';
               return (
-                <div className="my-2 rounded-lg bg-[#0c0e14] border border-white/10 overflow-hidden text-[11px] font-mono shadow-md">
-                  <div className="flex items-center justify-between px-2.5 py-1 bg-black/40 border-b border-white/10 text-[10px] text-gray-400">
+                <div className="my-2 rounded-lg bg-bg border border-line overflow-hidden text-xs font-mono shadow-md">
+                  <div className="flex items-center justify-between px-2.5 py-1 bg-inset border-b border-line text-[0.6875rem] text-muted">
                     <span className="font-semibold text-indigo-300">{langName}</span>
                     <button
                       onClick={() => {
@@ -145,7 +147,7 @@ const FormattedMarkdown: React.FC<{ text: string }> = ({ text }) => {
                           navigator.clipboard.writeText(codeString);
                         }
                       }}
-                      className="hover:text-white transition-colors cursor-pointer flex items-center gap-1"
+                      className="hover:text-fg transition-colors cursor-pointer flex items-center gap-1"
                       title="Copy code"
                     >
                       <Copy className="w-3 h-3" />
@@ -172,21 +174,21 @@ const FormattedMarkdown: React.FC<{ text: string }> = ({ text }) => {
               );
             }
             return (
-              <code className="px-1.5 py-0.5 bg-black/40 text-amber-300 rounded font-mono text-[10.5px] border border-white/10">
+              <code className="px-1.5 py-0.5 bg-inset text-amber-300 rounded font-mono text-[0.6875rem] border border-line">
                 {children}
               </code>
             );
           },
           table: ({ children }) => (
-            <div className="my-2 overflow-x-auto rounded-lg border border-white/10">
-              <table className="w-full text-left text-[11px] border-collapse">{children}</table>
+            <div className="my-2 overflow-x-auto rounded-lg border border-line">
+              <table className="w-full text-left text-xs border-collapse">{children}</table>
             </div>
           ),
-          thead: ({ children }) => <thead className="bg-black/40 text-indigo-300 font-semibold border-b border-white/10">{children}</thead>,
-          tbody: ({ children }) => <tbody className="divide-y divide-white/5">{children}</tbody>,
-          tr: ({ children }) => <tr className="hover:bg-white/5 transition-colors">{children}</tr>,
-          th: ({ children }) => <th className="px-2 py-1.5 border-r border-white/10 last:border-r-0">{children}</th>,
-          td: ({ children }) => <td className="px-2 py-1.5 border-r border-white/10 last:border-r-0 text-gray-300">{children}</td>,
+          thead: ({ children }) => <thead className="bg-inset text-indigo-300 font-semibold border-b border-line">{children}</thead>,
+          tbody: ({ children }) => <tbody className="divide-y divide-line">{children}</tbody>,
+          tr: ({ children }) => <tr className="hover:bg-fg/5 transition-colors">{children}</tr>,
+          th: ({ children }) => <th className="px-2 py-1.5 border-r border-line last:border-r-0">{children}</th>,
+          td: ({ children }) => <td className="px-2 py-1.5 border-r border-line last:border-r-0 text-fg-2">{children}</td>,
         }}
       >
         {text}
@@ -221,10 +223,10 @@ const ImagePreviewModal: React.FC<{
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative max-w-4xl max-h-[90vh] w-full bg-[#121422] border border-white/20 rounded-2xl p-3 shadow-2xl flex flex-col items-center overflow-hidden"
+        className="relative max-w-4xl max-h-[90vh] w-full bg-surface border border-line-strong rounded-2xl p-3 shadow-2xl flex flex-col items-center overflow-hidden"
       >
-        <div className="w-full flex items-center justify-between pb-2 border-b border-white/10 mb-2 px-1">
-          <span className="text-xs font-bold text-gray-200 truncate max-w-[80%]">
+        <div className="w-full flex items-center justify-between pb-2 border-b border-line mb-2 px-1">
+          <span className="text-xs font-bold text-fg-2 truncate max-w-[80%]">
             {altText && altText !== 'AI Image' ? altText : (lang === 'ko' ? '이미지 미리보기' : 'Image Preview')}
           </span>
           <div className="flex items-center gap-2">
@@ -232,14 +234,14 @@ const ImagePreviewModal: React.FC<{
               href={imageUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1.5 hover:bg-white/10 rounded-lg text-gray-300 hover:text-white text-xs flex items-center gap-1 cursor-pointer transition-colors"
+              className="p-1.5 hover:bg-fg/10 rounded-lg text-fg-2 hover:text-fg text-xs flex items-center gap-1 cursor-pointer transition-colors"
               title={lang === 'ko' ? '새 탭에서 열기' : 'Open in new tab'}
             >
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
             <button
               onClick={onClose}
-              className="p-1.5 hover:bg-rose-500/20 text-gray-400 hover:text-rose-300 rounded-lg cursor-pointer transition-colors"
+              className="p-1.5 hover:bg-rose-500/20 text-muted hover:text-rose-300 rounded-lg cursor-pointer transition-colors"
               title={lang === 'ko' ? '닫기' : 'Close'}
             >
               <X className="w-4 h-4" />
@@ -252,7 +254,7 @@ const ImagePreviewModal: React.FC<{
             src={imageUrl}
             alt={altText || 'Preview'}
             referrerPolicy="no-referrer"
-            className="max-w-full max-h-[78vh] object-contain rounded-xl shadow-2xl border border-white/10"
+            className="max-w-full max-h-[78vh] object-contain rounded-xl shadow-2xl border border-line"
           />
         </div>
       </div>
@@ -272,7 +274,7 @@ const ChatImageItem: React.FC<{
 
   if (hasError) {
     return (
-      <div className="my-2 p-3 bg-rose-950/30 border border-rose-500/30 rounded-xl text-[11px] text-rose-200 flex items-center justify-between gap-2 max-w-full">
+      <div className="my-2 p-3 bg-rose-950/30 border border-rose-500/30 rounded-xl text-xs text-rose-200 flex items-center justify-between gap-2 max-w-full">
         <div className="flex items-center gap-2 truncate">
           <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
           <span className="truncate">{alt && alt !== 'AI Image' ? alt : (lang === 'ko' ? '이미지를 불러올 수 없습니다.' : 'Failed to load image.')}</span>
@@ -282,7 +284,7 @@ const ChatImageItem: React.FC<{
             setHasError(false);
             setIsLoaded(false);
           }}
-          className="px-2 py-1 bg-rose-500/20 hover:bg-rose-500/40 text-rose-200 rounded-lg text-[10px] font-medium shrink-0 cursor-pointer transition-colors"
+          className="px-2 py-1 bg-rose-500/20 hover:bg-rose-500/40 text-rose-200 rounded-lg text-[0.6875rem] font-medium shrink-0 cursor-pointer transition-colors"
         >
           {lang === 'ko' ? '재시도' : 'Retry'}
         </button>
@@ -291,10 +293,10 @@ const ChatImageItem: React.FC<{
   }
 
   return (
-    <div className="my-2 relative group max-w-full overflow-hidden rounded-xl border border-white/10 shadow-lg bg-black/40 inline-block">
+    <div className="my-2 relative group max-w-full overflow-hidden rounded-xl border border-line shadow-lg bg-inset inline-block">
       {!isLoaded && (
-        <div className="w-full h-32 bg-white/5 animate-pulse rounded-xl flex items-center justify-center text-gray-400 text-[11px] gap-2 p-4">
-          <ImageIcon className="w-4 h-4 animate-bounce text-[#00d4aa]" />
+        <div className="w-full h-32 bg-fg/5 animate-pulse rounded-xl flex items-center justify-center text-muted text-xs gap-2 p-4">
+          <ImageIcon className="w-4 h-4 animate-bounce text-mint" />
           <span>{lang === 'ko' ? '이미지 로딩 중...' : 'Loading image...'}</span>
         </div>
       )}
@@ -312,9 +314,9 @@ const ChatImageItem: React.FC<{
       {isLoaded && (
         <div
           onClick={() => onPreview?.(src, alt)}
-          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center cursor-pointer text-white text-[11px] font-bold gap-1.5 backdrop-blur-[2px]"
+          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center cursor-pointer text-fg text-xs font-bold gap-1.5 backdrop-blur-[2px]"
         >
-          <ExternalLink className="w-3.5 h-3.5 text-[#00d4aa]" />
+          <ExternalLink className="w-3.5 h-3.5 text-mint" />
           <span>{lang === 'ko' ? '원본 크기로 보기' : 'View Full Image'}</span>
         </div>
       )}
@@ -330,8 +332,8 @@ const ActionToast: React.FC<{ message: string; onClose: () => void }> = ({ messa
   }, [onClose]);
 
   return (
-    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-[#1a1f2e] border border-[#00d4aa]/50 text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs font-medium backdrop-blur-md animate-bounce max-w-[90vw] text-center">
-      <Check className="w-4 h-4 text-[#00d4aa] shrink-0" />
+    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-surface-2 border border-mint/50 text-fg px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs font-medium backdrop-blur-md animate-bounce max-w-[90vw] text-center">
+      <Check className="w-4 h-4 text-mint shrink-0" />
       <span className="truncate">{message}</span>
     </div>
   );
@@ -371,26 +373,26 @@ const PromptHandoffCard: React.FC<{
   };
 
   return (
-    <div className="my-3 p-3.5 bg-[#121624] border border-[#00d4aa]/40 rounded-2xl shadow-xl space-y-2.5 max-w-full overflow-hidden">
-      <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2">
+    <div className="my-3 p-3.5 bg-surface border border-mint/40 rounded-2xl shadow-xl space-y-2.5 max-w-full overflow-hidden">
+      <div className="flex items-center justify-between gap-2 border-b border-line pb-2">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-6 h-6 rounded-lg bg-[#00d4aa]/20 border border-[#00d4aa]/40 flex items-center justify-center shrink-0">
-            <Sparkles className="w-3.5 h-3.5 text-[#00d4aa]" />
+          <div className="w-6 h-6 rounded-lg bg-mint/20 border border-mint/40 flex items-center justify-center shrink-0">
+            <Sparkles className="w-3.5 h-3.5 text-mint" />
           </div>
-          <span className="font-bold text-white text-xs truncate">{data.name || '추천 AI 도구'}</span>
+          <span className="font-bold text-fg text-xs truncate">{data.name || '추천 AI 도구'}</span>
         </div>
-        <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#00d4aa]/15 text-[#00d4aa] font-semibold border border-[#00d4aa]/30 shrink-0">
+        <span className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-mint/15 text-mint font-semibold border border-mint/30 shrink-0">
           {data.category || 'AI Tool'}
         </span>
       </div>
 
-      <p className="text-[11.5px] text-gray-300 leading-relaxed break-words">
+      <p className="text-xs text-fg-2 leading-relaxed break-words">
         {data.description || '이 프롬프트를 사용하여 해당 AI 도구에서 뛰어난 결과를 생성해 보세요.'}
       </p>
 
       {data.prompt && (
-        <div className="bg-black/50 border border-white/10 p-2.5 rounded-xl font-mono text-[10.5px] text-amber-200/90 break-words max-h-28 overflow-y-auto relative">
-          <div className="text-[9px] text-gray-400 font-sans mb-1">✨ 최적화된 프롬프트:</div>
+        <div className="bg-inset border border-line p-2.5 rounded-xl font-mono text-[0.6875rem] text-amber-200/90 break-words max-h-28 overflow-y-auto relative">
+          <div className="text-[0.6875rem] text-muted font-sans mb-1">✨ 최적화된 프롬프트:</div>
           <p className="whitespace-pre-wrap">{data.prompt}</p>
         </div>
       )}
@@ -398,16 +400,16 @@ const PromptHandoffCard: React.FC<{
       <div className="flex items-center gap-2 pt-1">
         <button
           onClick={handleCopyPrompt}
-          className="flex-1 py-1.5 px-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[11px] font-medium transition-all flex items-center justify-center gap-1.5 border border-white/10 active:scale-95 cursor-pointer"
+          className="flex-1 py-1.5 px-3 bg-fg/10 hover:bg-fg/20 text-fg rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1.5 border border-line active:scale-95 cursor-pointer"
         >
           {copied ? (
             <>
-              <Check className="w-3.5 h-3.5 text-[#00d4aa]" />
-              <span className="text-[#00d4aa]">{lang === 'ko' ? '복사됨' : 'Copied'}</span>
+              <Check className="w-3.5 h-3.5 text-mint" />
+              <span className="text-mint">{lang === 'ko' ? '복사됨' : 'Copied'}</span>
             </>
           ) : (
             <>
-              <Copy className="w-3.5 h-3.5 text-gray-300" />
+              <Copy className="w-3.5 h-3.5 text-fg-2" />
               <span>{lang === 'ko' ? '프롬프트 복사' : 'Copy Prompt'}</span>
             </>
           )}
@@ -415,7 +417,7 @@ const PromptHandoffCard: React.FC<{
 
         <button
           onClick={handleGoToTool}
-          className="flex-1 py-1.5 px-3 bg-[#00d4aa] hover:bg-[#00b894] text-black font-semibold rounded-xl text-[11px] transition-all flex items-center justify-center gap-1.5 shadow-md hover:shadow-[#00d4aa]/20 active:scale-95 cursor-pointer"
+          className="flex-1 py-1.5 px-3 bg-mint hover:bg-mint text-black font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-md hover:shadow-mint/20 active:scale-95 cursor-pointer"
         >
           <span>{lang === 'ko' ? '도구로 이동 →' : 'Open Tool →'}</span>
           <ExternalLink className="w-3.5 h-3.5" />
@@ -480,30 +482,30 @@ const InChatImageCard: React.FC<{
   };
 
   return (
-    <div className="my-3 p-3.5 bg-[#121624] border border-[#6c63ff]/40 rounded-2xl shadow-xl space-y-3 max-w-full overflow-hidden">
-      <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2">
+    <div className="my-3 p-3.5 bg-surface border border-accent/40 rounded-2xl shadow-xl space-y-3 max-w-full overflow-hidden">
+      <div className="flex items-center justify-between gap-2 border-b border-line pb-2">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-[#6c63ff]/20 border border-[#6c63ff]/40 flex items-center justify-center">
-            <ImageIcon className="w-3.5 h-3.5 text-[#6c63ff]" />
+          <div className="w-6 h-6 rounded-lg bg-accent/20 border border-accent/40 flex items-center justify-center">
+            <ImageIcon className="w-3.5 h-3.5 text-brand" />
           </div>
-          <span className="font-bold text-white text-xs">
+          <span className="font-bold text-fg text-xs">
             {lang === 'ko' ? '🎨 AI 이미지 생성' : '🎨 AI Image Generation'}
           </span>
         </div>
       </div>
 
-      <div className="text-[11px] text-gray-300 bg-black/40 p-2 rounded-xl border border-white/5 font-mono break-words">
-        <span className="text-gray-400 font-sans mr-1">프롬프트:</span>
+      <div className="text-xs text-fg-2 bg-inset p-2 rounded-xl border border-line font-mono break-words">
+        <span className="text-muted font-sans mr-1">프롬프트:</span>
         <span className="text-amber-200/90">{data.prompt}</span>
       </div>
 
       {isLoading ? (
-        <div className="h-44 bg-black/40 border border-white/10 rounded-xl flex flex-col items-center justify-center p-4 space-y-2 animate-pulse">
-          <Loader2 className="w-7 h-7 text-[#6c63ff] animate-spin" />
-          <span className="text-xs text-gray-300 font-medium">
+        <div className="h-44 bg-inset border border-line rounded-xl flex flex-col items-center justify-center p-4 space-y-2 animate-pulse">
+          <Loader2 className="w-7 h-7 text-brand animate-spin" />
+          <span className="text-xs text-fg-2 font-medium">
             {lang === 'ko' ? '이미지를 생성하고 있습니다...' : 'Generating image...'}
           </span>
-          <span className="text-[10px] text-gray-500">잠시만 기다려 주세요</span>
+          <span className="text-[0.6875rem] text-subtle">잠시만 기다려 주세요</span>
         </div>
       ) : errorMsg ? (
         <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-center space-y-2">
@@ -519,7 +521,7 @@ const InChatImageCard: React.FC<{
         <div className="space-y-2.5">
           <div
             onClick={() => onPreviewImage(imageUrl, data.prompt)}
-            className="relative group rounded-xl overflow-hidden border border-white/15 cursor-pointer bg-black/60 shadow-lg hover:border-[#6c63ff]/60 transition-all"
+            className="relative group rounded-xl overflow-hidden border border-line cursor-pointer bg-inset shadow-lg hover:border-accent/60 transition-all"
           >
             <img
               src={imageUrl}
@@ -527,7 +529,7 @@ const InChatImageCard: React.FC<{
               className="w-full h-auto max-h-72 object-cover transition-transform duration-300 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <span className="text-xs text-white bg-black/70 px-3 py-1.5 rounded-full border border-white/20">
+              <span className="text-xs text-white bg-black/70 px-3 py-1.5 rounded-full border border-line-strong">
                 {lang === 'ko' ? '확대보기 🔍' : 'Zoom Image 🔍'}
               </span>
             </div>
@@ -536,7 +538,7 @@ const InChatImageCard: React.FC<{
           <div className="flex items-center gap-2 pt-1">
             <button
               onClick={handleDownload}
-              className="flex-1 py-1.5 px-3 bg-[#6c63ff] hover:bg-[#5b52e0] text-white rounded-xl text-[11px] font-medium transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+              className="flex-1 py-1.5 px-3 bg-accent hover:bg-accent-hover text-white rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>{lang === 'ko' ? '이미지 저장' : 'Save Image'}</span>
@@ -544,7 +546,7 @@ const InChatImageCard: React.FC<{
 
             <button
               onClick={generateImage}
-              className="flex-1 py-1.5 px-3 bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white rounded-xl text-[11px] font-medium transition-all flex items-center justify-center gap-1.5 border border-white/10 active:scale-95 cursor-pointer"
+              className="flex-1 py-1.5 px-3 bg-fg/10 hover:bg-fg/20 text-fg-2 hover:text-fg rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1.5 border border-line active:scale-95 cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>{lang === 'ko' ? '다시 생성' : 'Regenerate'}</span>
@@ -594,7 +596,7 @@ const AdminActionCard: React.FC<{
   }
 
   return (
-    <div className="my-3 p-3.5 bg-[#1c1613] border border-amber-500/40 rounded-2xl shadow-xl space-y-2.5 max-w-full overflow-hidden font-sans">
+    <div className="my-3 p-3.5 bg-surface-2 border border-amber-500/40 rounded-2xl shadow-xl space-y-2.5 max-w-full overflow-hidden font-sans">
       <div className="flex items-center gap-2 border-b border-amber-500/20 pb-2">
         <div className="w-6 h-6 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0">
           <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
@@ -605,21 +607,21 @@ const AdminActionCard: React.FC<{
       </div>
 
       {status === 'success' && (
-        <div className="p-2.5 bg-emerald-500/15 border border-emerald-500/40 rounded-xl flex items-start gap-2 text-emerald-300 text-[11px]">
+        <div className="p-2.5 bg-emerald-500/15 border border-emerald-500/40 rounded-xl flex items-start gap-2 text-emerald-300 text-xs">
           <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
           <span>{resMsg}</span>
         </div>
       )}
 
       {status === 'error' && (
-        <div className="p-2.5 bg-rose-500/15 border border-rose-500/40 rounded-xl flex items-start gap-2 text-rose-300 text-[11px]">
+        <div className="p-2.5 bg-rose-500/15 border border-rose-500/40 rounded-xl flex items-start gap-2 text-rose-300 text-xs">
           <X className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
           <span>{resMsg}</span>
         </div>
       )}
 
       {status === 'cancelled' && (
-        <div className="p-2 bg-white/5 border border-white/10 rounded-xl text-center text-[11px] text-gray-400">
+        <div className="p-2 bg-fg/5 border border-line rounded-xl text-center text-xs text-muted">
           {lang === 'ko' ? '작업이 취소되었습니다.' : 'Action cancelled.'}
         </div>
       )}
@@ -744,7 +746,7 @@ const ChatMessageContent: React.FC<{
           return (
             <div
               key={idx}
-              className="my-2.5 p-3 bg-[#13151f] border border-[#6c63ff]/30 rounded-xl flex flex-col gap-2 shadow-lg hover:border-[#6c63ff]/60 transition-all max-w-full overflow-hidden"
+              className="my-2.5 p-3 bg-surface border border-accent/30 rounded-xl flex flex-col gap-2 shadow-lg hover:border-accent/60 transition-all max-w-full overflow-hidden"
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
@@ -752,25 +754,25 @@ const ChatMessageContent: React.FC<{
                     url={tool.url}
                     name={tool.name}
                     customIcon={tool.icon || tool.iconUrl || tool.logoUrl}
-                    className="w-5 h-5 rounded shrink-0 border border-white/10"
+                    className="w-5 h-5 rounded shrink-0 border border-line"
                   />
-                  <span className="font-bold text-white text-xs truncate">{tool.name}</span>
+                  <span className="font-bold text-fg text-xs truncate">{tool.name}</span>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#6c63ff]/20 text-[#6c63ff] font-semibold shrink-0">
+                <span className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-accent/20 text-brand font-semibold shrink-0">
                   {getCategoryLabel(tool.category, lang)}
                 </span>
               </div>
-              <p className="text-[11px] text-gray-300 line-clamp-2 leading-relaxed break-words [word-break:break-word]">
+              <p className="text-xs text-fg-2 line-clamp-2 leading-relaxed break-words [word-break:break-word]">
                 {getToolDescription(tool, lang)}
               </p>
-              <div className="flex items-center justify-between pt-2 border-t border-white/10 text-[11px]">
-                <span className="text-amber-400 font-mono text-[10px] font-medium bg-amber-400/10 px-2 py-0.5 rounded-md">
+              <div className="flex items-center justify-between pt-2 border-t border-line text-xs">
+                <span className="text-amber-400 font-mono text-[0.6875rem] font-medium bg-amber-400/10 px-2 py-0.5 rounded-md">
                   {getPriceLabel(tool.price, lang)}
                 </span>
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => onSelectTool?.(tool)}
-                    className="px-2.5 py-1 bg-[#6c63ff] hover:bg-[#5b52e0] text-white rounded-lg font-medium transition-colors text-[10px] flex items-center gap-1 cursor-pointer"
+                    className="px-2.5 py-1 bg-accent hover:bg-accent-hover text-white rounded-lg font-medium transition-colors text-[0.6875rem] flex items-center gap-1 cursor-pointer"
                   >
                     <span>{UI_TEXT.common.viewDetails[lang]}</span>
                   </button>
@@ -778,7 +780,7 @@ const ChatMessageContent: React.FC<{
                     href={tool.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-2 py-1 bg-white/10 hover:bg-white/20 text-gray-200 rounded-lg font-medium transition-colors text-[10px] flex items-center gap-1 cursor-pointer"
+                    className="px-2 py-1 bg-fg/10 hover:bg-fg/20 text-fg-2 rounded-lg font-medium transition-colors text-[0.6875rem] flex items-center gap-1 cursor-pointer"
                     title={UI_TEXT.card.visitSite[lang]}
                   >
                     <ExternalLink className="w-3 h-3" />
@@ -1519,6 +1521,23 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
     abortControllerRef.current = new AbortController();
 
     try {
+      if (IS_STATIC_SITE) {
+        const botMsg: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          sender: 'bot',
+          text: answerFromCatalog(query, activeTools, lang),
+          timestamp: new Date().toLocaleTimeString(isKo ? 'ko-KR' : 'en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+        };
+        setMessages((prev) => [...prev, botMsg]);
+        if (userSettings.tts.enabled && userSettings.tts.autoPlay) {
+          speakText(botMsg.text, botMsg.id);
+        }
+        return;
+      }
+
       const userEmail = currentUser?.email || '';
 
       // Collect real-time diagnostic snapshot if admin
@@ -1629,12 +1648,12 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-[90] p-4 bg-gradient-to-r from-[#6c63ff] to-[#00d4aa] text-white rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all cursor-pointer flex items-center justify-center group"
+          className="fixed bottom-6 right-6 z-[90] p-4 bg-gradient-to-r from-accent to-mint text-white rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all cursor-pointer flex items-center justify-center group"
           title={UI_TEXT.chatbot.title[lang]}
         >
           <Bot className="w-7 h-7 animate-pulse" />
           {isAdmin && (
-            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 border-2 border-black flex items-center justify-center text-[8px]">
+            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 border-2 border-bg flex items-center justify-center text-[0.6875rem]">
               👑
             </span>
           )}
@@ -1648,8 +1667,8 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] bg-[#13151f] border rounded-3xl shadow-2xl flex flex-col overflow-hidden transition-all duration-200 animate-in fade-in slide-in-from-bottom-5 box-border ${
-            isDragging ? 'border-[#00d4aa] ring-2 ring-[#00d4aa]/40 shadow-[#00d4aa]/20 shadow-2xl' : 'border-white/20'
+          className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] bg-surface border rounded-3xl shadow-2xl flex flex-col overflow-hidden transition-all duration-200 animate-in fade-in slide-in-from-bottom-5 box-border ${
+            isDragging ? 'border-mint ring-2 ring-mint/40 shadow-mint/20 shadow-2xl' : 'border-line-strong'
           }`}
           style={{
             width: 'min(400px, calc(100vw - 32px))',
@@ -1658,47 +1677,47 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
         >
           {/* Drag & Drop Visual Backdrop Overlay */}
           {isDragging && (
-            <div className="absolute inset-0 z-50 bg-[#0f111e]/90 backdrop-blur-md border-2 border-dashed border-[#00d4aa] rounded-3xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in pointer-events-none">
-              <div className="p-4 bg-[#00d4aa]/20 border border-[#00d4aa]/40 rounded-full mb-3 animate-bounce">
-                <UploadCloud className="w-10 h-10 text-[#00d4aa]" />
+            <div className="absolute inset-0 z-50 bg-surface/90 backdrop-blur-md border-2 border-dashed border-mint rounded-3xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in pointer-events-none">
+              <div className="p-4 bg-mint/20 border border-mint/40 rounded-full mb-3 animate-bounce">
+                <UploadCloud className="w-10 h-10 text-mint" />
               </div>
-              <h3 className="text-base font-bold text-white mb-1">
+              <h3 className="text-base font-bold text-fg mb-1">
                 {isKo ? '파일을 여기에 놓아주세요' : 'Drop files here'}
               </h3>
-              <p className="text-xs text-gray-300">
+              <p className="text-xs text-fg-2">
                 {isKo ? '이미지, 영상, 문서, 코드 파일을 자동으로 첨부합니다' : 'Images, videos, documents, & code will be attached'}
               </p>
             </div>
           )}
           {/* Header */}
-          <div className="bg-[#1a1d2a] px-4 py-3 border-b border-white/10 flex items-center justify-between shrink-0">
+          <div className="bg-surface-2 px-4 py-3 border-b border-line flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="relative shrink-0">
-                <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#6c63ff] to-[#00d4aa] flex items-center justify-center text-white shadow-md shadow-[#6c63ff]/20">
+                <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-accent to-mint flex items-center justify-center text-white shadow-md shadow-accent/20">
                   <Bot className="w-5 h-5" />
                 </div>
-                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#1a1d2a]" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-line" />
               </div>
 
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-bold text-white text-xs sm:text-sm truncate">
+                  <h3 className="font-bold text-fg text-xs sm:text-sm truncate">
                     {UI_TEXT.chatbot.title[lang]}
                   </h3>
                   {isAdmin && (
                     <div className="flex items-center gap-1">
-                      <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-extrabold tracking-wider shrink-0 flex items-center gap-1">
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[0.6875rem] font-extrabold tracking-wider shrink-0 flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                         DEV MODE
                       </span>
-                      <span className="px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[9px] font-extrabold tracking-wider shrink-0 flex items-center gap-0.5">
+                      <span className="px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[0.6875rem] font-extrabold tracking-wider shrink-0 flex items-center gap-0.5">
                         <Crown className="w-2.5 h-2.5 fill-current text-amber-400" />
                         OP
                       </span>
                     </div>
                   )}
                 </div>
-                <p className="text-[10px] text-gray-400 truncate">
+                <p className="text-[0.6875rem] text-muted truncate">
                   {selectedCategory !== '전체' ? `Category: ${selectedCategory}` : UI_TEXT.chatbot.subtitle[lang]}
                 </p>
               </div>
@@ -1715,14 +1734,14 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
                       window.dispatchEvent(new CustomEvent('aihub_admin_overlay_toggle', { detail: { enabled: next } }));
                     }
                   }}
-                  className={`px-2 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer flex items-center gap-1 ${
+                  className={`px-2 py-1 text-[0.6875rem] font-bold rounded-lg border transition-all cursor-pointer flex items-center gap-1 ${
                     isAdminViewEnabled
                       ? 'bg-amber-500/25 text-amber-300 border-amber-400/60 shadow-sm shadow-amber-500/30 ring-1 ring-amber-400/50'
-                      : 'bg-white/5 text-gray-400 hover:text-gray-200 border-white/10 hover:bg-white/10'
+                      : 'bg-fg/5 text-muted hover:text-fg-2 border-line hover:bg-fg/10'
                   }`}
                   title={isKo ? '대시보드 실시간 오버레이 패널 토글' : 'Toggle Real-time Status Overlay'}
                 >
-                  <Activity className={`w-3 h-3 ${isAdminViewEnabled ? 'text-amber-400 animate-pulse' : 'text-gray-400'}`} />
+                  <Activity className={`w-3 h-3 ${isAdminViewEnabled ? 'text-amber-400 animate-pulse' : 'text-muted'}`} />
                   <span>Admin View {isAdminViewEnabled ? 'ON' : 'OFF'}</span>
                 </button>
               )}
@@ -1730,7 +1749,7 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
               {/* Reset Chat Button */}
               <button
                 onClick={handleResetChat}
-                className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 text-muted hover:text-fg hover:bg-fg/10 rounded-lg transition-colors cursor-pointer"
                 title={isKo ? '대화 초기화' : 'Reset Conversation'}
               >
                 <RotateCcw className="w-4 h-4" />
@@ -1740,7 +1759,7 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
               {onOpenSettings && (
                 <button
                   onClick={onOpenSettings}
-                  className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                  className="p-1.5 text-muted hover:text-fg hover:bg-fg/10 rounded-lg transition-colors cursor-pointer"
                   title={UI_TEXT.settings.title[lang]}
                 >
                   <Settings className="w-4 h-4" />
@@ -1750,7 +1769,7 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
               {/* Close Button */}
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 text-muted hover:text-fg hover:bg-fg/10 rounded-lg transition-colors cursor-pointer"
                 title={UI_TEXT.chatbot.closeBtn[lang]}
               >
                 <X className="w-4 h-4" />
@@ -1760,7 +1779,7 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
 
           {/* Admin Live Site Status Diagnostic Panel (Renders smoothly in flex column when Admin View is enabled) */}
           {isAdmin && isAdminViewEnabled && (
-            <div className="bg-[#101322] border-b border-amber-400/30 p-2.5 text-[10.5px] font-mono text-gray-200 shrink-0 transition-all duration-200 animate-in fade-in slide-in-from-top-2">
+            <div className="bg-surface border-b border-amber-400/30 p-2.5 text-[0.6875rem] font-mono text-fg-2 shrink-0 transition-all duration-200 animate-in fade-in slide-in-from-top-2">
               <div className="flex items-center justify-between font-bold text-amber-300 mb-1.5">
                 <span className="flex items-center gap-1.5 text-xs font-extrabold text-amber-300">
                   <Activity className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
@@ -1770,7 +1789,7 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
                   <button
                     onClick={fetchDiagnosticStats}
                     disabled={isRefreshingDiag}
-                    className="px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30 text-[9.5px] font-sans font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                    className="px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30 text-[0.6875rem] font-sans font-bold flex items-center gap-1 cursor-pointer transition-colors"
                     title="진단 정보 갱신"
                   >
                     <RefreshCw className={`w-3 h-3 ${isRefreshingDiag ? 'animate-spin text-amber-300' : ''}`} />
@@ -1783,28 +1802,28 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
                         window.dispatchEvent(new CustomEvent('aihub_admin_overlay_toggle', { detail: { enabled: false } }));
                       }
                     }}
-                    className="p-1 text-gray-400 hover:text-rose-300 hover:bg-rose-500/20 rounded cursor-pointer transition-colors"
+                    className="p-1 text-muted hover:text-rose-300 hover:bg-rose-500/20 rounded cursor-pointer transition-colors"
                     title="패널 접기"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-[10px] text-gray-300 bg-black/50 p-2 rounded-xl border border-white/10">
+              <div className="grid grid-cols-2 gap-2 text-[0.6875rem] text-fg-2 bg-inset p-2 rounded-xl border border-line">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-400">네트워크:</span>
+                  <span className="text-muted">네트워크:</span>
                   <span className="text-emerald-400 font-bold">{diagStats.online ? '● Online' : '○ Offline'}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-400">HTTP RTT:</span>
+                  <span className="text-muted">HTTP RTT:</span>
                   <span className="text-amber-300 font-bold">{diagStats.httpRttMs !== undefined ? `${diagStats.httpRttMs} ms` : '측정중...'}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-400">API Health:</span>
+                  <span className="text-muted">API Health:</span>
                   <span className="text-indigo-300 font-bold truncate max-w-[90px]">{diagStats.apiStatus}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-400">JS Error:</span>
+                  <span className="text-muted">JS Error:</span>
                   <span className={diagStats.jsErrorsCount > 0 ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}>{diagStats.jsErrorsCount}건</span>
                 </div>
               </div>
@@ -1813,9 +1832,9 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
 
           {/* Active Filter Badge Bar */}
           {(selectedCategory !== '전체' || searchQuery) && (
-            <div className="bg-[#0c0e14] px-3 py-1.5 border-b border-white/10 flex items-center justify-between text-[10px] text-indigo-300 shrink-0">
+            <div className="bg-bg px-3 py-1.5 border-b border-line flex items-center justify-between text-[0.6875rem] text-indigo-300 shrink-0">
               <div className="flex items-center gap-1.5 min-w-0">
-                <Filter className="w-3 h-3 text-[#00d4aa] shrink-0" />
+                <Filter className="w-3 h-3 text-mint shrink-0" />
                 <span className="truncate">
                   {selectedCategory !== '전체' && `카테고리: ${selectedCategory}`}
                   {searchQuery && ` | 검색: "${searchQuery}"`}
@@ -1837,18 +1856,18 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
               >
                 <div className="flex items-center gap-1.5 mb-1 px-1 min-w-0 max-w-full">
                   {msg.sender === 'bot' ? (
-                    <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1 truncate">
-                      <Sparkles className="w-3 h-3 text-[#00d4aa] shrink-0" /> AI Hub Assistant
+                    <span className="text-[0.6875rem] font-bold text-muted flex items-center gap-1 truncate">
+                      <Sparkles className="w-3 h-3 text-mint shrink-0" /> AI Hub Assistant
                     </span>
                   ) : (
-                    <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1 truncate">
-                      <User className="w-3 h-3 text-[#6c63ff] shrink-0" />
+                    <span className="text-[0.6875rem] font-bold text-muted flex items-center gap-1 truncate">
+                      <User className="w-3 h-3 text-brand shrink-0" />
                       <span className="truncate">{currentUser?.displayName || (isKo ? '나' : 'Me')}</span>
                       {isAdmin && <Crown className="w-2.5 h-2.5 text-amber-400 fill-current shrink-0" />}
                     </span>
                   )}
-                  <span className="text-[9.5px] text-gray-400 font-mono shrink-0 flex items-center gap-1 bg-white/5 px-1.5 py-0.5 rounded-md border border-white/10">
-                    <Clock className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                  <span className="text-[0.6875rem] text-muted font-mono shrink-0 flex items-center gap-1 bg-fg/5 px-1.5 py-0.5 rounded-md border border-line">
+                    <Clock className="w-2.5 h-2.5 text-muted shrink-0" />
                     <span>{msg.timestamp || 'Just now'}</span>
                   </span>
                 </div>
@@ -1856,12 +1875,12 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
                 <div
                   className={`max-w-[88%] sm:max-w-[85%] p-3 rounded-2xl text-xs overflow-hidden break-words [word-break:break-word] min-w-0 ${
                     msg.sender === 'user'
-                      ? 'bg-gradient-to-r from-[#6c63ff] to-[#5b52e0] text-white rounded-tr-none shadow-md'
+                      ? 'bg-gradient-to-r from-accent to-accent-hover text-white rounded-tr-none shadow-md'
                       : msg.isError || msg.permissionDenied
                       ? 'bg-rose-500/15 border border-rose-500/30 text-rose-200 rounded-tl-none'
                       : msg.isOperatorCommand
-                      ? 'bg-[#1a1d2a] border border-amber-400/40 text-amber-200 rounded-tl-none shadow-md font-mono'
-                      : 'bg-[#1a1d2a] border border-white/10 text-gray-200 rounded-tl-none shadow-md'
+                      ? 'bg-surface-2 border border-amber-400/40 text-amber-200 rounded-tl-none shadow-md font-mono'
+                      : 'bg-surface-2 border border-line text-fg-2 rounded-tl-none shadow-md'
                   }`}
                 >
                   {/* User attached files inside message bubble */}
@@ -1873,11 +1892,11 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
                             <div
                               key={att.id}
                               onClick={() => setPreviewImage({ url: att.content, alt: att.name })}
-                              className="relative group rounded-xl overflow-hidden border border-white/20 cursor-pointer max-w-[180px] bg-black/40 shadow-md hover:scale-[1.02] transition-transform"
+                              className="relative group rounded-xl overflow-hidden border border-line-strong cursor-pointer max-w-[180px] bg-inset shadow-md hover:scale-[1.02] transition-transform"
                             >
                               <img src={att.content} alt={att.name} className="w-full h-24 object-cover" />
                               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
-                              <div className="absolute bottom-0 inset-x-0 p-1 bg-black/70 backdrop-blur-xs text-[9px] text-gray-200 truncate">
+                              <div className="absolute bottom-0 inset-x-0 p-1 bg-black/70 backdrop-blur-xs text-[0.6875rem] text-gray-200 truncate">
                                 {att.name}
                               </div>
                             </div>
@@ -1887,7 +1906,7 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
                           return (
                             <div key={att.id} className="relative rounded-xl overflow-hidden border border-amber-400/30 max-w-[220px] bg-black/80 p-1.5 shadow-md">
                               <video src={att.content} controls className="w-full max-h-32 rounded-lg" />
-                              <div className="text-[9.5px] font-bold text-amber-300 truncate mt-1 flex items-center gap-1.5">
+                              <div className="text-[0.6875rem] font-bold text-amber-300 truncate mt-1 flex items-center gap-1.5">
                                 <Film className="w-3.5 h-3.5 shrink-0 text-amber-400" />
                                 <span className="truncate">{att.name}</span>
                               </div>
@@ -1895,7 +1914,7 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
                           );
                         }
                         return (
-                          <div key={att.id} className="px-2.5 py-1.5 bg-black/40 border border-white/20 rounded-xl text-[10.5px] text-indigo-200 flex items-center gap-1.5 max-w-[200px]">
+                          <div key={att.id} className="px-2.5 py-1.5 bg-inset border border-line-strong rounded-xl text-[0.6875rem] text-indigo-200 flex items-center gap-1.5 max-w-[200px]">
                             <FileText className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
                             <span className="truncate font-medium">{att.name}</span>
                           </div>
@@ -1916,7 +1935,7 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
 
                   {/* User message timestamp label inside bubble */}
                   {msg.sender === 'user' && (
-                    <div className="flex items-center justify-end gap-1 mt-1.5 pt-1 border-t border-white/15 text-[9.5px] text-indigo-100/80 font-mono">
+                    <div className="flex items-center justify-end gap-1 mt-1.5 pt-1 border-t border-line text-[0.6875rem] text-indigo-100/80 font-mono">
                       <Clock className="w-2.5 h-2.5 shrink-0 text-indigo-200" />
                       <span>{msg.timestamp || 'Just now'}</span>
                     </div>
@@ -1924,15 +1943,15 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
 
                   {/* Operator Debug Box if present */}
                   {msg.debugInfo && (
-                    <div className="mt-3 pt-2 border-t border-amber-400/20 text-[10px] font-mono space-y-1 bg-black/40 p-2 rounded-xl text-amber-300 max-w-full overflow-hidden min-w-0">
+                    <div className="mt-3 pt-2 border-t border-amber-400/20 text-[0.6875rem] font-mono space-y-1 bg-inset p-2 rounded-xl text-amber-300 max-w-full overflow-hidden min-w-0">
                       <div className="flex items-center gap-1 text-amber-400 font-bold">
                         <Bug className="w-3 h-3 shrink-0" />
                         <span>OPERATOR DEBUG METADATA</span>
                       </div>
-                      <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[9.5px] text-gray-300 min-w-0">
-                        <div className="truncate">Model: <span className="text-white">{msg.debugInfo.model}</span></div>
+                      <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[0.6875rem] text-fg-2 min-w-0">
+                        <div className="truncate">Model: <span className="text-fg">{msg.debugInfo.model}</span></div>
                         <div className="truncate">Latency: <span className="text-emerald-400">{msg.debugInfo.responseTimeMs}ms</span></div>
-                        <div className="truncate">Catalog: <span className="text-white">{msg.debugInfo.catalogCount} tools</span></div>
+                        <div className="truncate">Catalog: <span className="text-fg">{msg.debugInfo.catalogCount} tools</span></div>
                         <div className="truncate">Status: <span className="text-emerald-400">{msg.debugInfo.status}</span></div>
                       </div>
                     </div>
@@ -1940,19 +1959,19 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
 
                   {/* Message Action Bar for Bot (Listen / Stop & Copy) with Timestamp */}
                   {msg.sender === 'bot' && !msg.isError && (
-                    <div className="flex items-center justify-between flex-wrap gap-2 mt-2 pt-2 border-t border-white/5 text-[10px] text-gray-400 min-w-0 max-w-full">
-                      <span className="text-[9.5px] text-gray-400/90 font-mono flex items-center gap-1 shrink-0">
-                        <Clock className="w-2.5 h-2.5 shrink-0 text-[#00d4aa]" />
+                    <div className="flex items-center justify-between flex-wrap gap-2 mt-2 pt-2 border-t border-line text-[0.6875rem] text-muted min-w-0 max-w-full">
+                      <span className="text-[0.6875rem] text-muted/90 font-mono flex items-center gap-1 shrink-0">
+                        <Clock className="w-2.5 h-2.5 shrink-0 text-mint" />
                         <span>{msg.timestamp || 'Just now'}</span>
                       </span>
 
                       <div className="flex items-center gap-1.5 ml-auto">
                         <button
                           onClick={() => speakText(msg.text, msg.id)}
-                          className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10.5px] font-medium transition-all cursor-pointer shrink-0 ${
+                          className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[0.6875rem] font-medium transition-all cursor-pointer shrink-0 ${
                             speakingMsgId === msg.id
                               ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse'
-                              : 'bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10'
+                              : 'bg-fg/5 hover:bg-fg/10 text-fg-2 hover:text-fg border border-line'
                           }`}
                           aria-label={speakingMsgId === msg.id ? UI_TEXT.chatbot.stop[lang] : UI_TEXT.chatbot.listen[lang]}
                           title={speakingMsgId === msg.id ? UI_TEXT.chatbot.stop[lang] : UI_TEXT.chatbot.listen[lang]}
@@ -1964,7 +1983,7 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
                             </>
                           ) : (
                             <>
-                              <Volume2 className="w-3 h-3 text-[#00d4aa] shrink-0" />
+                              <Volume2 className="w-3 h-3 text-mint shrink-0" />
                               <span>{UI_TEXT.chatbot.listen[lang]}</span>
                             </>
                           )}
@@ -1972,14 +1991,14 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
 
                         <button
                           onClick={() => copyToClipboard(msg.text, msg.id)}
-                          className="flex items-center gap-1.5 px-2 py-1 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 rounded-lg text-[10.5px] font-medium transition-all cursor-pointer shrink-0"
+                          className="flex items-center gap-1.5 px-2 py-1 bg-fg/5 hover:bg-fg/10 text-fg-2 hover:text-fg border border-line rounded-lg text-[0.6875rem] font-medium transition-all cursor-pointer shrink-0"
                           aria-label={copiedMsgId === msg.id ? UI_TEXT.chatbot.copied[lang] : UI_TEXT.chatbot.copy[lang]}
                           title={UI_TEXT.chatbot.copy[lang]}
                         >
                           {copiedMsgId === msg.id ? (
                             <>
-                              <Check className="w-3 h-3 text-[#00d4aa] shrink-0" />
-                              <span className="text-[#00d4aa]">{UI_TEXT.chatbot.copied[lang]}</span>
+                              <Check className="w-3 h-3 text-mint shrink-0" />
+                              <span className="text-mint">{UI_TEXT.chatbot.copied[lang]}</span>
                             </>
                           ) : (
                             <>
@@ -1999,23 +2018,23 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
             {isLoading && (
               <div className="flex flex-col items-start space-y-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
                 <div className="flex items-center gap-1.5 px-1">
-                  <Sparkles className="w-3.5 h-3.5 text-[#00d4aa] animate-spin shrink-0" />
-                  <span className="text-[10px] font-bold text-gray-400">
+                  <Sparkles className="w-3.5 h-3.5 text-mint animate-spin shrink-0" />
+                  <span className="text-[0.6875rem] font-bold text-muted">
                     AI Hub Assistant
                   </span>
                 </div>
-                <div className="bg-[#1a1d2a] border border-white/10 p-3 rounded-2xl rounded-tl-none flex items-center gap-3 text-xs text-gray-200 shadow-md">
+                <div className="bg-surface-2 border border-line p-3 rounded-2xl rounded-tl-none flex items-center gap-3 text-xs text-fg-2 shadow-md">
                   <div className="flex items-center gap-1.5 px-0.5">
-                    <span className="w-2 h-2 rounded-full bg-[#6c63ff] animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 rounded-full bg-[#00d4aa] animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-2 h-2 rounded-full bg-mint animate-bounce" style={{ animationDelay: '150ms' }} />
                     <span className="w-2 h-2 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
-                  <span className="text-[11px] text-gray-300 font-medium animate-pulse">
+                  <span className="text-xs text-fg-2 font-medium animate-pulse">
                     {isKo ? '답변을 작성하고 있습니다...' : 'AI is typing a response...'}
                   </span>
                   <button
                     onClick={handleStopGeneration}
-                    className="ml-auto px-2 py-0.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 rounded-lg text-[10px] font-medium transition-colors cursor-pointer shrink-0"
+                    className="ml-auto px-2 py-0.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 rounded-lg text-[0.6875rem] font-medium transition-colors cursor-pointer shrink-0"
                     title={isKo ? '생성 중단' : 'Stop response generation'}
                   >
                     {isKo ? '중단' : 'Stop'}
@@ -2031,47 +2050,47 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
           {showScrollBottom && (
             <button
               onClick={() => scrollToBottom()}
-              className="absolute bottom-20 right-4 z-10 p-2 bg-[#6c63ff] text-white rounded-full shadow-lg hover:scale-105 transition-all cursor-pointer"
+              className="absolute bottom-20 right-4 z-10 p-2 bg-accent text-white rounded-full shadow-lg hover:scale-105 transition-all cursor-pointer"
             >
               <ChevronDown className="w-4 h-4" />
             </button>
           )}
 
           {/* Quick Suggested Prompts Chips */}
-          <div className="bg-[#0c0e14] px-3 py-2 border-t border-white/10 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 max-h-[90px] flex-wrap">
+          <div className="bg-bg px-3 py-2 border-t border-line flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 max-h-[90px] flex-wrap">
             {isAdmin ? (
               <>
                 <button
                   onClick={() => handleSendMessage(isKo ? '현재 웹사이트 상태 종합 점검해줘' : 'Check website status')}
-                  className="px-2.5 py-1 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/40 text-emerald-300 rounded-xl text-[10.5px] font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1"
+                  className="px-2.5 py-1 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/40 text-emerald-300 rounded-xl text-[0.6875rem] font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1"
                 >
                   <Activity className="w-3 h-3 text-emerald-400" />
                   <span>사이트 상태</span>
                 </button>
                 <button
                   onClick={() => handleSendMessage(isKo ? '현재 핑 및 응답 지연시간(RTT) 측정 결과를 알려줘' : 'Check ping latency RTT')}
-                  className="px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 rounded-xl text-[10.5px] font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1"
+                  className="px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 rounded-xl text-[0.6875rem] font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1"
                 >
                   <RefreshCw className="w-3 h-3 text-amber-400" />
                   <span>핑 / RTT</span>
                 </button>
                 <button
                   onClick={() => handleSendMessage(isKo ? '현재 웹사이트에 발생한 JavaScript 런타임 오류 보여줘' : 'Show recent JS errors')}
-                  className="px-2.5 py-1 bg-rose-500/15 hover:bg-rose-500/25 border border-rose-400/40 text-rose-300 rounded-xl text-[10.5px] font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1"
+                  className="px-2.5 py-1 bg-rose-500/15 hover:bg-rose-500/25 border border-rose-400/40 text-rose-300 rounded-xl text-[0.6875rem] font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1"
                 >
                   <Bug className="w-3 h-3 text-rose-400" />
                   <span>오류 분석</span>
                 </button>
                 <button
                   onClick={() => handleSendMessage(isKo ? '페이지 성능 및 로딩 시간 지표 분석해줘' : 'Analyze page performance')}
-                  className="px-2.5 py-1 bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-400/40 text-indigo-300 rounded-xl text-[10.5px] font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1"
+                  className="px-2.5 py-1 bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-400/40 text-indigo-300 rounded-xl text-[0.6875rem] font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1"
                 >
                   <Sparkles className="w-3 h-3 text-indigo-400" />
                   <span>성능 지표</span>
                 </button>
                 <button
                   onClick={() => handleSendMessage('/op help')}
-                  className="px-2.5 py-1 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-400/40 text-purple-300 rounded-xl text-[10.5px] font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1"
+                  className="px-2.5 py-1 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-400/40 text-purple-300 rounded-xl text-[0.6875rem] font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1"
                 >
                   <Terminal className="w-3 h-3 text-purple-400" />
                   <span>/op help</span>
@@ -2081,19 +2100,19 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
               <>
                 <button
                   onClick={() => handleSendMessage(isKo ? '글쓰기 및 문서 작성 AI 도구를 추천해줘' : 'Recommend AI writing tools')}
-                  className="px-2.5 py-1 bg-[#1a1d2a] hover:bg-[#6c63ff]/20 border border-white/10 hover:border-[#6c63ff]/40 text-gray-300 hover:text-white rounded-xl text-[10.5px] transition-all cursor-pointer whitespace-nowrap"
+                  className="px-2.5 py-1 bg-surface-2 hover:bg-accent/20 border border-line hover:border-accent/40 text-fg-2 hover:text-fg rounded-xl text-[0.6875rem] transition-all cursor-pointer whitespace-nowrap"
                 >
                   {UI_TEXT.chatbot.prompts.writing[lang]}
                 </button>
                 <button
                   onClick={() => handleSendMessage(isKo ? '이미지 및 디자이너용 AI 도구를 알려줘' : 'Show me image generation AI tools')}
-                  className="px-2.5 py-1 bg-[#1a1d2a] hover:bg-[#6c63ff]/20 border border-white/10 hover:border-[#6c63ff]/40 text-gray-300 hover:text-white rounded-xl text-[10.5px] transition-all cursor-pointer whitespace-nowrap"
+                  className="px-2.5 py-1 bg-surface-2 hover:bg-accent/20 border border-line hover:border-accent/40 text-fg-2 hover:text-fg rounded-xl text-[0.6875rem] transition-all cursor-pointer whitespace-nowrap"
                 >
                   {UI_TEXT.chatbot.prompts.image[lang]}
                 </button>
                 <button
                   onClick={() => handleSendMessage(isKo ? '개발 및 코딩 자동화 AI 도구를 추천해줘' : 'Recommend coding AI tools')}
-                  className="px-2.5 py-1 bg-[#1a1d2a] hover:bg-[#6c63ff]/20 border border-white/10 hover:border-[#6c63ff]/40 text-gray-300 hover:text-white rounded-xl text-[10.5px] transition-all cursor-pointer whitespace-nowrap"
+                  className="px-2.5 py-1 bg-surface-2 hover:bg-accent/20 border border-line hover:border-accent/40 text-fg-2 hover:text-fg rounded-xl text-[0.6875rem] transition-all cursor-pointer whitespace-nowrap"
                 >
                   {UI_TEXT.chatbot.prompts.dev[lang]}
                 </button>
@@ -2103,11 +2122,11 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
 
           {/* Clipboard Paste Notification Banner */}
           {pasteNotice && (
-            <div className="bg-[#6c63ff]/20 text-[#00d4aa] px-3 py-1.5 text-[11px] font-medium border-t border-[#6c63ff]/30 flex items-center justify-between gap-2 animate-in fade-in shrink-0">
+            <div className="bg-accent/20 text-mint px-3 py-1.5 text-xs font-medium border-t border-accent/30 flex items-center justify-between gap-2 animate-in fade-in shrink-0">
               <span className="truncate">{pasteNotice}</span>
               <button
                 onClick={() => setPasteNotice(null)}
-                className="text-gray-400 hover:text-white text-xs shrink-0 cursor-pointer"
+                className="text-muted hover:text-fg text-xs shrink-0 cursor-pointer"
               >
                 ✕
               </button>
@@ -2116,12 +2135,12 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
 
           {/* Attached Files Preview Bar */}
           {attachments.length > 0 && (
-            <div className="bg-[#101320] px-3 py-2 border-t border-white/10 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar shrink-0">
+            <div className="bg-surface px-3 py-2 border-t border-line flex items-center justify-between gap-2 overflow-x-auto no-scrollbar shrink-0">
               <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
                 {attachments.map((att) => (
                   <div
                     key={att.id}
-                    className="px-2.5 py-1 bg-[#1a1d2a] border border-white/15 rounded-xl text-[10px] text-gray-200 flex items-center gap-1.5 shrink-0 shadow-sm"
+                    className="px-2.5 py-1 bg-surface-2 border border-line rounded-xl text-[0.6875rem] text-fg-2 flex items-center gap-1.5 shrink-0 shadow-sm"
                   >
                     {att.type.startsWith('image/') ? (
                       <div className="flex items-center gap-1.5">
@@ -2132,11 +2151,11 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
                       <div className="flex items-center gap-1.5">
                         <Film className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                         <span className="max-w-[100px] truncate font-medium">{att.name}</span>
-                        <span className="text-[8px] bg-amber-400/20 text-amber-300 font-bold px-1 rounded shrink-0">VIDEO</span>
+                        <span className="text-[0.6875rem] bg-amber-400/20 text-amber-300 font-bold px-1 rounded shrink-0">VIDEO</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-1.5">
-                        <FileText className="w-3.5 h-3.5 text-[#6c63ff] shrink-0" />
+                        <FileText className="w-3.5 h-3.5 text-brand shrink-0" />
                         <span className="max-w-[100px] truncate font-medium">{att.name}</span>
                       </div>
                     )}
@@ -2153,7 +2172,7 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
               {attachments.length > 1 && (
                 <button
                   onClick={() => setAttachments([])}
-                  className="text-[10px] text-gray-400 hover:text-rose-300 transition-colors cursor-pointer shrink-0 px-2 py-1 bg-white/5 hover:bg-white/10 rounded-lg whitespace-nowrap"
+                  className="text-[0.6875rem] text-muted hover:text-rose-300 transition-colors cursor-pointer shrink-0 px-2 py-1 bg-fg/5 hover:bg-fg/10 rounded-lg whitespace-nowrap"
                 >
                   {isKo ? '전체 삭제' : 'Clear All'}
                 </button>
@@ -2173,13 +2192,13 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
 
           {/* Developer Command Autocomplete Suggestions (Authenticated Developer Only) */}
           {isAdmin && inputMessage.startsWith('/') && devSuggestions.length > 0 && (
-            <div className="bg-[#12141e] border-t border-indigo-500/30 px-3 py-2 shrink-0 animate-in fade-in slide-in-from-bottom-2 shadow-inner">
-              <div className="flex items-center justify-between mb-1.5 text-[10px] text-indigo-300 font-semibold">
+            <div className="bg-surface border-t border-indigo-500/30 px-3 py-2 shrink-0 animate-in fade-in slide-in-from-bottom-2 shadow-inner">
+              <div className="flex items-center justify-between mb-1.5 text-[0.6875rem] text-indigo-300 font-semibold">
                 <span className="flex items-center gap-1.5">
                   <Terminal className="w-3 h-3 text-indigo-400" />
                   {isKo ? '개발자 전용 명령어' : 'Developer Commands'}
                 </span>
-                <span className="text-gray-400 font-mono text-[9px]">/dev &lt;cmd&gt;</span>
+                <span className="text-muted font-mono text-[0.6875rem]">/dev &lt;cmd&gt;</span>
               </div>
               <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
                 {devSuggestions.map((cmd) => (
@@ -2188,10 +2207,10 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
                     onClick={() => {
                       setInputMessage(cmd.syntax);
                     }}
-                    className="px-2 py-1 bg-[#1a1d2d] hover:bg-indigo-600/30 border border-white/10 hover:border-indigo-400/60 text-gray-200 hover:text-white rounded-lg text-[11px] font-mono transition-all flex items-center gap-1.5 cursor-pointer text-left group"
+                    className="px-2 py-1 bg-surface-2 hover:bg-indigo-600/30 border border-line hover:border-indigo-400/60 text-fg-2 hover:text-fg rounded-lg text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer text-left group"
                   >
-                    <span className="text-[#00d4aa] group-hover:text-amber-300 font-bold">{cmd.syntax}</span>
-                    <span className="text-[10px] text-gray-400 group-hover:text-gray-200">
+                    <span className="text-mint group-hover:text-amber-300 font-bold">{cmd.syntax}</span>
+                    <span className="text-[0.6875rem] text-muted group-hover:text-fg-2">
                       - {isKo ? cmd.descriptionKo : cmd.descriptionEn}
                     </span>
                   </button>
@@ -2201,15 +2220,17 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
           )}
 
           {/* Input Box Bar */}
-          <div className="bg-[#1a1d2a] p-3 border-t border-white/10 flex items-center gap-1.5 shrink-0">
-            {/* File Upload Button */}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="p-2 bg-[#13151f] hover:bg-white/10 text-gray-400 hover:text-white border border-white/10 rounded-xl transition-all cursor-pointer shrink-0"
-              title={isKo ? '파일/이미지 첨부' : 'Attach file/image'}
-            >
-              <Paperclip className="w-4 h-4" />
-            </button>
+          <div className="bg-surface-2 p-3 border-t border-line flex items-center gap-1.5 shrink-0">
+            {/* File Upload Button (attachments need the chat server) */}
+            {!IS_STATIC_SITE && (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="p-2 bg-surface hover:bg-fg/10 text-muted hover:text-fg border border-line rounded-xl transition-all cursor-pointer shrink-0"
+                title={isKo ? '파일/이미지 첨부' : 'Attach file/image'}
+              >
+                <Paperclip className="w-4 h-4" />
+              </button>
+            )}
 
             {/* Mic STT Button */}
             <button
@@ -2217,7 +2238,7 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
               className={`p-2 rounded-xl transition-all cursor-pointer shrink-0 ${
                 isListening
                   ? 'bg-rose-500 text-white animate-pulse'
-                  : 'bg-[#13151f] hover:bg-white/10 text-gray-400 hover:text-white border border-white/10'
+                  : 'bg-surface hover:bg-fg/10 text-muted hover:text-fg border border-line'
               }`}
               title={UI_TEXT.chatbot.voiceInput[lang]}
             >
@@ -2240,14 +2261,14 @@ export const AIChatbot: React.FC<AIChatbotProps> = ({
                   : 'Ask about any AI tools or goals...'
               }
               disabled={isLoading}
-              className="flex-1 bg-[#13151f] border border-white/15 focus:border-[#6c63ff] text-white rounded-xl px-3 py-2 text-xs focus:outline-none placeholder-gray-500 min-w-0"
+              className="flex-1 bg-surface border border-line focus:border-accent text-fg rounded-xl px-3 py-2 text-xs focus:outline-none placeholder:text-subtle min-w-0"
             />
 
             {/* Send Button */}
             <button
               onClick={() => handleSendMessage()}
               disabled={(!inputMessage.trim() && attachments.length === 0) || isLoading}
-              className="p-2 bg-gradient-to-r from-[#6c63ff] to-[#00d4aa] disabled:opacity-40 text-white rounded-xl transition-all cursor-pointer disabled:cursor-not-allowed shrink-0 active:scale-95 shadow-md shadow-[#6c63ff]/20"
+              className="p-2 bg-gradient-to-r from-accent to-mint disabled:opacity-40 text-white rounded-xl transition-all cursor-pointer disabled:cursor-not-allowed shrink-0 active:scale-95 shadow-md shadow-accent/20"
               title={UI_TEXT.chatbot.send[lang]}
             >
               <Send className="w-4 h-4" />

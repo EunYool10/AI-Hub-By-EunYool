@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { ArrowUp, Sparkles, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { ArrowUp, SearchX, RotateCcw, Lightbulb } from 'lucide-react';
 import { Header } from './components/Header';
-import { Controls } from './components/Controls';
+import { Hero } from './components/Hero';
+import { CategorySidebar, CategoryChips } from './components/CategoryNav';
+import { Toolbar } from './components/Toolbar';
+import { Button } from './components/ui/Button';
 import { AICard } from './components/AICard';
 import { AIDetailModal } from './components/AIDetailModal';
 import { NoticeModal } from './components/NoticeModal';
@@ -20,11 +23,13 @@ import { AITool, Category, NoticeItem } from './types';
 import { getStoredUser, saveStoredUser, clearStoredUser } from './lib/authStorage';
 import { getStoredSettings, updateStoredSettings, UserSettings } from './lib/settings';
 import { safeFetchJson } from './lib/api';
+import { IS_STATIC_SITE } from './lib/runtime';
+import { CATEGORIES } from './lib/categories';
 import { getCategoryLabel } from './lib/translations';
 
 export default function App() {
   // Google Logged In User State with resilient localStorage restoration
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => getStoredUser());
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => (IS_STATIC_SITE ? null : getStoredUser()));
 
   // Language State ('ko' | 'en') with central settings & localStorage persistence
   const [lang, setLang] = useState<'ko' | 'en'>(() => {
@@ -224,30 +229,33 @@ export default function App() {
     // Initial settings & theme sync
     syncSettings();
 
-    // Fetch initial notices
-    safeFetchJson<{ notices: NoticeItem[] }>('/api/notices').then((res) => {
-      if (res.ok && res.data?.notices && Array.isArray(res.data.notices)) {
-        setNotices(res.data.notices);
-        localStorage.setItem('ai_hub_notices', JSON.stringify(res.data.notices));
-      }
-    });
-
-    // Verify session role with server on mount if user is logged in
-    const initialUser = getStoredUser();
-    if (initialUser?.email) {
-      safeFetchJson<{ authenticated: boolean; user?: { role: 'ADMIN' | 'USER'; isAdmin: boolean } }>('/api/auth/me', {
-        headers: { 'x-user-email': initialUser.email },
-      }).then((res) => {
-        if (res.ok && res.data?.authenticated && res.data.user) {
-          const updatedUser: UserProfile = {
-            ...initialUser,
-            role: res.data.user.role,
-            isAdmin: res.data.user.isAdmin,
-          };
-          setCurrentUser(updatedUser);
-          saveStoredUser(updatedUser);
+    // The static site has no server to ask for notices or the session role.
+    if (!IS_STATIC_SITE) {
+      // Fetch initial notices
+      safeFetchJson<{ notices: NoticeItem[] }>('/api/notices').then((res) => {
+        if (res.ok && res.data?.notices && Array.isArray(res.data.notices)) {
+          setNotices(res.data.notices);
+          localStorage.setItem('ai_hub_notices', JSON.stringify(res.data.notices));
         }
       });
+
+      // Verify session role with server on mount if user is logged in
+      const initialUser = getStoredUser();
+      if (initialUser?.email) {
+        safeFetchJson<{ authenticated: boolean; user?: { role: 'ADMIN' | 'USER'; isAdmin: boolean } }>('/api/auth/me', {
+          headers: { 'x-user-email': initialUser.email },
+        }).then((res) => {
+          if (res.ok && res.data?.authenticated && res.data.user) {
+            const updatedUser: UserProfile = {
+              ...initialUser,
+              role: res.data.user.role,
+              isAdmin: res.data.user.isAdmin,
+            };
+            setCurrentUser(updatedUser);
+            saveStoredUser(updatedUser);
+          }
+        });
+      }
     }
 
     return () => {
@@ -380,29 +388,41 @@ export default function App() {
     return bookmarks.filter((id) => activeTools.some((t) => t.id === id)).length;
   }, [bookmarks, activeTools]);
 
-  // Filtered & sorted tools
-  const filteredTools = useMemo(() => {
+  // Tools matching search, price and bookmark filters (category applied separately
+  // so the category navigation can show faceted counts)
+  const facetTools = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
 
-    let result = activeTools.filter((item) => {
+    return activeTools.filter((item) => {
       const matchesSearch =
         !q ||
         item.name.toLowerCase().includes(q) ||
         item.description.toLowerCase().includes(q) ||
         (item.descriptionEn && item.descriptionEn.toLowerCase().includes(q)) ||
         (Array.isArray(item.tags) && item.tags.some((t) => t.toLowerCase().includes(q))) ||
-        item.category.toLowerCase().includes(q);
-
-      const matchesCategory =
-        selectedCategory === '전체' || item.category === selectedCategory;
+        item.category.toLowerCase().includes(q) ||
+        getCategoryLabel(item.category, 'en').toLowerCase().includes(q);
 
       const matchesPrice =
         selectedPrice === 'all' || item.price === selectedPrice;
 
       const matchesBookmark = !showBookmarksOnly || bookmarks.includes(item.id);
 
-      return matchesSearch && matchesCategory && matchesPrice && matchesBookmark;
+      return matchesSearch && matchesPrice && matchesBookmark;
     });
+  }, [activeTools, searchQuery, selectedPrice, showBookmarksOnly, bookmarks]);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { '전체': facetTools.length };
+    for (const tool of facetTools) counts[tool.category] = (counts[tool.category] || 0) + 1;
+    return counts;
+  }, [facetTools]);
+
+  // Filtered & sorted tools
+  const filteredTools = useMemo(() => {
+    let result = facetTools.filter(
+      (item) => selectedCategory === '전체' || item.category === selectedCategory
+    );
 
     if (selectedSort === 'abc') {
       result = [...result].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
@@ -411,25 +431,90 @@ export default function App() {
     }
 
     return result;
-  }, [
-    activeTools,
-    searchQuery,
-    selectedCategory,
-    selectedPrice,
-    selectedSort,
-    showBookmarksOnly,
-    bookmarks,
-  ]);
+  }, [facetTools, selectedCategory, selectedSort]);
 
   const customToolsCount = useMemo(
     () => activeTools.filter((t) => t.isCustom).length,
     [activeTools]
   );
 
+  const freeToolsCount = useMemo(
+    () => activeTools.filter((t) => t.price === '무료').length,
+    [activeTools]
+  );
+
+  // ── Layout helpers ──────────────────────────────────────────────
+  const heroSearchInputRef = useRef<HTMLInputElement>(null);
+  const heroSearchAnchorRef = useRef<HTMLDivElement>(null);
+  const headerSearchInputRef = useRef<HTMLInputElement>(null);
+  const directoryRef = useRef<HTMLElement>(null);
+  const [isHeroSearchVisible, setIsHeroSearchVisible] = useState(true);
+
+  useEffect(() => {
+    const anchor = heroSearchAnchorRef.current;
+    if (!anchor || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsHeroSearchVisible(entry.isIntersecting),
+      { rootMargin: '-64px 0px 0px 0px' }
+    );
+    observer.observe(anchor);
+    return () => observer.disconnect();
+  }, [isAdminConsoleActive]);
+
+  const scrollToDirectory = useCallback(() => {
+    const el = directoryRef.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - 80;
+    if (Math.abs(window.scrollY - top) > 8) window.scrollTo({ top, behavior: 'smooth' });
+  }, []);
+
+  const focusSearch = useCallback(() => {
+    const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+    if (!isHeroSearchVisible && isDesktop && headerSearchInputRef.current) {
+      headerSearchInputRef.current.focus();
+      return;
+    }
+    heroSearchAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    window.setTimeout(() => heroSearchInputRef.current?.focus({ preventScroll: true }), 250);
+  }, [isHeroSearchVisible]);
+
+  // "/" or Ctrl/Cmd+K focuses search
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isTyping =
+        !!target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable);
+      if ((e.key === '/' && !isTyping) || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k')) {
+        if (document.querySelector('[role="dialog"]')) return;
+        e.preventDefault();
+        focusSearch();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [focusSearch]);
+
+  const handleSelectCategory = (cat: Category) => {
+    setSelectedCategory(cat);
+    if (directoryRef.current && window.scrollY > directoryRef.current.offsetTop) scrollToDirectory();
+  };
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('전체');
+    setSelectedPrice('all');
+    setShowBookmarksOnly(false);
+  };
+
+  const openSettings = () => {
+    setProfileModalTab('general');
+    setIsProfileModalOpen(true);
+  };
+
   // If Full Admin Console is active and user is admin
   if (isAdminConsoleActive && currentUser?.isAdmin) {
     return (
-      <div className="min-h-screen bg-[#0c0e14] text-[#e8eaf2] font-['Noto_Sans_KR',sans-serif]">
+      <div className="min-h-screen bg-bg text-fg ">
         <AdminConsole
           currentUser={currentUser}
           lang={lang}
@@ -447,8 +532,14 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0c0e14] text-[#e8eaf2] font-['Noto_Sans_KR',sans-serif] flex flex-col selection:bg-[#6c63ff] selection:text-white">
-      {/* Header */}
+    <div id="top" className="min-h-screen bg-bg text-fg flex flex-col">
+      <a
+        href="#directory"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[10000] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-accent focus:text-accent-fg focus:text-sm focus:font-semibold"
+      >
+        {lang === 'ko' ? '본문으로 건너뛰기' : 'Skip to content'}
+      </a>
+
       <Header
         totalCount={activeTools.length}
         bookmarkCount={activeBookmarksCount}
@@ -458,7 +549,7 @@ export default function App() {
         onToggleLang={handleToggleLang}
         onOpenNoticeModal={() => setIsNoticeModalOpen(true)}
         onOpenInquiryModal={() => setIsInquiryModalOpen(true)}
-        onOpenGoogleLogin={() => setIsGoogleLoginOpen(true)}
+        onOpenGoogleLogin={IS_STATIC_SITE ? undefined : () => setIsGoogleLoginOpen(true)}
         onOpenProfileModal={() => {
           setProfileModalTab('profile');
           setIsProfileModalOpen(true);
@@ -466,139 +557,149 @@ export default function App() {
         onOpenAdminCenter={() => setIsAdminModalOpen(true)}
         onOpenAdminConsole={() => setIsAdminConsoleActive(true)}
         onLogout={handleLogout}
-        onOpenSettings={() => {
-          setProfileModalTab('general');
-          setIsProfileModalOpen(true);
-        }}
+        onOpenSettings={openSettings}
+        hasNotices={notices.length > 0}
+        showSearch={!isHeroSearchVisible}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchInputRef={headerSearchInputRef}
+        onRequestSearch={focusSearch}
       />
 
-      {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-16 flex-1 w-full">
-        {/* Controls and Category Filters */}
-        <Controls
+      <main className="flex-1">
+        <Hero
+          lang={lang}
+          totalCount={activeTools.length}
+          categoryCount={CATEGORIES.length - 1}
+          freeCount={freeToolsCount}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-          selectedPrice={selectedPrice}
-          onPriceChange={setSelectedPrice}
-          selectedSort={selectedSort}
-          onSortChange={setSelectedSort}
-          showBookmarksOnly={showBookmarksOnly}
-          onToggleBookmarksOnly={() => setShowBookmarksOnly((prev) => !prev)}
-          onOpenRandomModal={() => setIsRandomModalOpen(true)}
-          lang={lang}
+          onSubmitSearch={scrollToDirectory}
+          searchInputRef={heroSearchInputRef}
+          searchAnchorRef={heroSearchAnchorRef}
         />
 
-        {/* Results Header */}
-        <div className="flex items-center justify-between mt-5 sm:mt-6 mb-4 flex-wrap gap-2">
-          <div className="text-xs sm:text-sm text-gray-300 flex items-center flex-wrap gap-1.5">
-            {searchQuery.trim() ? (
-              lang === 'ko' ? (
-                <span>
-                  검색 결과 <strong className="text-[#00d4aa] font-extrabold text-sm sm:text-base px-0.5">{filteredTools.length}</strong>개
-                </span>
-              ) : (
-                <span>
-                  Search results: <strong className="text-[#00d4aa] font-extrabold text-sm sm:text-base px-0.5">{filteredTools.length}</strong>
-                </span>
-              )
-            ) : selectedCategory !== '전체' ? (
-              lang === 'ko' ? (
-                <span>
-                  <span className="text-[#00d4aa] font-semibold">{getCategoryLabel(selectedCategory, lang)}</span>: 총 <strong className="text-white font-extrabold text-sm sm:text-base px-0.5">{filteredTools.length}</strong>개 AI 도구
-                </span>
-              ) : (
-                <span>
-                  <span className="text-[#00d4aa] font-semibold">{getCategoryLabel(selectedCategory, lang)}</span>: <strong className="text-white font-extrabold text-sm sm:text-base px-0.5">{filteredTools.length}</strong> AI tools
-                </span>
-              )
-            ) : (
-              lang === 'ko' ? (
-                <span>
-                  총 <strong className="text-white font-extrabold text-sm sm:text-base px-0.5">{filteredTools.length}</strong>개의 AI 도구
-                </span>
-              ) : (
-                <span>
-                  Total <strong className="text-white font-extrabold text-sm sm:text-base px-0.5">{filteredTools.length}</strong> AI tools
-                </span>
-              )
-            )}
-            {showBookmarksOnly && (
-              <span className="text-amber-400 font-semibold text-xs ml-1 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
-                {lang === 'ko' ? '⭐ 북마크 항목만' : '⭐ Bookmarks Only'}
-              </span>
-            )}
-          </div>
+        <section
+          id="directory"
+          ref={directoryRef}
+          className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-24 scroll-mt-20"
+          aria-label={lang === 'ko' ? 'AI 도구 목록' : 'AI tool directory'}
+        >
+          <div className="lg:grid lg:grid-cols-[228px_minmax(0,1fr)] lg:gap-10 xl:gap-12">
+            <CategorySidebar
+              activeCategory={selectedCategory}
+              onSelectCategory={handleSelectCategory}
+              counts={categoryCounts}
+              lang={lang}
+              showBookmarksOnly={showBookmarksOnly}
+              onToggleBookmarksOnly={() => setShowBookmarksOnly((prev) => !prev)}
+              bookmarkCount={activeBookmarksCount}
+              onOpenRandomModal={() => setIsRandomModalOpen(true)}
+            />
 
-          {(searchQuery || selectedCategory !== '전체' || selectedPrice !== 'all' || showBookmarksOnly) && (
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedCategory('전체');
-                setSelectedPrice('all');
-                setShowBookmarksOnly(false);
-              }}
-              className="text-xs text-[#6c63ff] hover:text-[#00d4aa] hover:underline transition-colors cursor-pointer font-medium"
-            >
-              {lang === 'ko' ? '필터 초기화 ↺' : 'Reset Filters ↺'}
-            </button>
-          )}
-        </div>
+            <div className="min-w-0">
+              {/* Mobile / tablet category chips (sticky under the header) */}
+              <div className="lg:hidden sticky top-16 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 mb-5 bg-bg/85 backdrop-blur-xl border-b border-line">
+                <CategoryChips
+                  activeCategory={selectedCategory}
+                  onSelectCategory={handleSelectCategory}
+                  counts={categoryCounts}
+                  lang={lang}
+                />
+              </div>
 
-        {/* AI Tools Cards Grid */}
-        {filteredTools.length === 0 ? (
-          <div className="text-center py-20 px-4 bg-[#13151f]/50 rounded-3xl border border-white/5 my-4">
-            <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3 text-gray-500">
-              <AlertCircle className="w-7 h-7" />
-            </div>
-            <h3 className="text-base font-bold text-white mb-1">
-              {lang === 'ko' ? '검색 결과가 없습니다' : 'No results found'}
-            </h3>
-            <p className="text-xs text-gray-400 max-w-sm mx-auto mb-4">
-              {lang === 'ko'
-                ? '검색어나 필터 조건을 변경해 보거나, 원하는 AI 도구가 있다면 문의하기로 제안해 주세요!'
-                : 'Try changing your search or filters, or suggest an AI tool via Contact!'}
-            </p>
-            <button
-              onClick={() => setIsInquiryModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#6c63ff] hover:bg-[#5b52e0] text-white rounded-xl text-xs font-bold font-['Space_Grotesk'] shadow-md transition-all cursor-pointer"
-            >
-              <span>{lang === 'ko' ? '문의 / AI 도구 제안하기' : 'Suggest AI Tool / Contact'}</span>
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 items-stretch">
-            {filteredTools.map((tool, index) => (
-              <AICard
-                key={tool.id}
-                tool={tool}
-                isBookmarked={bookmarks.includes(tool.id)}
-                onToggleBookmark={handleToggleBookmark}
-                onDeleteCustomTool={
-                  tool.isCustom || currentUser?.isAdmin
-                    ? () => handleDeleteTool(tool.id)
-                    : undefined
-                }
-                onOpenDetail={(t) => setDetailModalTool(t)}
-                index={index}
+              <Toolbar
                 lang={lang}
+                resultCount={filteredTools.length}
+                selectedCategory={selectedCategory}
+                searchQuery={searchQuery}
+                selectedPrice={selectedPrice}
+                onPriceChange={setSelectedPrice}
+                selectedSort={selectedSort}
+                onSortChange={setSelectedSort}
+                showBookmarksOnly={showBookmarksOnly}
+                onToggleBookmarksOnly={() => setShowBookmarksOnly((prev) => !prev)}
+                bookmarkCount={activeBookmarksCount}
+                onOpenRandomModal={() => setIsRandomModalOpen(true)}
+                onClearSearch={() => setSearchQuery('')}
+                onClearCategory={() => setSelectedCategory('전체')}
+                onResetAll={handleResetFilters}
               />
-            ))}
+
+              <div className="mt-6">
+                {filteredTools.length === 0 ? (
+                  <div className="flex flex-col items-center text-center px-6 py-16 sm:py-20 rounded-2xl border border-dashed border-line-strong">
+                    <div className="w-14 h-14 rounded-2xl bg-fg/[0.06] flex items-center justify-center text-muted">
+                      <SearchX className="w-7 h-7" />
+                    </div>
+                    <h3 className="mt-5 text-lg font-semibold text-fg">
+                      {showBookmarksOnly && activeBookmarksCount === 0
+                        ? lang === 'ko'
+                          ? '아직 북마크한 도구가 없어요'
+                          : 'No bookmarks yet'
+                        : lang === 'ko'
+                          ? '조건에 맞는 AI 도구가 없어요'
+                          : 'No tools match your filters'}
+                    </h3>
+                    <p className="mt-2 text-sm text-muted max-w-sm leading-relaxed">
+                      {showBookmarksOnly && activeBookmarksCount === 0
+                        ? lang === 'ko'
+                          ? '카드의 ☆ 버튼을 눌러 자주 쓰는 도구를 모아 보세요.'
+                          : 'Tap ☆ on any card to save tools you use often.'
+                        : lang === 'ko'
+                          ? '검색어나 필터를 바꿔 보세요. 찾는 도구가 목록에 없다면 제안해 주세요.'
+                          : 'Try a different search or filter — or suggest the tool you are looking for.'}
+                    </p>
+                    <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                      <Button variant="secondary" onClick={handleResetFilters}>
+                        <RotateCcw className="w-4 h-4" />
+                        {lang === 'ko' ? '필터 초기화' : 'Reset filters'}
+                      </Button>
+                      <Button variant="primary" onClick={() => setIsInquiryModalOpen(true)}>
+                        <Lightbulb className="w-4 h-4" />
+                        {lang === 'ko' ? 'AI 도구 제안하기' : 'Suggest a tool'}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 items-stretch">
+                    {filteredTools.map((tool, index) => (
+                      <AICard
+                        key={tool.id}
+                        tool={tool}
+                        isBookmarked={bookmarks.includes(tool.id)}
+                        onToggleBookmark={handleToggleBookmark}
+                        onDeleteCustomTool={
+                          tool.isCustom || currentUser?.isAdmin
+                            ? () => handleDeleteTool(tool.id)
+                            : undefined
+                        }
+                        onOpenDetail={(t) => setDetailModalTool(t)}
+                        index={index}
+                        lang={lang}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        )}
+        </section>
       </main>
 
       {/* Back To Top Button */}
-      {showBackTop && (
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 left-6 z-50 w-11 h-11 bg-[#1a1d2a] hover:bg-[#6c63ff] border border-white/10 hover:border-[#6c63ff] text-gray-300 hover:text-white rounded-full flex items-center justify-center shadow-xl transition-all cursor-pointer hover:-translate-y-1"
-          title={lang === 'ko' ? '맨 위로 스크롤' : 'Scroll to top'}
-        >
-          <ArrowUp className="w-5 h-5" />
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        aria-label={lang === 'ko' ? '맨 위로' : 'Back to top'}
+        title={lang === 'ko' ? '맨 위로' : 'Back to top'}
+        tabIndex={showBackTop ? 0 : -1}
+        className={`fixed right-5 sm:right-7 bottom-[5.75rem] sm:bottom-[6.5rem] z-[80] w-11 h-11 rounded-full border border-line bg-surface/90 backdrop-blur text-fg-2 hover:text-fg hover:border-line-strong shadow-card flex items-center justify-center transition-all duration-200 ${
+          showBackTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
+        }`}
+      >
+        <ArrowUp className="w-[18px] h-[18px]" />
+      </button>
 
       {/* Floating AI Assistant Chatbot */}
       <AIChatbot
@@ -704,7 +805,13 @@ export default function App() {
       )}
 
       {/* Footer */}
-      <Footer onOpenInquiryModal={() => setIsInquiryModalOpen(true)} lang={lang} />
+      <Footer
+        onOpenInquiryModal={() => setIsInquiryModalOpen(true)}
+        onOpenNoticeModal={() => setIsNoticeModalOpen(true)}
+        onOpenRandomModal={() => setIsRandomModalOpen(true)}
+        onOpenSettings={openSettings}
+        lang={lang}
+      />
     </div>
   );
 }

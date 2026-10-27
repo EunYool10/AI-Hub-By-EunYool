@@ -39,14 +39,14 @@ export const AIFavicon: React.FC<AIFaviconProps> = ({
 
     return (
       <div
-        className={`bg-[#171a29] border border-white/15 flex items-center justify-center text-[#6c63ff] font-bold text-xs shrink-0 select-none shadow-sm ${className}`}
+        className={`[container-type:size] bg-gradient-to-br from-accent/20 to-mint/15 ring-1 ring-inset ring-line flex items-center justify-center text-brand font-bold shrink-0 select-none ${className}`}
         title={name}
         aria-label={`${name} icon`}
       >
         {isSpecial ? (
-          <Sparkles className="w-3.5 h-3.5 text-[#857dff]" />
+          <Sparkles className="w-[45%] h-[45%] text-brand" />
         ) : (
-          <span className="leading-none text-[11px] text-[#857dff] font-['Space_Grotesk']">
+          <span className="leading-none text-[42cqh] text-brand font-display">
             {firstChar}
           </span>
         )}
@@ -61,14 +61,14 @@ export const AIFavicon: React.FC<AIFaviconProps> = ({
 
   return (
     <div
-      className={`relative flex items-center justify-center shrink-0 overflow-hidden bg-[#151824] border border-white/10 ${className}`}
+      className={`relative flex items-center justify-center shrink-0 overflow-hidden bg-white ring-1 ring-inset ring-black/[0.07] ${className}`}
       title={name}
     >
       <img
         key={`${currentSrc}-${sourceIndex}`}
         src={currentSrc}
         alt={name ? `${name} logo` : 'AI Tool logo'}
-        className="w-full h-full object-contain p-1 rounded-[inherit]"
+        className="w-full h-full object-contain p-[14%] rounded-[inherit]"
         onError={() => {
           setSourceIndex((prev) => prev + 1);
         }}

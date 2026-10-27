@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { X, ExternalLink, Star, Copy, Check, Sparkles, Tag, Zap, Target, Lightbulb, Users, Info } from 'lucide-react';
+import { X, Star, Copy, Check, Sparkles, Zap, Lightbulb, Users, Globe, ArrowUpRight } from 'lucide-react';
 import { AITool, BadgeInfo } from '../types';
 import { BADGES } from '../data/aiToolsData';
-import { CATEGORIES } from './CategoryTabs';
+import { getCategoryVisual } from '../lib/categories';
 import { getCategoryLabel, getToolDescription, Language, UI_TEXT } from '../lib/translations';
 import { AIFavicon } from './AIFavicon';
+import { cn } from '../lib/cn';
+import { Modal, ModalBody, ModalFooter } from './ui/Modal';
+import { IconButton, LinkButton } from './ui/Button';
+import { PriceBadge, ToolBadge } from './ui/Badges';
 
 interface AIDetailModalProps {
   tool: AITool | null;
@@ -618,57 +622,29 @@ export const AIDetailModal: React.FC<AIDetailModalProps> = ({
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = prev;
-      };
-    }
-  }, [isOpen]);
+    setCopied(false);
+  }, [tool?.id]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  if (!tool) return null;
 
-  if (!isOpen || !tool) return null;
-
-  const badge: BadgeInfo | undefined = BADGES[tool.id];
-  const categoryInfo = CATEGORIES.find((c) => c.label === tool.category);
-
-  // Get rich supplementary details resolved for current language
   const currentLang: Language = (lang || 'ko') as Language;
+  const isKo = currentLang === 'ko';
+  const badge: BadgeInfo | undefined = BADGES[tool.id];
+  const { Icon: CategoryIcon, text: categoryText } = getCategoryVisual(tool.category);
+
   const rawDetails = TOOL_EXTRA_DETAILS[tool.name] || getFallbackDetails(tool);
   const extraDetails = getExtraDetailResolved(rawDetails, currentLang);
-
-  // Core description resolved for language
   const coreDesc = getToolDescription(tool, currentLang);
 
-  const getPriceBadgeStyle = (price: string, l: Language) => {
-    if (price === '무료') {
-      return { bg: 'bg-[#00d4aa]/15', text: 'text-[#00d4aa]', border: 'border-[#00d4aa]/30', label: l === 'ko' ? '무료' : 'Free' };
-    }
-    if (price === '유료') {
-      return { bg: 'bg-[#ff6b6b]/15', text: 'text-[#ff6b6b]', border: 'border-[#ff6b6b]/30', label: l === 'ko' ? '유료' : 'Paid' };
-    }
-    return { bg: 'bg-amber-400/15', text: 'text-amber-400', border: 'border-amber-400/30', label: l === 'ko' ? '무료/유료' : 'Free / Paid' };
-  };
-
-  const priceBadge = getPriceBadgeStyle(tool.price, currentLang);
-
-  const handleCopyLink = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (tool.url) {
-      navigator.clipboard.writeText(tool.url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+  const handleCopyLink = () => {
+    if (!tool.url) return;
+    navigator.clipboard?.writeText(tool.url).then(
+      () => {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 2000);
+      },
+      () => setCopied(false)
+    );
   };
 
   const hasHighlights = extraDetails.highlights && extraDetails.highlights.length > 0;
@@ -676,247 +652,168 @@ export const AIDetailModal: React.FC<AIDetailModalProps> = ({
   const hasProTip = Boolean(extraDetails.proTip && extraDetails.proTip.trim());
   const hasTargetAudience = extraDetails.targetAudience && extraDetails.targetAudience.length > 0;
 
-  // Prepare active section elements
-  const activeSections: React.ReactNode[] = [];
+  const sectionTitle = 'flex items-center gap-2 text-sm font-semibold text-fg';
+  const displayUrl = (tool.url || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
 
-  if (hasHighlights) {
-    activeSections.push(
-      <div key="features" className="bg-[#1a1d2a] p-3.5 sm:p-5 rounded-2xl border border-white/10 space-y-2.5 min-w-0">
-        <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-amber-400 uppercase tracking-wider font-['Space_Grotesk'] min-w-0">
-          <Zap className="w-4 h-4 text-amber-400 shrink-0" />
-          <span className="truncate">{UI_TEXT.modal.coreFeatures[currentLang]}</span>
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} size="lg" zIndex={220} labelledBy="tool-detail-title">
+      {/* Header */}
+      <div className="relative px-5 sm:px-7 pt-4 sm:pt-6 pb-5 border-b border-line shrink-0">
+        <div className="absolute right-3 top-3 sm:right-4 sm:top-4 flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => onToggleBookmark(tool.id)}
+            aria-pressed={isBookmarked}
+            aria-label={isBookmarked ? UI_TEXT.modal.bookmarked[currentLang] : UI_TEXT.modal.bookmark[currentLang]}
+            title={isBookmarked ? UI_TEXT.modal.bookmarked[currentLang] : UI_TEXT.modal.bookmark[currentLang]}
+            className={cn(
+              'w-9 h-9 inline-flex items-center justify-center rounded-lg transition-colors',
+              isBookmarked ? 'text-amber-400 hover:bg-amber-400/10' : 'text-muted hover:text-amber-400 hover:bg-fg/[0.07]'
+            )}
+          >
+            <Star className={cn('w-[18px] h-[18px]', isBookmarked && 'fill-amber-400')} />
+          </button>
+          <IconButton label={UI_TEXT.modal.close[currentLang]} onClick={onClose}>
+            <X className="w-5 h-5" />
+          </IconButton>
         </div>
 
-        <ul className="space-y-2 text-xs sm:text-sm text-gray-200 min-w-0">
-          {extraDetails.highlights.map((item, idx) => (
-            <li key={idx} className="flex items-start gap-2.5 leading-relaxed min-w-0">
-              <span className="text-[#00d4aa] font-bold mt-0.5 shrink-0">•</span>
-              <span className="break-words min-w-0 flex-1">{item}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  }
-
-  if (hasUseCases) {
-    activeSections.push(
-      <div key="use-cases" className="bg-[#1a1d2a] p-3.5 sm:p-5 rounded-2xl border border-white/10 space-y-2.5 min-w-0">
-        <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-[#6c63ff] uppercase tracking-wider font-['Space_Grotesk'] min-w-0">
-          <Sparkles className="w-4 h-4 text-[#6c63ff] shrink-0" />
-          <span className="truncate">{UI_TEXT.modal.useCases[currentLang]}</span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm text-gray-300 min-w-0 w-full">
-          {extraDetails.useCases.map((useCase, idx) => (
-            <div key={idx} className="flex items-center gap-2.5 bg-[#0c0e14]/70 p-2.5 sm:p-3 rounded-xl border border-white/5 h-full min-w-0 w-full overflow-hidden">
-              <span className="text-[#00d4aa] font-bold shrink-0">✨</span>
-              <span className="font-medium text-gray-200 leading-snug break-words min-w-0 flex-1">{useCase}</span>
+        <div className="flex items-start gap-4 pr-20">
+          <AIFavicon
+            url={tool.url}
+            name={tool.name}
+            customIcon={tool.icon || tool.iconUrl || tool.logoUrl}
+            size={128}
+            className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow-card"
+          />
+          <div className="min-w-0 flex-1 pt-0.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 id="tool-detail-title" className="text-xl sm:text-2xl font-bold tracking-tight text-fg leading-tight break-words">
+                {tool.name}
+              </h2>
+              {badge && <ToolBadge badge={badge} lang={currentLang} />}
             </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (hasProTip || hasTargetAudience) {
-    activeSections.push(
-      <div key="tips-audience" className={`grid grid-cols-1 ${hasProTip && hasTargetAudience ? 'sm:grid-cols-3' : 'grid-cols-1'} gap-3 min-w-0 w-full`}>
-        {/* AI 활용 팁 Box */}
-        {hasProTip && (
-          <div className={`${hasTargetAudience ? 'sm:col-span-2' : 'col-span-1'} bg-gradient-to-br from-[#1a1d2a] to-[#0c0e14] p-3.5 sm:p-4 rounded-2xl border border-amber-400/20 space-y-2 min-w-0`}>
-            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400 font-['Space_Grotesk'] min-w-0">
-              <Lightbulb className="w-4 h-4 shrink-0" />
-              <span className="truncate">{UI_TEXT.modal.aiTip[currentLang]}</span>
-            </div>
-            <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-normal break-words min-w-0 whitespace-pre-line">
-              {extraDetails.proTip}
-            </p>
+            <p className="mt-1.5 text-sm sm:text-[0.9375rem] text-muted leading-relaxed">{extraDetails.tagline || coreDesc}</p>
           </div>
+        </div>
+
+        <div className="mt-4 flex items-center gap-1.5 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 h-6 px-2 rounded-md bg-fg/[0.06] text-xs font-medium text-fg-2">
+            <CategoryIcon className={cn('w-3.5 h-3.5', categoryText)} />
+            {getCategoryLabel(tool.category, currentLang)}
+          </span>
+          <PriceBadge price={tool.price} lang={currentLang} />
+          {tool.isCustom && (
+            <span className="inline-flex items-center h-6 px-2 rounded-md bg-purple-400/12 text-xs font-semibold text-purple-300">
+              {isKo ? '사용자 등록' : 'User added'}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Body */}
+      <ModalBody className="px-5 sm:px-7 py-6 space-y-7">
+        {coreDesc && extraDetails.tagline && coreDesc !== extraDetails.tagline && (
+          <p className="text-[0.9375rem] leading-relaxed text-fg-2">{coreDesc}</p>
         )}
 
-        {/* 추천 대상 Box */}
-        {hasTargetAudience && (
-          <div className={`${hasProTip ? 'col-span-1' : 'col-span-1'} bg-[#1a1d2a] p-3.5 sm:p-4 rounded-2xl border border-white/10 space-y-2.5 flex flex-col justify-start min-w-0`}>
-            <div className="flex items-center gap-1.5 text-xs font-bold text-gray-300 font-['Space_Grotesk'] min-w-0">
-              <Users className="w-4 h-4 text-[#00d4aa] shrink-0" />
-              <span className="truncate">{UI_TEXT.modal.targetUsers[currentLang]}</span>
+        {hasHighlights && (
+          <section>
+            <h3 className={sectionTitle}>
+              <Zap className="w-4 h-4 text-amber-400" />
+              {UI_TEXT.modal.coreFeatures[currentLang]}
+            </h3>
+            <ul className="mt-3 space-y-2.5">
+              {extraDetails.highlights.map((item, idx) => (
+                <li key={idx} className="flex items-start gap-2.5 text-sm leading-relaxed text-fg-2">
+                  <span className="mt-0.5 w-5 h-5 rounded-full bg-mint/12 text-mint flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3" strokeWidth={3} />
+                  </span>
+                  <span className="min-w-0">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {hasUseCases && (
+          <section>
+            <h3 className={sectionTitle}>
+              <Sparkles className="w-4 h-4 text-brand" />
+              {UI_TEXT.modal.useCases[currentLang]}
+            </h3>
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {extraDetails.useCases.map((useCase, idx) => (
+                <div key={idx} className="flex items-start gap-3 p-3.5 rounded-xl bg-surface-2 border border-line text-sm leading-snug text-fg-2">
+                  <span className="text-xs font-bold tabular-nums text-subtle mt-px">{String(idx + 1).padStart(2, '0')}</span>
+                  <span className="min-w-0">{useCase}</span>
+                </div>
+              ))}
             </div>
-            <div className="flex flex-wrap gap-1.5 min-w-0">
+          </section>
+        )}
+
+        {hasProTip && (
+          <section className="p-4 rounded-xl bg-amber-400/[0.07] border border-amber-400/25">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-amber-300">
+              <Lightbulb className="w-4 h-4" />
+              {isKo ? 'AI 활용 팁' : 'Pro tip'}
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-fg-2 whitespace-pre-line">{extraDetails.proTip}</p>
+          </section>
+        )}
+
+        {hasTargetAudience && (
+          <section>
+            <h3 className={sectionTitle}>
+              <Users className="w-4 h-4 text-mint" />
+              {UI_TEXT.modal.targetUsers[currentLang]}
+            </h3>
+            <div className="mt-3 flex flex-wrap gap-1.5">
               {extraDetails.targetAudience.map((target, idx) => (
-                <span
-                  key={idx}
-                  className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#6c63ff]/20 text-[#00d4aa] border border-[#00d4aa]/30 break-words max-w-full truncate"
-                >
-                  #{target}
+                <span key={idx} className="inline-flex items-center h-8 px-3 rounded-full border border-line bg-surface-2 text-sm text-fg-2">
+                  {target}
                 </span>
               ))}
             </div>
+          </section>
+        )}
+      </ModalBody>
+
+      {/* Footer */}
+      <ModalFooter className="flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3 px-5 sm:px-7">
+        {tool.url && (
+          <div className="w-full sm:flex-1 min-w-0 flex items-center gap-1 h-11 pl-3.5 pr-1.5 rounded-xl bg-surface-2 border border-line">
+            <Globe className="w-4 h-4 text-subtle shrink-0" />
+            <span className="flex-1 min-w-0 truncate text-sm text-muted ml-1.5" title={tool.url}>
+              {displayUrl}
+            </span>
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className={cn(
+                'shrink-0 inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-semibold transition-colors',
+                copied ? 'text-mint' : 'text-fg-2 hover:text-fg hover:bg-fg/[0.07]'
+              )}
+              aria-live="polite"
+            >
+              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? UI_TEXT.modal.urlCopied[currentLang] : UI_TEXT.modal.copyUrl[currentLang]}
+            </button>
           </div>
         )}
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-[220] bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200 overflow-hidden"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div
-        className="bg-[#13151f] border border-white/20 rounded-3xl p-4 sm:p-6 max-w-2xl w-full shadow-2xl shadow-black relative my-auto animate-in zoom-in-95 duration-200 overflow-hidden max-h-[90vh] flex flex-col text-left min-w-0"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Top Glow Accent Bar */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#6c63ff] via-[#00d4aa] to-[#6c63ff]" />
-
-        {/* Modal Header Container (Fixed Top) */}
-        <div className="flex items-start justify-between gap-2.5 sm:gap-4 pb-3.5 sm:pb-4 border-b border-white/10 shrink-0 min-w-0 w-full">
-          {/* Left Column: Badges + AI Icon + Name + Description */}
-          <div className="flex-1 min-w-0 space-y-2">
-            {/* Badges Row */}
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 w-full">
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#1a1d2a] border border-white/10 text-gray-300 flex items-center gap-1.5 whitespace-nowrap shrink-0">
-                <span>{categoryInfo?.icon || '💡'}</span>
-                <span>{getCategoryLabel(tool.category, currentLang)}</span>
-              </span>
-
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${priceBadge.bg} ${priceBadge.text} ${priceBadge.border} whitespace-nowrap shrink-0`}>
-                {priceBadge.label}
-              </span>
-
-              {badge && (
-                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#6c63ff]/20 text-[#6c63ff] border border-[#6c63ff]/30 uppercase font-['Space_Grotesk'] whitespace-nowrap shrink-0">
-                  ✨ {badge.label}
-                </span>
-              )}
-
-              {tool.isCustom && (
-                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 whitespace-nowrap shrink-0">
-                  {UI_TEXT.card.userAdded[currentLang]}
-                </span>
-              )}
-            </div>
-
-            {/* AI Icon & Name & Tagline */}
-            <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 w-full pt-0.5">
-              <AIFavicon
-                url={tool.url}
-                name={tool.name}
-                customIcon={tool.icon || tool.iconUrl || tool.logoUrl}
-                size={128}
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl shrink-0 mt-0.5 shadow-md border border-white/10"
-              />
-              <div className="flex-1 min-w-0">
-                <h2 className="font-['Space_Grotesk'] text-lg sm:text-2xl lg:text-3xl font-bold text-white tracking-tight leading-snug break-words min-w-0">
-                  {tool.name}
-                </h2>
-                <p className="text-xs sm:text-sm text-gray-300 font-normal mt-0.5 sm:mt-1 leading-relaxed line-clamp-2 break-words min-w-0">
-                  {extraDetails.tagline || coreDesc}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: Top Action Buttons (Bookmark & Close) */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 pt-0.5">
-            {/* Bookmark Button */}
-            <button
-              onClick={() => onToggleBookmark(tool.id)}
-              className={`p-2 sm:px-3 sm:py-2 rounded-xl border transition-all cursor-pointer shrink-0 flex items-center gap-1.5 text-xs font-semibold ${
-                isBookmarked
-                  ? 'bg-amber-400/20 border-amber-400/40 text-amber-400'
-                  : 'bg-[#1a1d2a] border-white/10 text-gray-400 hover:text-amber-400 hover:border-amber-400/30'
-              }`}
-              title={isBookmarked ? UI_TEXT.modal.bookmarked[currentLang] : UI_TEXT.modal.bookmark[currentLang]}
-              aria-label={isBookmarked ? UI_TEXT.modal.bookmarked[currentLang] : UI_TEXT.modal.bookmark[currentLang]}
-            >
-              <Star className={`w-4 h-4 ${isBookmarked ? 'fill-amber-400' : ''}`} />
-              <span className="hidden sm:inline">
-                {isBookmarked ? UI_TEXT.modal.bookmarked[currentLang] : UI_TEXT.modal.bookmark[currentLang]}
-              </span>
-            </button>
-
-            {/* Close Button */}
-            <button
-              onClick={onClose}
-              className="p-2 sm:p-2 rounded-xl bg-[#1a1d2a] hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer shrink-0"
-              title={UI_TEXT.modal.close[currentLang]}
-              aria-label={UI_TEXT.modal.close[currentLang]}
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Scrollable Content Body */}
-        <div className="overflow-y-auto space-y-3.5 sm:space-y-4 py-3.5 sm:py-4 pr-1 flex-1 min-h-0 min-w-0 no-scrollbar">
-          {activeSections.map((section, idx) => (
-            <React.Fragment key={idx}>
-              {idx > 0 && <div className="border-t border-white/10 my-1 sm:my-2" />}
-              {section}
-            </React.Fragment>
-          ))}
-        </div>
-
-        {/* Footer Container (Fixed Bottom) */}
-        <div className="pt-3.5 border-t border-white/10 shrink-0 space-y-3 mt-auto">
-          {/* Official Website URL & Copy Address */}
-          {tool.url && (
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-0.5">
-                <span>{UI_TEXT.modal.officialWebsite[currentLang]}</span>
-              </div>
-              <div className="flex items-center gap-2 bg-[#0c0e14] p-2 rounded-xl border border-white/10 min-w-0">
-                <span className="text-xs text-gray-300 font-mono truncate flex-1 px-1 min-w-0">
-                  {tool.url}
-                </span>
-                <button
-                  onClick={handleCopyLink}
-                  className="px-3 py-1.5 bg-[#1a1d2a] hover:bg-white/10 text-gray-200 hover:text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
-                  title={UI_TEXT.modal.copyUrl[currentLang]}
-                  aria-label={UI_TEXT.modal.copyUrl[currentLang]}
-                >
-                  {copied ? (
-                    <span className="flex items-center gap-1.5 animate-in fade-in zoom-in-95 duration-150">
-                      <Check className="w-3.5 h-3.5 text-[#00d4aa]" />
-                      <span className="text-[#00d4aa] font-bold">{UI_TEXT.modal.urlCopied[currentLang]}</span>
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1.5">
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>{UI_TEXT.modal.copyUrl[currentLang]}</span>
-                    </span>
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons: Official Site & Close */}
-          <div className="flex items-center gap-2.5">
-            <a
-              href={tool.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-[#6c63ff] to-[#5b52e0] hover:from-[#5b52e0] hover:to-[#4a42cd] text-white font-bold text-sm font-['Space_Grotesk'] rounded-xl transition-all shadow-lg shadow-[#6c63ff]/25 active:scale-98"
-            >
-              <span>{UI_TEXT.modal.visitWebsite[currentLang]}</span>
-              <ExternalLink className="w-4 h-4 shrink-0" />
-            </a>
-
-            <button
-              onClick={onClose}
-              className="px-5 py-3 bg-[#1a1d2a] hover:bg-white/10 text-gray-300 hover:text-white font-semibold text-sm rounded-xl transition-all border border-white/10 cursor-pointer shrink-0"
-            >
-              {UI_TEXT.modal.close[currentLang]}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+        <LinkButton
+          href={tool.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          variant="primary"
+          size="lg"
+          className="w-full sm:w-auto h-11"
+        >
+          {isKo ? '공식 사이트 방문' : 'Visit website'}
+          <ArrowUpRight className="w-4 h-4" />
+        </LinkButton>
+      </ModalFooter>
+    </Modal>
   );
 };
-

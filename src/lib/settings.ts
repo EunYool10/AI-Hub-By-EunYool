@@ -60,6 +60,22 @@ export const applyTheme = (theme: ThemeMode): void => {
   } else {
     root.classList.add('dark');
   }
+
+  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeColorMeta) {
+    themeColorMeta.setAttribute('content', effectiveTheme === 'light' ? '#f6f6f8' : '#0a0a0d');
+  }
+};
+
+export const applyAccessibility = (accessibility: AccessibilitySettings): void => {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  root.setAttribute('data-font-size', accessibility.fontSize || 'medium');
+  if (accessibility.animations === false) {
+    root.setAttribute('data-motion', 'reduce');
+  } else {
+    root.removeAttribute('data-motion');
+  }
 };
 
 export const getStoredSettings = (): UserSettings => {
@@ -67,6 +83,7 @@ export const getStoredSettings = (): UserSettings => {
     const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
     if (!saved) {
       applyTheme(DEFAULT_SETTINGS.theme);
+      applyAccessibility(DEFAULT_SETTINGS.accessibility);
       return DEFAULT_SETTINGS;
     }
 
@@ -89,10 +106,12 @@ export const getStoredSettings = (): UserSettings => {
       },
     };
     applyTheme(settings.theme);
+    applyAccessibility(settings.accessibility);
     return settings;
   } catch (e) {
     console.error('Failed to load settings:', e);
     applyTheme(DEFAULT_SETTINGS.theme);
+    applyAccessibility(DEFAULT_SETTINGS.accessibility);
     return DEFAULT_SETTINGS;
   }
 };
@@ -102,6 +121,7 @@ export const saveStoredSettings = (newSettings: UserSettings): void => {
     localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(newSettings));
     localStorage.setItem('ai_hub_lang', newSettings.language);
     applyTheme(newSettings.theme);
+    applyAccessibility(newSettings.accessibility);
     window.dispatchEvent(new CustomEvent('aihub_settings_changed', { detail: newSettings }));
   } catch (e) {
     console.error('Failed to save settings:', e);

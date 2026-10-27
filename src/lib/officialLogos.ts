@@ -208,9 +208,9 @@ export function getOfficialLogoSources(name: string, url?: string, customLogoUrl
   const cleanName = (name || '').toLowerCase().trim();
   const regEntry = OFFICIAL_BRAND_REGISTRY[cleanName];
 
-  // 1. Simple Icons official SVG vector CDN
+  // 1. Simple Icons official SVG vector CDN (official brand color; logos sit on a white tile)
   if (regEntry?.slug) {
-    sources.push(`https://cdn.simpleicons.org/${regEntry.slug}/ffffff`);
+    sources.push(`https://cdn.simpleicons.org/${regEntry.slug}`);
   }
 
   // 2. High-res official website favicon from domain

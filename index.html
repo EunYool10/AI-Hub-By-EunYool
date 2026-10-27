@@ -1,21 +1,43 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="카테고리별로 정리된 최신 AI 도구를 검색하고, 비교하고, 추천받는 AI 도구 디렉토리" />
+    <meta name="theme-color" content="#0a0a0d" />
     <title>AI Hub — by Yool</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="shortcut icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+    <script>
+      // Apply the saved theme/accessibility preferences before first paint to avoid a flash.
+      (function () {
+        var root = document.documentElement;
+        try {
+          var s = JSON.parse(localStorage.getItem('ai_hub_global_settings') || '{}');
+          var theme = s.theme || 'dark';
+          if (theme === 'system') {
+            theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+          }
+          root.setAttribute('data-theme', theme);
+          var a = s.accessibility || {};
+          if (a.fontSize) root.setAttribute('data-font-size', a.fontSize);
+          if (a.animations === false) root.setAttribute('data-motion', 'reduce');
+        } catch (e) {
+          root.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
-  <body class="bg-[#0c0e14] text-[#e8eaf2]">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

@@ -187,21 +187,21 @@ export const AdminChatbotTab: React.FC<AdminChatbotTabProps> = ({
   return (
     <div className="space-y-4 flex flex-col h-[calc(100vh-180px)] min-h-[500px]">
       {/* Top Banner */}
-      <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-cyan-500/10 via-[#16192b] to-[#121422] border border-cyan-400/20 shrink-0">
+      <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-cyan-500/10 via-surface-2 to-surface border border-cyan-400/20 shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center text-cyan-300">
             <Bot className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-white">
+              <h2 className="text-base font-bold text-fg">
                 {isKo ? '관리자 전용 AI 비서' : 'Admin AI Assistant'}
               </h2>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+              <span className="px-1.5 py-0.5 rounded text-[0.6875rem] font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
                 PRIVILEGED
               </span>
             </div>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-xs text-muted">
               {isKo ? '운영 명령어 실행 및 자연어 종합 분석' : 'Command console & deep analysis'}
             </p>
           </div>
@@ -209,7 +209,7 @@ export const AdminChatbotTab: React.FC<AdminChatbotTabProps> = ({
 
         <button
           onClick={handleClearHistory}
-          className="p-2 hover:bg-white/10 rounded-xl text-gray-400 hover:text-white transition-colors cursor-pointer"
+          className="p-2 hover:bg-fg/10 rounded-xl text-muted hover:text-fg transition-colors cursor-pointer"
           title="대화 비우기"
         >
           <Trash2 className="w-4 h-4" />
@@ -223,17 +223,17 @@ export const AdminChatbotTab: React.FC<AdminChatbotTabProps> = ({
             key={item.cmd}
             onClick={() => handleSendMessage(item.cmd)}
             disabled={loading}
-            className="px-2.5 py-1.5 bg-[#16192d] hover:bg-[#1f2442] border border-white/10 hover:border-cyan-400/40 rounded-xl text-xs text-gray-300 hover:text-white transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 shadow-sm"
+            className="px-2.5 py-1.5 bg-surface-2 hover:bg-surface-3 border border-line hover:border-cyan-400/40 rounded-xl text-xs text-fg-2 hover:text-fg transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 shadow-sm"
           >
             <Terminal className="w-3 h-3 text-cyan-400" />
-            <span className="font-mono text-[11px] font-bold text-cyan-300">{item.cmd}</span>
-            <span className="text-[10px] text-gray-500">({item.desc})</span>
+            <span className="font-mono text-xs font-bold text-cyan-300">{item.cmd}</span>
+            <span className="text-[0.6875rem] text-subtle">({item.desc})</span>
           </button>
         ))}
       </div>
 
       {/* Chat Messages Container */}
-      <div className="flex-1 bg-[#121424] rounded-2xl border border-white/10 p-4 overflow-y-auto space-y-4 shadow-inner">
+      <div className="flex-1 bg-surface rounded-2xl border border-line p-4 overflow-y-auto space-y-4 shadow-inner">
         {messages.map((msg) => {
           const isUser = msg.sender === 'user';
           const isSys = msg.sender === 'system';
@@ -241,7 +241,7 @@ export const AdminChatbotTab: React.FC<AdminChatbotTabProps> = ({
           if (isSys) {
             return (
               <div key={msg.id} className="text-center my-2">
-                <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[11px] text-gray-400">
+                <span className="px-3 py-1 bg-fg/5 border border-line rounded-full text-xs text-muted">
                   {msg.text}
                 </span>
               </div>
@@ -262,14 +262,14 @@ export const AdminChatbotTab: React.FC<AdminChatbotTabProps> = ({
               <div
                 className={`max-w-[85%] rounded-2xl p-4 text-xs leading-relaxed relative group ${
                   isUser
-                    ? 'bg-gradient-to-r from-[#6c63ff] to-[#5046e5] text-white rounded-tr-none shadow-md'
-                    : 'bg-[#181b30] border border-white/10 text-gray-200 rounded-tl-none shadow-md'
+                    ? 'bg-gradient-to-r from-accent to-accent-hover text-white rounded-tr-none shadow-md'
+                    : 'bg-surface-2 border border-line text-fg-2 rounded-tl-none shadow-md'
                 }`}
               >
                 {!isUser && (
                   <button
                     onClick={() => handleCopyText(msg.id, msg.text)}
-                    className="absolute top-2 right-2 p-1 rounded bg-black/40 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    className="absolute top-2 right-2 p-1 rounded bg-black/40 text-muted hover:text-fg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                     title="복사하기"
                   >
                     {copiedId === msg.id ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
@@ -278,8 +278,8 @@ export const AdminChatbotTab: React.FC<AdminChatbotTabProps> = ({
 
                 <div className="whitespace-pre-wrap font-sans text-xs">{msg.text}</div>
                 <div
-                  className={`text-[10px] mt-2 font-mono ${
-                    isUser ? 'text-indigo-200 text-right' : 'text-gray-500'
+                  className={`text-[0.6875rem] mt-2 font-mono ${
+                    isUser ? 'text-indigo-200 text-right' : 'text-subtle'
                   }`}
                 >
                   {msg.timestamp}
@@ -300,7 +300,7 @@ export const AdminChatbotTab: React.FC<AdminChatbotTabProps> = ({
             <div className="w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center text-cyan-300 shrink-0">
               <Bot className="w-4 h-4" />
             </div>
-            <div className="bg-[#181b30] border border-white/10 rounded-2xl rounded-tl-none p-4 text-xs text-gray-400 flex items-center gap-2">
+            <div className="bg-surface-2 border border-line rounded-2xl rounded-tl-none p-4 text-xs text-muted flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
               <span>{isKo ? '관리자 명령어 처리 및 AI 응답 생성 중...' : 'Processing admin query...'}</span>
             </div>
@@ -328,7 +328,7 @@ export const AdminChatbotTab: React.FC<AdminChatbotTabProps> = ({
                 ? '관리자 명령어(/admin help) 또는 자연어로 질문을 입력하세요...'
                 : 'Enter admin command or natural query...'
             }
-            className="w-full pl-4 pr-12 py-3 bg-[#121424] border border-white/10 rounded-2xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 shadow-inner"
+            className="w-full pl-4 pr-12 py-3 bg-surface border border-line rounded-2xl text-xs text-fg placeholder:text-subtle focus:outline-none focus:border-cyan-400 shadow-inner"
           />
         </div>
 

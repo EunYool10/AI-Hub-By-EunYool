@@ -1,19 +1,29 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   MessageSquare,
   Crown,
   LogOut,
-  Globe,
   Megaphone,
   Settings,
   User,
   ChevronDown,
   Shield,
-  ExternalLink
+  Search,
+  Sun,
+  Moon,
+  Menu,
+  Languages,
+  X,
+  ChevronRight,
 } from 'lucide-react';
 import { UserProfile } from '../types';
 import { UI_TEXT } from '../lib/translations';
+import { getStoredSettings, updateStoredSettings } from '../lib/settings';
+import { cn } from '../lib/cn';
 import { AIHubBrandLogo } from './AIHubBrandLogo';
+import { Button, IconButton } from './ui/Button';
+import { Modal, ModalBody } from './ui/Modal';
+import { Avatar, GoogleGlyph } from './ui/Identity';
 
 interface HeaderProps {
   totalCount: number;
@@ -24,18 +34,41 @@ interface HeaderProps {
   onToggleLang: () => void;
   onOpenNoticeModal: () => void;
   onOpenInquiryModal: () => void;
-  onOpenGoogleLogin: () => void;
+  /** Left out on the static site, where there is no server to sign in against. */
+  onOpenGoogleLogin?: () => void;
   onOpenProfileModal?: () => void;
   onOpenAdminCenter: () => void;
   onOpenAdminConsole?: () => void;
   onLogout: () => void;
   onOpenSettings?: () => void;
+  hasNotices?: boolean;
+  /** Compact search shown in the bar once the hero search scrolls away */
+  showSearch?: boolean;
+  searchQuery?: string;
+  onSearchChange?: (q: string) => void;
+  searchInputRef?: React.Ref<HTMLInputElement>;
+  onRequestSearch?: () => void;
 }
 
+const useEffectiveTheme = () => {
+  const read = () => {
+    if (typeof document === 'undefined') return 'dark';
+    return document.documentElement.getAttribute('data-theme') || 'dark';
+  };
+  const [theme, setTheme] = useState<string>(read);
+  useEffect(() => {
+    const sync = () => setTheme(read());
+    window.addEventListener('aihub_settings_changed', sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener('aihub_settings_changed', sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
+  return theme;
+};
+
 export const Header: React.FC<HeaderProps> = ({
-  totalCount,
-  bookmarkCount,
-  customCount,
   currentUser,
   lang,
   onToggleLang,
@@ -47,333 +80,397 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAdminConsole,
   onLogout,
   onOpenSettings,
+  hasNotices = false,
+  showSearch = false,
+  searchQuery = '',
+  onSearchChange,
+  searchInputRef,
+  onRequestSearch,
 }) => {
+  const isKo = lang === 'ko';
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const accountRef = useRef<HTMLDivElement>(null);
+  const theme = useEffectiveTheme();
+  const isLight = theme === 'light';
 
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-      setScrollProgress(pct);
+      setScrollProgress(docHeight > 0 ? (scrollTop / docHeight) * 100 : 0);
+      setIsScrolled(scrollTop > 4);
     };
-
-    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close dropdown on click outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsAccountDropdownOpen(false);
-      }
+    if (!isAccountOpen) return;
+    const handlePointer = (event: MouseEvent) => {
+      if (accountRef.current && !accountRef.current.contains(event.target as Node)) setIsAccountOpen(false);
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsAccountOpen(false);
+    };
+    document.addEventListener('mousedown', handlePointer);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handlePointer);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [isAccountOpen]);
+
+  const toggleTheme = () => {
+    const current = getStoredSettings().theme;
+    const next = current === 'light' || (current === 'system' && isLight) ? 'dark' : 'light';
+    updateStoredSettings({ theme: next });
+  };
+
+  const displayName = currentUser
+    ? currentUser.nickname || currentUser.displayName || currentUser.email.split('@')[0]
+    : '';
+
+  const runAndClose = (fn?: () => void) => () => {
+    setIsAccountOpen(false);
+    setIsMobileMenuOpen(false);
+    fn?.();
+  };
+
+  const navButton =
+    'relative h-9 px-3 rounded-lg text-sm font-medium text-fg-2 hover:text-fg hover:bg-fg/[0.06] transition-colors inline-flex items-center gap-2';
 
   return (
     <>
-      {/* Rainbow Scroll Bar */}
-      <div
-        className="fixed top-0 left-0 h-[3px] z-[9999] transition-[width] duration-75 ease-linear rounded-r-sm shadow-[0_0_10px_rgba(255,255,255,0.25)]"
-        style={{
-          width: `${scrollProgress}%`,
-          background:
-            'linear-gradient(90deg, #ff0080, #ff4500, #ffaa00, #00ff88, #00cfff, #7b2fff, #ff0080)',
-          backgroundSize: '200% 100%',
-          animation: 'rainbowShift 3s linear infinite',
-        }}
-      />
+      <header
+        className={cn(
+          'sticky top-0 z-50 border-b transition-[background-color,border-color] duration-200',
+          isScrolled ? 'bg-bg/80 backdrop-blur-xl border-line' : 'bg-bg/0 border-transparent'
+        )}
+      >
+        <div className="max-w-[1400px] mx-auto h-16 px-4 sm:px-6 lg:px-8 flex items-center gap-2 sm:gap-3">
+          {/* Brand */}
+          <a
+            href="#top"
+            onClick={(e) => {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="flex items-center gap-2.5 shrink-0 rounded-lg -ml-1 pl-1 pr-2 py-1"
+            aria-label="AI Hub"
+          >
+            <AIHubBrandLogo className="w-8 h-8" />
+            <span className="flex items-baseline gap-1.5">
+              <span className="font-display text-[1.0625rem] font-bold tracking-tight text-fg rainbow-text">AI Hub</span>
+              <span className="hidden sm:inline text-xs font-medium text-subtle">by Yool</span>
+            </span>
+          </a>
 
-      <header className="sticky top-0 z-50 bg-[#0c0e14]/90 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between py-3 sm:py-3.5 gap-2.5 sm:gap-4">
-            
-            {/* Official AI Hub Brand Logo & Title */}
-            <div className="flex items-center justify-between sm:justify-start gap-3">
-              <div className="flex items-center gap-2.5 sm:gap-3">
-                <AIHubBrandLogo className="w-8 h-8 sm:w-9 sm:h-9" />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h1 className="font-['Space_Grotesk'] text-lg sm:text-xl md:text-2xl font-extrabold tracking-tight text-white leading-none">
-                      AI Hub <span className="text-[#6c63ff]">by Yool</span>
-                    </h1>
-                    {currentUser?.isAdmin && (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400/20 to-amber-500/20 border border-amber-400/40 text-amber-300 font-bold text-[10px] animate-pulse">
-                        <Crown className="w-3 h-3 text-amber-400 fill-amber-400" />
-                        ADMIN
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[11px] sm:text-xs text-gray-400 font-normal mt-0.5 leading-none">
-                    {UI_TEXT.header.subtitle[lang]}
-                  </p>
-                </div>
-              </div>
-            </div>
+          {currentUser?.isAdmin && (
+            <span className="hidden sm:inline-flex items-center gap-1 h-6 px-2 rounded-full bg-amber-400/12 border border-amber-400/30 text-amber-300 text-[0.6875rem] font-bold tracking-wide">
+              <Crown className="w-3 h-3" />
+              ADMIN
+            </span>
+          )}
 
-            {/* Header Right Action Controls */}
-            <div className="flex items-center justify-start sm:justify-end gap-1.5 sm:gap-2 flex-wrap">
-              {/* Settings Button */}
-              {onOpenSettings && (
+          {/* Primary nav */}
+          <nav className="hidden md:flex items-center gap-0.5 ml-2" aria-label={isKo ? '주요 메뉴' : 'Primary'}>
+            <button type="button" onClick={onOpenNoticeModal} className={navButton}>
+              <Megaphone className="w-4 h-4 text-muted" />
+              {UI_TEXT.header.notices[lang]}
+              {hasNotices && <span className="w-1.5 h-1.5 rounded-full bg-accent" aria-hidden="true" />}
+            </button>
+            <button type="button" onClick={onOpenInquiryModal} className={navButton}>
+              <MessageSquare className="w-4 h-4 text-muted" />
+              {UI_TEXT.header.inquiry[lang]}
+            </button>
+          </nav>
+
+          <div className="flex-1" />
+
+          {/* Compact search (desktop, after hero search scrolls away) */}
+          <div
+            className={cn(
+              'hidden md:block w-64 lg:w-80 transition-all duration-200',
+              showSearch ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none'
+            )}
+            aria-hidden={!showSearch}
+          >
+            <label className="relative block">
+              <span className="sr-only">{UI_TEXT.controls.searchPlaceholder[lang]}</span>
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-subtle pointer-events-none" />
+              <input
+                ref={searchInputRef}
+                type="search"
+                tabIndex={showSearch ? 0 : -1}
+                value={searchQuery}
+                onChange={(e) => onSearchChange?.(e.target.value)}
+                placeholder={isKo ? 'AI 도구 검색' : 'Search AI tools'}
+                className="w-full h-9 rounded-lg bg-surface-2 border border-line pl-9 pr-10 text-sm text-fg placeholder:text-subtle focus:outline-none focus:border-accent focus:ring-4 focus:ring-accent/15 transition"
+              />
+              <kbd className="absolute right-2 top-1/2 -translate-y-1/2 hidden lg:inline-flex items-center h-5 px-1.5 rounded border border-line text-[0.6875rem] font-sans text-subtle">
+                /
+              </kbd>
+            </label>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-0.5 sm:gap-1">
+            <IconButton label={isKo ? '검색' : 'Search'} onClick={onRequestSearch} className="md:hidden">
+              <Search className="w-[18px] h-[18px]" />
+            </IconButton>
+
+            <button
+              type="button"
+              onClick={onToggleLang}
+              aria-label={isKo ? 'Switch to English' : '한국어로 전환'}
+              title={isKo ? 'Switch to English' : '한국어로 전환'}
+              className="hidden sm:inline-flex items-center gap-1.5 h-9 px-2.5 rounded-lg text-xs font-semibold text-muted hover:text-fg hover:bg-fg/[0.07] transition-colors"
+            >
+              <Languages className="w-4 h-4" />
+              {isKo ? 'EN' : 'KO'}
+            </button>
+
+            <IconButton
+              label={isLight ? (isKo ? '다크 모드로 전환' : 'Switch to dark mode') : isKo ? '라이트 모드로 전환' : 'Switch to light mode'}
+              onClick={toggleTheme}
+            >
+              {isLight ? <Moon className="w-[18px] h-[18px]" /> : <Sun className="w-[18px] h-[18px]" />}
+            </IconButton>
+
+            {onOpenSettings && (
+              <IconButton label={UI_TEXT.settings.title[lang]} onClick={onOpenSettings} className="max-sm:hidden">
+                <Settings className="w-[18px] h-[18px]" />
+              </IconButton>
+            )}
+
+            <span className="hidden sm:block w-px h-5 bg-line mx-1.5" aria-hidden="true" />
+
+            {currentUser?.isAdmin && onOpenAdminConsole && (
+              <Button
+                variant="warn"
+                size="sm"
+                onClick={onOpenAdminConsole}
+                className="max-lg:hidden mr-1"
+                title={isKo ? '운영 콘솔 열기' : 'Open admin console'}
+              >
+                <Crown className="w-3.5 h-3.5" />
+                {isKo ? '운영 콘솔' : 'Console'}
+              </Button>
+            )}
+
+            {currentUser ? (
+              <div className="relative" ref={accountRef}>
                 <button
-                  onClick={onOpenSettings}
-                  aria-label={UI_TEXT.settings.title[lang]}
-                  className="h-8.5 px-2 sm:px-2.5 bg-[#1a1d2a] hover:bg-[#232738] border border-white/10 hover:border-[#6c63ff]/40 rounded-xl text-xs text-gray-300 hover:text-white transition-all shadow-sm cursor-pointer inline-flex items-center gap-1.5 group shrink-0"
-                  title={UI_TEXT.settings.title[lang]}
+                  type="button"
+                  onClick={() => setIsAccountOpen((v) => !v)}
+                  aria-haspopup="menu"
+                  aria-expanded={isAccountOpen}
+                  aria-label={isKo ? '계정 메뉴' : 'Account menu'}
+                  className="inline-flex items-center gap-2 h-9 pl-1 pr-1.5 sm:pr-2 rounded-full sm:rounded-lg hover:bg-fg/[0.07] transition-colors"
                 >
-                  <Settings className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#6c63ff] group-hover:rotate-45 transition-transform" />
-                  <span className="hidden md:inline font-['Space_Grotesk'] text-[11px] font-bold">
-                    {UI_TEXT.settings.title[lang]}
-                  </span>
+                  <Avatar user={currentUser} className="w-7 h-7 text-sm" />
+                  <span className="hidden lg:block max-w-[120px] truncate text-sm font-medium text-fg">{displayName}</span>
+                  <ChevronDown
+                    className={cn('hidden sm:block w-3.5 h-3.5 text-subtle transition-transform', isAccountOpen && 'rotate-180')}
+                  />
                 </button>
-              )}
 
-              {/* Language Toggle Switch */}
-              <button
-                onClick={onToggleLang}
-                aria-label={lang === 'ko' ? 'Switch to English' : '한국어로 전환'}
-                className="h-8.5 px-2 sm:px-2.5 bg-[#1a1d2a] hover:bg-[#232738] border border-white/10 hover:border-[#00d4aa]/40 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer inline-flex items-center gap-1.5 group shrink-0"
-                title={lang === 'ko' ? 'Switch to English' : '한국어로 전환'}
-              >
-                <Globe className="w-3.5 h-3.5 text-[#00d4aa]" />
-                <span className="font-['Space_Grotesk'] text-[11px] font-extrabold text-gray-300 group-hover:text-white uppercase">
-                  {lang === 'ko' ? 'EN' : 'KR'}
-                </span>
-              </button>
-
-              {/* Notice Button */}
-              <button
-                onClick={onOpenNoticeModal}
-                aria-label={UI_TEXT.header.notices[lang]}
-                className="relative h-8.5 px-2.5 sm:px-3 bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-amber-300 hover:text-white rounded-xl text-xs font-semibold transition-all shadow-sm active:scale-95 cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
-              >
-                <Megaphone className="w-3.5 h-3.5 text-amber-400" />
-                <span>{UI_TEXT.header.notices[lang]}</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping absolute top-1 right-1" />
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 absolute top-1 right-1" />
-              </button>
-
-              {/* Inquiry Button */}
-              <button
-                onClick={onOpenInquiryModal}
-                aria-label={UI_TEXT.header.inquiry[lang]}
-                className="h-8.5 px-2.5 sm:px-3 bg-[#1a1d2a] hover:bg-[#232738] border border-white/10 hover:border-[#6c63ff]/40 text-gray-300 hover:text-white rounded-xl text-xs font-medium transition-all shadow-sm active:scale-95 cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
-              >
-                <MessageSquare className="w-3.5 h-3.5 text-[#6c63ff]" />
-                <span>{UI_TEXT.header.inquiry[lang]}</span>
-              </button>
-
-              {/* Google Login & Account Controls */}
-              {currentUser ? (
-                <div className="relative flex items-center gap-1.5 shrink-0" ref={dropdownRef}>
-                  {/* Admin Console Quick Button for immediate access */}
-                  {currentUser.isAdmin && onOpenAdminConsole && (
-                    <button
-                      onClick={onOpenAdminConsole}
-                      aria-label="Admin Console"
-                      className="h-8.5 px-2.5 sm:px-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold rounded-xl text-xs shadow-md shadow-amber-500/20 transition-all cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap"
-                      title="전체 관리자 콘솔 열기"
-                    >
-                      <Crown className="w-3.5 h-3.5 fill-current" />
-                      <span>{lang === 'ko' ? '운영 콘솔' : 'Console'}</span>
-                    </button>
-                  )}
-
-                  {/* Profile Trigger Button */}
-                  <button
-                    onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
-                    aria-label="User Account Menu"
-                    className="h-8.5 inline-flex items-center gap-1.5 bg-[#1a1d2a] hover:bg-[#232738] border border-white/10 hover:border-[#6c63ff]/40 pl-1.5 pr-2 rounded-xl text-xs transition-all cursor-pointer group shadow-sm active:scale-95"
+                {isAccountOpen && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-full mt-2 w-72 rounded-xl border border-line bg-surface shadow-pop overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
                   >
-                    {/* User Avatar */}
-                    <div className="w-6 h-6 rounded-full overflow-hidden bg-[#202434] border border-white/20 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
-                      {currentUser.photoURL ? (
-                        <img
-                          src={currentUser.photoURL}
-                          alt="Avatar"
-                          referrerPolicy="no-referrer"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/bottts/svg?seed=${currentUser.email}`;
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-[#6c63ff] to-[#00d4aa] flex items-center justify-center text-white text-[10px] font-bold">
-                          {currentUser.isAdmin ? '👑' : (currentUser.displayName || currentUser.email).charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-
-                    <span className="text-white font-medium max-w-[80px] sm:max-w-[105px] truncate text-[11px] sm:text-xs">
-                      {currentUser.nickname || currentUser.displayName || currentUser.email.split('@')[0]}
-                    </span>
-
-                    <ChevronDown className={`w-3 h-3 text-gray-400 group-hover:text-white transition-transform ${isAccountDropdownOpen ? 'rotate-180' : ''}`} />
-                  </button>
-
-                  {/* Account Profile Dropdown Menu */}
-                  {isAccountDropdownOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-64 bg-[#12141c] border border-white/15 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                      {/* Header Info */}
-                      <div className="p-3.5 bg-[#161924] border-b border-white/10">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#202434] border border-white/20 flex items-center justify-center shrink-0">
-                            {currentUser.photoURL ? (
-                              <img
-                                src={currentUser.photoURL}
-                                alt="Avatar"
-                                referrerPolicy="no-referrer"
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-[#6c63ff] to-[#00d4aa] flex items-center justify-center text-white text-base font-bold">
-                                {(currentUser.displayName || currentUser.email).charAt(0).toUpperCase()}
-                              </div>
+                    <div className="p-4 flex items-center gap-3 border-b border-line">
+                      <Avatar user={currentUser} className="w-10 h-10 text-base" />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm font-semibold text-fg truncate">{displayName}</p>
+                          <span
+                            className={cn(
+                              'shrink-0 px-1.5 py-px rounded text-[0.625rem] font-bold tracking-wide',
+                              currentUser.isAdmin ? 'bg-amber-400/15 text-amber-300' : 'bg-fg/[0.07] text-muted'
                             )}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5">
-                              <h4 className="text-xs font-bold text-white truncate">
-                                {currentUser.displayName || currentUser.email.split('@')[0]}
-                              </h4>
-                              {currentUser.isAdmin ? (
-                                <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                                  ADMIN
-                                </span>
-                              ) : (
-                                <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-white/10 text-gray-300 border border-white/10">
-                                  USER
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-[11px] text-gray-400 truncate mt-0.5 font-mono">
-                              {currentUser.email}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Status bar */}
-                        <div className="mt-2.5 pt-2 border-t border-white/5 flex items-center justify-between text-[10px]">
-                          <span className="text-gray-400">{lang === 'ko' ? '계정 상태' : 'Account Status'}</span>
-                          <span className="flex items-center gap-1 text-emerald-400 font-semibold">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                            {lang === 'ko' ? '정상 활성' : 'Active'}
+                          >
+                            {currentUser.isAdmin ? 'ADMIN' : 'USER'}
                           </span>
                         </div>
-                      </div>
-
-                      {/* Menu List */}
-                      <div className="p-1.5 space-y-0.5 text-xs">
-                        {/* My Profile */}
-                        <button
-                          onClick={() => {
-                            setIsAccountDropdownOpen(false);
-                            onOpenProfileModal?.();
-                          }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer text-left"
-                        >
-                          <User className="w-4 h-4 text-[#6c63ff]" />
-                          <span className="font-semibold">{lang === 'ko' ? '내 프로필 관리' : 'My Profile'}</span>
-                        </button>
-
-                        {/* Settings */}
-                        {onOpenSettings && (
-                          <button
-                            onClick={() => {
-                              setIsAccountDropdownOpen(false);
-                              onOpenSettings();
-                            }}
-                            className="w-full flex items-center gap-2.5 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer text-left"
-                          >
-                            <Settings className="w-4 h-4 text-gray-400" />
-                            <span>{lang === 'ko' ? '환경 설정' : 'Preferences'}</span>
-                          </button>
-                        )}
-
-                        {/* Admin Console (If Admin) */}
-                        {currentUser.isAdmin && onOpenAdminConsole && (
-                          <button
-                            onClick={() => {
-                              setIsAccountDropdownOpen(false);
-                              onOpenAdminConsole();
-                            }}
-                            className="w-full flex items-center gap-2.5 px-3 py-2 text-amber-300 hover:text-amber-200 hover:bg-amber-400/10 rounded-xl transition-colors cursor-pointer text-left font-bold"
-                          >
-                            <Crown className="w-4 h-4 text-amber-400" />
-                            <span>{lang === 'ko' ? '운영 관리 콘솔' : 'Admin Console'}</span>
-                          </button>
-                        )}
-
-                        {/* Quick Admin (If Admin) */}
-                        {currentUser.isAdmin && (
-                          <button
-                            onClick={() => {
-                              setIsAccountDropdownOpen(false);
-                              onOpenAdminCenter();
-                            }}
-                            className="w-full flex items-center gap-2.5 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer text-left"
-                          >
-                            <Shield className="w-4 h-4 text-amber-400/80" />
-                            <span>{lang === 'ko' ? '빠른 관리자 팝업' : 'Quick Admin Modal'}</span>
-                          </button>
-                        )}
-
-                        <div className="my-1 border-t border-white/10" />
-
-                        {/* Logout */}
-                        <button
-                          onClick={() => {
-                            setIsAccountDropdownOpen(false);
-                            onLogout();
-                          }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-colors cursor-pointer text-left font-semibold"
-                        >
-                          <LogOut className="w-4 h-4" />
-                          <span>{lang === 'ko' ? '로그아웃' : 'Log Out'}</span>
-                        </button>
+                        <p className="text-xs text-muted truncate mt-0.5">{currentUser.email}</p>
                       </div>
                     </div>
-                  )}
-                </div>
-              ) : (
-                <button
-                  onClick={onOpenGoogleLogin}
-                  aria-label={UI_TEXT.header.login[lang]}
-                  className="h-8.5 px-3 sm:px-3.5 bg-white hover:bg-gray-100 text-gray-900 font-bold rounded-xl text-xs shadow-md shadow-white/10 transition-all cursor-pointer active:scale-95 inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"
-                >
-                  {/* Google G Icon */}
-                  <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
-                    <path
-                      fill="#4285F4"
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    />
-                    <path
-                      fill="#34A853"
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    />
-                    <path
-                      fill="#FBBC05"
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                    />
-                    <path
-                      fill="#EA4335"
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                    />
-                  </svg>
-                  <span>{UI_TEXT.header.login[lang]}</span>
-                </button>
-              )}
-            </div>
+                    <div className="p-1.5 text-sm">
+                      <MenuItem icon={<User className="w-4 h-4" />} onClick={runAndClose(onOpenProfileModal)}>
+                        {isKo ? '내 프로필' : 'My profile'}
+                      </MenuItem>
+                      {onOpenSettings && (
+                        <MenuItem icon={<Settings className="w-4 h-4" />} onClick={runAndClose(onOpenSettings)}>
+                          {isKo ? '환경 설정' : 'Preferences'}
+                        </MenuItem>
+                      )}
+                      {currentUser.isAdmin && onOpenAdminConsole && (
+                        <MenuItem icon={<Crown className="w-4 h-4 text-amber-400" />} onClick={runAndClose(onOpenAdminConsole)}>
+                          {isKo ? '운영 관리 콘솔' : 'Admin console'}
+                        </MenuItem>
+                      )}
+                      {currentUser.isAdmin && (
+                        <MenuItem icon={<Shield className="w-4 h-4" />} onClick={runAndClose(onOpenAdminCenter)}>
+                          {isKo ? '빠른 관리 패널' : 'Quick admin panel'}
+                        </MenuItem>
+                      )}
+                      <div className="my-1.5 h-px bg-line" />
+                      <MenuItem icon={<LogOut className="w-4 h-4" />} onClick={runAndClose(onLogout)} danger>
+                        {isKo ? '로그아웃' : 'Log out'}
+                      </MenuItem>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : onOpenGoogleLogin && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onOpenGoogleLogin}
+                className="h-9 px-2.5 sm:px-3.5"
+                aria-label={UI_TEXT.header.login[lang]}
+              >
+                <GoogleGlyph />
+                <span className="hidden sm:inline">{isKo ? '로그인' : 'Sign in'}</span>
+              </Button>
+            )}
 
+            <IconButton
+              label={isKo ? '메뉴' : 'Menu'}
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="md:hidden"
+              data-mobile-menu
+            >
+              <Menu className="w-5 h-5" />
+            </IconButton>
           </div>
         </div>
+
+        {/* Reading progress */}
+        <div
+          className="absolute left-0 bottom-0 h-[2px] bg-accent rainbow-accent-bg transition-[width] duration-75 ease-linear"
+          style={{ width: `${scrollProgress}%` }}
+          aria-hidden="true"
+        />
       </header>
+
+      {/* Mobile menu sheet */}
+      <Modal isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} size="sm" zIndex={260}>
+        <div className="flex items-center justify-between px-5 pt-3 pb-2">
+          <span className="text-sm font-semibold text-muted">{isKo ? '메뉴' : 'Menu'}</span>
+          <IconButton label={isKo ? '닫기' : 'Close'} onClick={() => setIsMobileMenuOpen(false)} className="-mr-2">
+            <X className="w-5 h-5" />
+          </IconButton>
+        </div>
+        <ModalBody className="pt-1 pb-[max(1.5rem,env(safe-area-inset-bottom))] space-y-4">
+          {currentUser ? (
+            <button
+              type="button"
+              onClick={runAndClose(onOpenProfileModal)}
+              className="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-2 border border-line text-left"
+            >
+              <Avatar user={currentUser} className="w-10 h-10 text-base" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-fg truncate">{displayName}</span>
+                <span className="block text-xs text-muted truncate">{currentUser.email}</span>
+              </span>
+              <ChevronRight className="w-4 h-4 text-subtle" />
+            </button>
+          ) : onOpenGoogleLogin && (
+            <Button variant="primary" size="lg" className="w-full" onClick={runAndClose(onOpenGoogleLogin)}>
+              <span className="w-6 h-6 rounded-full bg-white inline-flex items-center justify-center">
+                <GoogleGlyph />
+              </span>
+              {UI_TEXT.header.login[lang]}
+            </Button>
+          )}
+
+          <div className="rounded-xl border border-line divide-y divide-line overflow-hidden">
+            <SheetItem icon={<Megaphone className="w-[18px] h-[18px]" />} onClick={runAndClose(onOpenNoticeModal)}>
+              {UI_TEXT.header.notices[lang]}
+              {hasNotices && <span className="ml-2 w-1.5 h-1.5 rounded-full bg-accent inline-block align-middle" />}
+            </SheetItem>
+            <SheetItem icon={<MessageSquare className="w-[18px] h-[18px]" />} onClick={runAndClose(onOpenInquiryModal)}>
+              {UI_TEXT.header.inquiry[lang]}
+            </SheetItem>
+            {onOpenSettings && (
+              <SheetItem icon={<Settings className="w-[18px] h-[18px]" />} onClick={runAndClose(onOpenSettings)}>
+                {UI_TEXT.settings.title[lang]}
+              </SheetItem>
+            )}
+            <SheetItem
+              icon={<Languages className="w-[18px] h-[18px]" />}
+              onClick={() => onToggleLang()}
+              trailing={<span className="text-xs font-semibold text-muted">{isKo ? '한국어 → EN' : 'English → KO'}</span>}
+            >
+              {isKo ? '언어' : 'Language'}
+            </SheetItem>
+          </div>
+
+          {currentUser?.isAdmin && (
+            <div className="rounded-xl border border-amber-400/30 divide-y divide-line overflow-hidden">
+              {onOpenAdminConsole && (
+                <SheetItem icon={<Crown className="w-[18px] h-[18px] text-amber-400" />} onClick={runAndClose(onOpenAdminConsole)}>
+                  {isKo ? '운영 관리 콘솔' : 'Admin console'}
+                </SheetItem>
+              )}
+              <SheetItem icon={<Shield className="w-[18px] h-[18px]" />} onClick={runAndClose(onOpenAdminCenter)}>
+                {isKo ? '빠른 관리 패널' : 'Quick admin panel'}
+              </SheetItem>
+            </div>
+          )}
+
+          {currentUser && (
+            <Button variant="danger" size="md" className="w-full" onClick={runAndClose(onLogout)}>
+              <LogOut className="w-4 h-4" />
+              {isKo ? '로그아웃' : 'Log out'}
+            </Button>
+          )}
+        </ModalBody>
+      </Modal>
     </>
   );
 };
 
+const MenuItem: React.FC<{ icon: React.ReactNode; onClick: () => void; danger?: boolean; children: React.ReactNode }> = ({
+  icon,
+  onClick,
+  danger,
+  children,
+}) => (
+  <button
+    type="button"
+    role="menuitem"
+    onClick={onClick}
+    className={cn(
+      'w-full flex items-center gap-2.5 px-3 h-9 rounded-lg text-left transition-colors',
+      danger ? 'text-rose-400 hover:bg-rose-500/10' : 'text-fg-2 hover:text-fg hover:bg-fg/[0.06]'
+    )}
+  >
+    <span className={cn('shrink-0', !danger && 'text-muted')}>{icon}</span>
+    <span className="font-medium">{children}</span>
+  </button>
+);
+
+const SheetItem: React.FC<{
+  icon: React.ReactNode;
+  onClick: () => void;
+  trailing?: React.ReactNode;
+  children: React.ReactNode;
+}> = ({ icon, onClick, trailing, children }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="w-full flex items-center gap-3 px-4 min-h-[52px] bg-surface hover:bg-surface-2 text-left transition-colors"
+  >
+    <span className="text-muted shrink-0">{icon}</span>
+    <span className="flex-1 text-[0.9375rem] font-medium text-fg">{children}</span>
+    {trailing ?? <ChevronRight className="w-4 h-4 text-subtle" />}
+  </button>
+);

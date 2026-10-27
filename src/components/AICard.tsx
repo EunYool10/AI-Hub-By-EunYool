@@ -1,9 +1,13 @@
 import React from 'react';
-import { Star, Trash2, ArrowRight } from 'lucide-react';
+import { Star, Trash2, ArrowUpRight } from 'lucide-react';
 import { AITool } from '../types';
-import { getCategoryLabel, getToolDescription, Language, UI_TEXT } from '../lib/translations';
-import { AIFavicon } from './AIFavicon';
+import { BADGES } from '../data/aiToolsData';
+import { getCategoryLabel, getToolDescription, Language } from '../lib/translations';
+import { getCategoryVisual } from '../lib/categories';
 import { getToolFeatureTags } from '../lib/toolTags';
+import { cn } from '../lib/cn';
+import { AIFavicon } from './AIFavicon';
+import { PriceBadge, ToolBadge } from './ui/Badges';
 
 interface AICardProps {
   tool: AITool;
@@ -24,119 +28,100 @@ export const AICard: React.FC<AICardProps> = ({
   index,
   lang = 'ko',
 }) => {
-  const getPriceStyle = (price: string) => {
-    if (price === '무료') {
-      return { dot: 'bg-[#00d4aa]', text: 'text-[#00d4aa]', label: lang === 'ko' ? '무료' : 'FREE' };
-    }
-    if (price === '유료') {
-      return { dot: 'bg-[#ff6b6b]', text: 'text-[#ff6b6b]', label: lang === 'ko' ? '유료' : 'PAID' };
-    }
-    return { dot: 'bg-amber-400', text: 'text-amber-400', label: lang === 'ko' ? '무료/유료' : 'FREE+' };
-  };
-
-  const priceInfo = getPriceStyle(tool.price);
-  const descriptionText = getToolDescription(tool, lang);
+  const isKo = lang === 'ko';
+  const description = getToolDescription(tool, lang);
   const featureTags = getToolFeatureTags(tool, lang);
+  const badge = BADGES[tool.id];
+  const { Icon, text } = getCategoryVisual(tool.category);
 
   return (
-    <div
-      onClick={() => onOpenDetail?.(tool)}
-      className="group relative bg-[#13151f] hover:bg-[#161926] border border-white/10 hover:border-[#6c63ff]/60 rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(108,99,255,0.2),0_12px_32px_rgba(0,0,0,0.5)] overflow-hidden cursor-pointer h-full select-none"
-      style={{
-        animationDelay: `${Math.min(index * 20, 250)}ms`,
-      }}
+    <article
+      data-tool-card
+      className="group relative flex flex-col h-full p-5 rounded-2xl border border-line bg-surface transition-[transform,border-color,box-shadow,background-color] duration-200 ease-out hover:-translate-y-0.5 hover:border-line-strong hover:shadow-card animate-in fade-in slide-in-from-bottom-2"
+      style={{ animationDelay: `${Math.min(index, 12) * 25}ms` }}
     >
-      {/* Top Gradient Border Glow */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#6c63ff] to-[#00d4aa] opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-h-0 mb-3.5">
-        {/* Header: Name + Favicon + Favorite Star + Category */}
-        <div className="flex items-start justify-between gap-2 mb-2.5 shrink-0">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <AIFavicon
-              url={tool.url}
-              name={tool.name}
-              customIcon={tool.icon || tool.iconUrl || tool.logoUrl}
-              className="w-7 h-7 rounded-lg shrink-0 border border-white/10"
-            />
-            <h3 className="font-['Space_Grotesk'] text-sm sm:text-base font-bold text-white group-hover:text-[#6c63ff] transition-colors truncate">
-              {tool.name}
-            </h3>
-          </div>
-
-          <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => onToggleBookmark(tool.id)}
-              className="p-1 rounded-lg text-gray-400 hover:text-amber-400 hover:scale-110 transition-all cursor-pointer"
-              title={isBookmarked ? (lang === 'ko' ? '북마크 취소' : 'Remove Bookmark') : (lang === 'ko' ? '북마크 추가' : 'Add Bookmark')}
-            >
-              <Star
-                className={`w-4 h-4 ${
-                  isBookmarked
-                    ? 'fill-amber-400 text-amber-400'
-                    : 'text-gray-500 hover:text-amber-400'
-                }`}
-              />
-            </button>
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#1a1d2a] border border-white/10 text-gray-400 whitespace-nowrap">
-              {getCategoryLabel(tool.category, lang)}
-            </span>
-            {tool.isCustom && onDeleteCustomTool && (
+      <div className="flex items-start gap-3.5">
+        <AIFavicon
+          url={tool.url}
+          name={tool.name}
+          customIcon={tool.icon || tool.iconUrl || tool.logoUrl}
+          className="w-11 h-11 rounded-xl"
+        />
+        <div className="min-w-0 flex-1 pt-0.5">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h3 className="min-w-0 text-[0.9375rem] font-semibold leading-snug text-fg truncate">
+              {/* Stretched button: makes the whole card open the detail view */}
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteCustomTool(tool.id);
-                }}
-                className="text-gray-500 hover:text-red-400 p-1 rounded transition-colors"
-                title={lang === 'ko' ? '삭제하기' : 'Delete'}
+                type="button"
+                data-open
+                onClick={() => onOpenDetail?.(tool)}
+                className="text-left focus-visible:outline-none after:absolute after:inset-0 after:rounded-2xl focus-visible:after:outline-2 focus-visible:after:outline-accent focus-visible:after:outline-offset-2"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                {tool.name}
+                <span className="sr-only">{isKo ? ' 자세히 보기' : ' — view details'}</span>
               </button>
-            )}
+            </h3>
+            {badge && <ToolBadge badge={badge} lang={lang} />}
           </div>
-        </div>
-
-        {/* Description */}
-        <p className="text-xs sm:text-[13px] text-gray-300/85 leading-relaxed line-clamp-3 font-normal min-h-[3.6rem] mb-2.5">
-          {descriptionText}
-        </p>
-
-        {/* Feature Tags (Chips) */}
-        {featureTags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-auto pt-1">
-            {featureTags.map((tag, idx) => (
-              <span
-                key={idx}
-                className="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/5 text-gray-400 font-medium group-hover:border-white/10 group-hover:text-gray-300 transition-colors whitespace-nowrap"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Footer: Price + Single CTA Button */}
-      <div className="pt-3 border-t border-white/10 flex items-center justify-between mt-auto shrink-0">
-        <div className="flex items-center gap-1.5">
-          <span className={`w-2 h-2 rounded-full ${priceInfo.dot}`} />
-          <span className={`text-[11px] font-bold font-['Space_Grotesk'] uppercase tracking-wider ${priceInfo.text}`}>
-            {priceInfo.label}
-          </span>
+          <p className="mt-1 flex items-center gap-1.5 text-xs text-muted min-w-0">
+            <Icon className={cn('w-3.5 h-3.5 shrink-0', text)} aria-hidden="true" />
+            <span className="truncate">{getCategoryLabel(tool.category, lang)}</span>
+          </p>
         </div>
 
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenDetail?.(tool);
-          }}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1d2a] group-hover:bg-[#6c63ff] border border-white/10 group-hover:border-[#6c63ff] text-white text-xs font-semibold font-['Space_Grotesk'] rounded-lg transition-all duration-150 cursor-pointer shadow-sm"
+          type="button"
+          onClick={() => onToggleBookmark(tool.id)}
+          aria-pressed={isBookmarked}
+          aria-label={isBookmarked ? (isKo ? '북마크 해제' : 'Remove bookmark') : isKo ? '북마크 추가' : 'Add bookmark'}
+          title={isBookmarked ? (isKo ? '북마크 해제' : 'Remove bookmark') : isKo ? '북마크 추가' : 'Add bookmark'}
+          className={cn(
+            'relative z-10 -mr-2 -mt-1.5 w-9 h-9 inline-flex items-center justify-center rounded-lg transition-colors',
+            isBookmarked ? 'text-amber-400 hover:bg-amber-400/10' : 'text-subtle hover:text-amber-400 hover:bg-fg/[0.06]'
+          )}
         >
-          <span>{UI_TEXT.common.viewDetails[lang]}</span>
-          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+          <Star className={cn('w-[18px] h-[18px]', isBookmarked && 'fill-amber-400')} />
         </button>
       </div>
-    </div>
+
+      <p className="mt-4 text-sm leading-relaxed text-fg-2 line-clamp-3">{description}</p>
+
+      {featureTags.length > 0 && (
+        <ul className="mt-3.5 flex flex-wrap gap-1.5" aria-label={isKo ? '특징' : 'Features'}>
+          {featureTags.map((tag) => (
+            <li key={tag} className="h-6 inline-flex items-center px-2 rounded-md bg-fg/[0.05] text-xs text-muted whitespace-nowrap">
+              {tag}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="mt-auto pt-5 flex items-center justify-between gap-2">
+        <PriceBadge price={tool.price} lang={lang} />
+        <div className="relative z-10 flex items-center gap-0.5 -mr-2">
+          {tool.isCustom && onDeleteCustomTool && (
+            <button
+              type="button"
+              onClick={() => onDeleteCustomTool(tool.id)}
+              aria-label={isKo ? `${tool.name} 삭제` : `Delete ${tool.name}`}
+              title={isKo ? '삭제' : 'Delete'}
+              className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-subtle hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+          <a
+            href={tool.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 h-8 px-2.5 rounded-lg text-xs font-semibold text-muted hover:text-fg hover:bg-fg/[0.07] transition-colors"
+          >
+            {isKo ? '바로가기' : 'Visit'}
+            <ArrowUpRight className="w-3.5 h-3.5" />
+            <span className="sr-only">{isKo ? '(새 창)' : '(opens in new tab)'}</span>
+          </a>
+        </div>
+      </div>
+    </article>
   );
 };

@@ -77,20 +77,20 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-[#16192b] to-[#121422] border border-amber-400/20">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-surface-2 to-surface border border-amber-400/20">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 text-[11px] font-extrabold uppercase rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
+            <span className="px-2 py-0.5 text-xs font-extrabold uppercase rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
               PLATFORM SETTINGS
             </span>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-muted">
               {isKo ? '운영 시스템 전역 환경설정' : 'Global Platform Configurations'}
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black text-white mt-1">
+          <h2 className="text-xl sm:text-2xl font-black text-fg mt-1">
             {isKo ? '관리자 플랫폼 설정' : 'Admin Settings'}
           </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-muted mt-0.5">
             Admin: <span className="text-amber-300 font-mono">{currentUserEmail}</span>
           </p>
         </div>
@@ -98,21 +98,21 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({
 
       <form onSubmit={handleSave} className="space-y-6 text-xs">
         {/* Section 1: AI Engine & Model Settings */}
-        <div className="p-5 rounded-2xl bg-[#121424] border border-white/10 space-y-4 shadow-xl">
-          <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+        <div className="p-5 rounded-2xl bg-surface border border-line space-y-4 shadow-xl">
+          <div className="flex items-center gap-2 border-b border-line pb-3">
             <Cpu className="w-4 h-4 text-cyan-400" />
-            <h3 className="text-sm font-bold text-white">
+            <h3 className="text-sm font-bold text-fg">
               {isKo ? 'AI 모델 및 추론 파라미터 (AI Engine Settings)' : 'AI Model Parameters'}
             </h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-gray-300 font-bold mb-1">AI 모델 엔진</label>
+              <label className="block text-fg-2 font-bold mb-1">AI 모델 엔진</label>
               <select
                 value={settings.aiModel}
                 onChange={(e) => setSettings({ ...settings, aiModel: e.target.value })}
-                className="w-full px-3 py-2 bg-[#171a2e] border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400 cursor-pointer"
+                className="w-full px-3 py-2 bg-surface-2 border border-line rounded-xl text-fg focus:outline-none focus:border-cyan-400 cursor-pointer"
               >
                 <option value="gemini-3.6-flash">Google Gemini 3.6 Flash (권장)</option>
                 <option value="gemini-2.5-flash">Google Gemini 2.5 Flash</option>
@@ -121,7 +121,7 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({
             </div>
 
             <div>
-              <label className="block text-gray-300 font-bold mb-1">
+              <label className="block text-fg-2 font-bold mb-1">
                 Temperature ({settings.temperature})
               </label>
               <input
@@ -131,16 +131,16 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({
                 step="0.1"
                 value={settings.temperature}
                 onChange={(e) => setSettings({ ...settings, temperature: parseFloat(e.target.value) })}
-                className="w-full h-2 bg-[#171a2e] rounded-lg appearance-none cursor-pointer accent-cyan-400 mt-2"
+                className="w-full h-2 bg-surface-2 rounded-lg appearance-none cursor-pointer accent-cyan-400 mt-2"
               />
             </div>
 
             <div>
-              <label className="block text-gray-300 font-bold mb-1">Max Output Tokens</label>
+              <label className="block text-fg-2 font-bold mb-1">Max Output Tokens</label>
               <select
                 value={settings.maxTokens}
                 onChange={(e) => setSettings({ ...settings, maxTokens: parseInt(e.target.value) })}
-                className="w-full px-3 py-2 bg-[#171a2e] border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400 cursor-pointer"
+                className="w-full px-3 py-2 bg-surface-2 border border-line rounded-xl text-fg focus:outline-none focus:border-cyan-400 cursor-pointer"
               >
                 <option value={4096}>4096 Tokens</option>
                 <option value={8192}>8192 Tokens (표준)</option>
@@ -150,33 +150,33 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-            <label className="flex items-center gap-2 p-3 bg-[#171a2e] rounded-xl border border-white/5 cursor-pointer">
+            <label className="flex items-center gap-2 p-3 bg-surface-2 rounded-xl border border-line cursor-pointer">
               <input
                 type="checkbox"
                 checked={settings.enableWebSearch}
                 onChange={(e) => setSettings({ ...settings, enableWebSearch: e.target.checked })}
-                className="w-4 h-4 rounded text-cyan-500 bg-[#121424] border-white/10"
+                className="w-4 h-4 rounded text-cyan-500 bg-surface border-line"
               />
-              <span className="text-gray-300 font-bold">🌐 실시간 구글 웹 검색 연동 (Search Grounding)</span>
+              <span className="text-fg-2 font-bold">🌐 실시간 구글 웹 검색 연동 (Search Grounding)</span>
             </label>
 
-            <label className="flex items-center gap-2 p-3 bg-[#171a2e] rounded-xl border border-white/5 cursor-pointer">
+            <label className="flex items-center gap-2 p-3 bg-surface-2 rounded-xl border border-line cursor-pointer">
               <input
                 type="checkbox"
                 checked={settings.enableTTS}
                 onChange={(e) => setSettings({ ...settings, enableTTS: e.target.checked })}
-                className="w-4 h-4 rounded text-cyan-500 bg-[#121424] border-white/10"
+                className="w-4 h-4 rounded text-cyan-500 bg-surface border-line"
               />
-              <span className="text-gray-300 font-bold">🔊 음성 합성(TTS) 음성 지원 활성화</span>
+              <span className="text-fg-2 font-bold">🔊 음성 합성(TTS) 음성 지원 활성화</span>
             </label>
           </div>
         </div>
 
         {/* Section 2: Platform Maintenance & Banner */}
-        <div className="p-5 rounded-2xl bg-[#121424] border border-white/10 space-y-4 shadow-xl">
-          <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+        <div className="p-5 rounded-2xl bg-surface border border-line space-y-4 shadow-xl">
+          <div className="flex items-center gap-2 border-b border-line pb-3">
             <Sliders className="w-4 h-4 text-amber-400" />
-            <h3 className="text-sm font-bold text-white">
+            <h3 className="text-sm font-bold text-fg">
               {isKo ? '서비스 공지 및 점검 배너 설정' : 'Maintenance & Banner'}
             </h3>
           </div>
@@ -187,22 +187,22 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({
                 type="checkbox"
                 checked={settings.maintenanceBanner}
                 onChange={(e) => setSettings({ ...settings, maintenanceBanner: e.target.checked })}
-                className="w-4 h-4 rounded text-amber-500 bg-[#121424] border-white/10"
+                className="w-4 h-4 rounded text-amber-500 bg-surface border-line"
               />
-              <span className="text-gray-200 font-bold">
+              <span className="text-fg-2 font-bold">
                 ⚠️ 상단 점검 안내 배너 활성화 (Maintenance Notice Banner)
               </span>
             </label>
 
             {settings.maintenanceBanner && (
               <div>
-                <label className="block text-gray-400 font-bold mb-1">배너 안내 문구</label>
+                <label className="block text-muted font-bold mb-1">배너 안내 문구</label>
                 <input
                   type="text"
                   value={settings.bannerText}
                   onChange={(e) => setSettings({ ...settings, bannerText: e.target.value })}
                   placeholder="배너에 노출될 문구를 입력하세요."
-                  className="w-full px-3 py-2 bg-[#171a2e] border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-surface-2 border border-line rounded-xl text-fg focus:outline-none focus:border-amber-400"
                 />
               </div>
             )}
@@ -214,7 +214,7 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({
           <button
             type="button"
             onClick={handleReset}
-            className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl text-xs font-bold transition-colors cursor-pointer inline-flex items-center gap-1.5"
+            className="px-4 py-2.5 bg-fg/5 hover:bg-fg/10 text-muted hover:text-fg rounded-xl text-xs font-bold transition-colors cursor-pointer inline-flex items-center gap-1.5"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>{isKo ? '기본값 초기화' : 'Reset Defaults'}</span>

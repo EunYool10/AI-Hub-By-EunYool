@@ -105,20 +105,20 @@ export const AdminSystemTab: React.FC<AdminSystemTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-cyan-500/10 via-[#16192b] to-[#121422] border border-cyan-400/20">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-cyan-500/10 via-surface-2 to-surface border border-cyan-400/20">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 text-[11px] font-extrabold uppercase rounded bg-cyan-400/20 text-cyan-300 border border-cyan-400/30">
+            <span className="px-2 py-0.5 text-xs font-extrabold uppercase rounded bg-cyan-400/20 text-cyan-300 border border-cyan-400/30">
               SYSTEM MONITOR & DIAGNOSTICS
             </span>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-muted">
               {isKo ? '실시간 인프라 및 API 지연 시간' : 'Real-time Infrastructure & Latency'}
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black text-white mt-1">
+          <h2 className="text-xl sm:text-2xl font-black text-fg mt-1">
             {isKo ? '시스템 모니터링 및 진단' : 'System Monitoring'}
           </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-muted mt-0.5">
             Node.js <span className="text-cyan-300 font-mono">{nodeVersion}</span> | Port{' '}
             <span className="text-cyan-300 font-mono">{port}</span> | Gemini Key{' '}
             <span className="text-emerald-400 font-bold">{geminiConfigured ? 'Ready' : 'Missing'}</span>
@@ -141,7 +141,7 @@ export const AdminSystemTab: React.FC<AdminSystemTabProps> = ({
               fetchSystemData();
             }}
             disabled={refreshing}
-            className="p-2 bg-[#1f2338] hover:bg-[#282d47] border border-white/10 text-gray-300 hover:text-white rounded-xl transition-all cursor-pointer"
+            className="p-2 bg-surface-3 hover:bg-surface-3 border border-line text-fg-2 hover:text-fg rounded-xl transition-all cursor-pointer"
             title="새로고침"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-cyan-400' : ''}`} />
@@ -152,75 +152,75 @@ export const AdminSystemTab: React.FC<AdminSystemTabProps> = ({
       {/* Latency & Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: HTTP Ping / Latency */}
-        <div className="p-5 rounded-2xl bg-[#121424] border border-white/10 space-y-2">
-          <div className="flex items-center justify-between text-xs font-bold text-gray-400">
+        <div className="p-5 rounded-2xl bg-surface border border-line space-y-2">
+          <div className="flex items-center justify-between text-xs font-bold text-muted">
             <span>HTTP RTT (Ping)</span>
             <Activity className="w-4 h-4 text-cyan-400" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-white font-mono">
+            <span className="text-3xl font-black text-fg font-mono">
               {pingResult ? (pingResult.rttMs >= 0 ? `${pingResult.rttMs}ms` : 'FAIL') : (isKo ? '측정 대기' : 'Pending')}
             </span>
             {pingResult && pingResult.rttMs >= 0 && (
               <span className="text-xs text-emerald-400 font-bold">Fast</span>
             )}
           </div>
-          <p className="text-[10px] text-gray-500">
+          <p className="text-[0.6875rem] text-subtle">
             {pingResult ? `측정: ${pingResult.time}` : (isKo ? '핑 테스트 버튼을 눌러 측정' : 'Press Ping Test to measure')}
           </p>
         </div>
 
         {/* Card 2: Memory RSS & Heap */}
-        <div className="p-5 rounded-2xl bg-[#121424] border border-white/10 space-y-2">
-          <div className="flex items-center justify-between text-xs font-bold text-gray-400">
+        <div className="p-5 rounded-2xl bg-surface border border-line space-y-2">
+          <div className="flex items-center justify-between text-xs font-bold text-muted">
             <span>메모리 사용량 (Memory)</span>
             <Cpu className="w-4 h-4 text-indigo-400" />
           </div>
           <div className="flex items-baseline gap-2">
             {mem ? (
               <>
-                <span className="text-3xl font-black text-white font-mono">{mem.heapUsed}</span>
-                <span className="text-xs text-gray-400 font-mono">/ {mem.heapTotal} MB</span>
+                <span className="text-3xl font-black text-fg font-mono">{mem.heapUsed}</span>
+                <span className="text-xs text-muted font-mono">/ {mem.heapTotal} MB</span>
               </>
             ) : (
-              <span className="text-lg font-bold text-gray-400">{isKo ? '확인 중...' : 'Loading...'}</span>
+              <span className="text-lg font-bold text-muted">{isKo ? '확인 중...' : 'Loading...'}</span>
             )}
           </div>
-          <p className="text-[10px] text-gray-500">{mem ? `RSS: ${mem.rss} MB` : (isKo ? '프로세스 메모리' : 'Process Memory')}</p>
+          <p className="text-[0.6875rem] text-subtle">{mem ? `RSS: ${mem.rss} MB` : (isKo ? '프로세스 메모리' : 'Process Memory')}</p>
         </div>
 
         {/* Card 3: Server Uptime */}
-        <div className="p-5 rounded-2xl bg-[#121424] border border-white/10 space-y-2">
-          <div className="flex items-center justify-between text-xs font-bold text-gray-400">
+        <div className="p-5 rounded-2xl bg-surface border border-line space-y-2">
+          <div className="flex items-center justify-between text-xs font-bold text-muted">
             <span>서버 가동 시간 (Uptime)</span>
             <Clock className="w-4 h-4 text-amber-400" />
           </div>
-          <div className="text-xl font-black text-white font-mono">{formatUptime(uptime)}</div>
-          <p className="text-[10px] text-gray-500">Node Container Process</p>
+          <div className="text-xl font-black text-fg font-mono">{formatUptime(uptime)}</div>
+          <p className="text-[0.6875rem] text-subtle">Node Container Process</p>
         </div>
 
         {/* Card 4: Accumulated Errors */}
-        <div className="p-5 rounded-2xl bg-[#121424] border border-white/10 space-y-2">
-          <div className="flex items-center justify-between text-xs font-bold text-gray-400">
+        <div className="p-5 rounded-2xl bg-surface border border-line space-y-2">
+          <div className="flex items-center justify-between text-xs font-bold text-muted">
             <span>누적 에러 수 (Errors)</span>
             <AlertOctagon className="w-4 h-4 text-rose-400" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-white font-mono">{errorLogs.length}</span>
+            <span className="text-3xl font-black text-fg font-mono">{errorLogs.length}</span>
             <span className="text-xs text-emerald-400 font-bold">
               {errorLogs.length === 0 ? 'Optimal' : 'Logged'}
             </span>
           </div>
-          <p className="text-[10px] text-gray-500">실시간 예외 버퍼</p>
+          <p className="text-[0.6875rem] text-subtle">실시간 예외 버퍼</p>
         </div>
       </div>
 
       {/* Error Logs Console */}
-      <div className="p-5 rounded-2xl bg-[#121424] border border-white/10 space-y-4">
-        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+      <div className="p-5 rounded-2xl bg-surface border border-line space-y-4">
+        <div className="flex items-center justify-between border-b border-line pb-3">
           <div className="flex items-center gap-2">
             <AlertOctagon className="w-4 h-4 text-rose-400" />
-            <h3 className="text-sm font-bold text-white">
+            <h3 className="text-sm font-bold text-fg">
               {isKo ? '실시간 서버 에러 로그 버퍼' : 'Live Server Error Logs'}
             </h3>
           </div>
@@ -228,7 +228,7 @@ export const AdminSystemTab: React.FC<AdminSystemTabProps> = ({
           <button
             onClick={handleClearErrors}
             disabled={errorLogs.length === 0}
-            className="px-2.5 py-1 bg-white/5 hover:bg-white/10 disabled:opacity-40 text-gray-300 rounded-lg text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1"
+            className="px-2.5 py-1 bg-fg/5 hover:bg-fg/10 disabled:opacity-40 text-fg-2 rounded-lg text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1"
           >
             <Trash2 className="w-3.5 h-3.5 text-rose-400" />
             <span>{isKo ? '로그 비우기' : 'Clear Errors'}</span>
@@ -236,7 +236,7 @@ export const AdminSystemTab: React.FC<AdminSystemTabProps> = ({
         </div>
 
         {errorLogs.length === 0 ? (
-          <div className="py-8 text-center text-xs text-gray-500 flex flex-col items-center gap-2">
+          <div className="py-8 text-center text-xs text-subtle flex flex-col items-center gap-2">
             <CheckCircle2 className="w-6 h-6 text-emerald-400" />
             <span>{isKo ? '현재 감지된 서버 예외 및 에러가 없습니다. (시스템 정상)' : 'No errors logged. All systems nominal.'}</span>
           </div>
@@ -249,9 +249,9 @@ export const AdminSystemTab: React.FC<AdminSystemTabProps> = ({
               >
                 <div className="flex items-center justify-between text-rose-300">
                   <span className="font-bold">[{log.endpoint || 'API'}]</span>
-                  <span className="text-gray-400 text-[10px]">{log.timestamp}</span>
+                  <span className="text-muted text-[0.6875rem]">{log.timestamp}</span>
                 </div>
-                <div className="text-gray-200">{log.message || log.error}</div>
+                <div className="text-fg-2">{log.message || log.error}</div>
               </div>
             ))}
           </div>
