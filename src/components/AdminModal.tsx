@@ -5,6 +5,7 @@ import { NoticeItem, AITool } from '../types';
 import { safeFetchJson } from '../lib/api';
 import { CategoryChartDashboard } from './CategoryChartDashboard';
 import { Language } from '../lib/translations';
+import { CATEGORIES } from '../lib/categories';
 
 interface Inquiry {
   id: string;
@@ -46,7 +47,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
   // New tool form state
   const [toolName, setToolName] = useState('');
-  const [toolCategory, setToolCategory] = useState('기획/글쓰기');
+  const [toolCategory, setToolCategory] = useState('AI 챗봇');
   const [toolDesc, setToolDesc] = useState('');
   const [toolUrl, setToolUrl] = useState('');
   const [toolPrice, setToolPrice] = useState('무료');
@@ -462,13 +463,11 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                   onChange={(e) => setToolCategory(e.target.value)}
                   className="w-full bg-surface-2 border border-line rounded-xl px-2.5 py-2 text-xs text-fg focus:outline-none focus:border-amber-400"
                 >
-                  <option value="기획/글쓰기">기획/글쓰기</option>
-                  <option value="디자인/이미지">디자인/이미지</option>
-                  <option value="영상/오디오">영상/오디오</option>
-                  <option value="번역/어학">번역/어학</option>
-                  <option value="개발/데이터">개발/데이터</option>
-                  <option value="생산성/협업">생산성/협업</option>
-                  <option value="마케팅/분석">마케팅/분석</option>
+                  {CATEGORIES.filter((c) => c.label !== '전체').map((c) => (
+                    <option key={c.label} value={c.label}>
+                      {c.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

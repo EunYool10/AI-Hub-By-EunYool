@@ -3,6 +3,7 @@ import { X, Star, Copy, Check, Sparkles, Zap, Lightbulb, Users, Globe, ArrowUpRi
 import { AITool, BadgeInfo } from '../types';
 import { BADGES } from '../data/aiToolsData';
 import { TOOL_DETAILS } from '../data/toolDetails';
+import { TOOL_DETAILS_EN } from '../data/toolDetailsEn';
 import { getCategoryVisual } from '../lib/categories';
 import { getCategoryLabel, getToolDescription, Language, UI_TEXT } from '../lib/translations';
 import { AIFavicon } from './AIFavicon';
@@ -22,200 +23,6 @@ interface AIDetailModalProps {
   onSelectTool?: (tool: AITool) => void;
   lang?: Language;
 }
-
-interface ExtraToolDetailItem {
-  tagline: { ko: string; en: string };
-  highlights: { ko: string[]; en: string[] };
-  useCases: { ko: string[]; en: string[] };
-  proTip: { ko: string; en: string };
-  targetAudience: { ko: string[]; en: string[] };
-}
-
-interface ExtraToolDetailResolved {
-  tagline: string;
-  highlights: string[];
-  useCases: string[];
-  proTip: string;
-  targetAudience: string[];
-}
-
-const getExtraDetailResolved = (item: ExtraToolDetailItem, lang: Language): ExtraToolDetailResolved => {
-  return {
-    tagline: lang === 'en' ? item.tagline.en || item.tagline.ko : item.tagline.ko,
-    highlights: lang === 'en' && item.highlights.en ? item.highlights.en : item.highlights.ko,
-    useCases: lang === 'en' && item.useCases.en ? item.useCases.en : item.useCases.ko,
-    proTip: lang === 'en' ? item.proTip.en || item.proTip.ko : item.proTip.ko,
-    targetAudience: lang === 'en' && item.targetAudience.en ? item.targetAudience.en : item.targetAudience.ko,
-  };
-};
-
-// Per-category text: the English for every tool, and the Korean when TOOL_DETAILS has no entry.
-const getFallbackDetails = (tool: AITool): ExtraToolDetailItem => {
-  const cat = tool.category;
-
-  if (cat.includes('기획') || cat.includes('글쓰기')) {
-    return {
-      tagline: {
-        ko: `${tool.name} - 아이디어 구상과 효율적인 텍스트 작성을 돕는 전문 AI`,
-        en: `${tool.name} - Professional AI assisting in ideation and efficient text generation`,
-      },
-      highlights: {
-        ko: [
-          '자연스러운 문장 구성 및 문맥에 맞는 내용 자동 보완',
-          '긴 문단 요약, 핵심 포인트 추출 및 브레인스토밍 기능',
-          '다양한 글쓰기 톤앤매너 변경 및 맞춤법 정교 교정',
-        ],
-        en: [
-          'Natural sentence structuring and context-aware auto-completion',
-          'Paragraph summarization, key point extraction, and brainstorming',
-          'Custom writing tone adjustments and precise grammar correction',
-        ],
-      },
-      useCases: {
-        ko: ['업무 보고서 및 제안서 작성', '블로그·SNS 스크립트 작성', '자료 정리 및 아이디어 도출'],
-        en: ['Writing business reports & proposals', 'Drafting blog & social media scripts', 'Organizing research & ideation'],
-      },
-      proTip: {
-        ko: '원하는 목적(예: "상사 보고용으로 경어체를 사용하여 3줄 요약해줘")을 명확히 제시하면 훨씬 만족스러운 결과를 얻을 수 있습니다.',
-        en: 'Clearly state your goal (e.g. "Summarize in 3 bullet points with a formal tone for executive reporting").',
-      },
-      targetAudience: {
-        ko: ['기획자', '직장인', '콘텐츠 크리에이터'],
-        en: ['Planners', 'Professionals', 'Content Creators'],
-      },
-    };
-  }
-
-  if (cat.includes('디자인') || cat.includes('이미지')) {
-    return {
-      tagline: {
-        ko: `${tool.name} - 고퀄리티 시각 자료와 비주얼을 신속하게 구현하는 AI`,
-        en: `${tool.name} - AI for rapidly rendering high-quality visual materials`,
-      },
-      highlights: {
-        ko: [
-          '텍스트 명령어나 이미지 기반의 고화질 비주얼 자동 생성',
-          '스타일 매칭, 레이아웃 추천 및 그래픽 보정 기능',
-          '디자이너 작업 시간 절감을 위한 맞춤형 워크플로우 지원',
-        ],
-        en: [
-          'Automated generation of high-res visuals from prompts or images',
-          'Style matching, layout recommendation, and graphic touch-ups',
-          'Tailored workflows to save design iteration time',
-        ],
-      },
-      useCases: {
-        ko: ['마케팅 배너 및 SNS 이미지 제작', '웹/앱 UI 컨셉 시안 구상', '포스터 및 시각 자료 제작'],
-        en: ['Creating marketing banners & social images', 'Drafting web/app UI concept mockups', 'Designing posters & graphics'],
-      },
-      proTip: {
-        ko: '주요 메인 컬러, 구도, 아트 스타일(예: "Minimalist, 3D render, octane render") 키워드를 포함해 보세요.',
-        en: 'Include key color palettes, composition, and art style keywords (e.g., "Minimalist, 3D render, octane render").',
-      },
-      targetAudience: {
-        ko: ['디자이너', '마케터', '크리에이터'],
-        en: ['Designers', 'Marketers', 'Creators'],
-      },
-    };
-  }
-
-  if (cat.includes('영상') || cat.includes('오디오')) {
-    return {
-      tagline: {
-        ko: `${tool.name} - 차세대 멀티미디어 콘텐츠를 위한 미디어 생성 AI`,
-        en: `${tool.name} - Media synthesis AI for next-gen multimedia content`,
-      },
-      highlights: {
-        ko: [
-          '텍스트나 스틸 컷 기반의 자연스러운 모션/음성 자동 합성',
-          '빠른 영상 편집, 자막 자동화, 음성 복제 및 BGM 생성',
-          '쇼츠, 릴스 등 숏폼 콘텐츠 최적화 제작 기능',
-        ],
-        en: [
-          'Automated motion and voice synthesis from text or still shots',
-          'Fast video editing, auto-captioning, voice cloning, and BGM creation',
-          'Optimized creation flow for Shorts, Reels, and short-form video',
-        ],
-      },
-      useCases: {
-        ko: ['유튜브 및 숏폼 영상 제작', '기업 홍보 영상 및 오디오 더빙', '배경음악 및 효과음 창작'],
-        en: ['YouTube & short-form video creation', 'Corporate promos & audio dubbing', 'Creating background music & SFX'],
-      },
-      proTip: {
-        ko: '원하는 비트수, 분위기 또는 카메라 액션 명칭을 구체적으로 입력해 보세요.',
-        en: 'Provide specific tempo, mood, or camera movement names in your prompt.',
-      },
-      targetAudience: {
-        ko: ['영상 편집자', '유튜버', '마케터'],
-        en: ['Video Editors', 'YouTubers', 'Marketers'],
-      },
-    };
-  }
-
-  if (cat.includes('개발') || cat.includes('데이터')) {
-    return {
-      tagline: {
-        ko: `${tool.name} - 생산성을 극대화하는 개발자 & 데이터 전문 AI`,
-        en: `${tool.name} - Specialized AI for developer velocity and data processing`,
-      },
-      highlights: {
-        ko: [
-          '자동 코드 완성, 리팩토링 및 버그 자동 탐지',
-          '복잡한 데이터 구조 분석 및 SQL/파이썬 쿼리 자동 작성',
-          '신규 기술 스택 학습 및 알고리즘 해설',
-        ],
-        en: [
-          'Auto code completion, refactoring, and bug detection',
-          'Complex data structure analysis & auto SQL/Python query drafting',
-          'Accelerated tech stack learning and algorithm explanation',
-        ],
-      },
-      useCases: {
-        ko: ['프로그램 개발 및 코드 작성', '데이터 가공 및 자동 분석', '코드 리뷰 및 성능 최적화'],
-        en: ['Software development & coding', 'Data transformation & automated analysis', 'Code review & performance optimization'],
-      },
-      proTip: {
-        ko: '에러 메시지 전체를 복사하여 전달하면 원인 분석과 수정 코드를 즉시 제안받을 수 있습니다.',
-        en: 'Paste the complete error stack trace to get root-cause analysis and fixed code snippets instantly.',
-      },
-      targetAudience: {
-        ko: ['개발자', '데이터 분석가', '엔지니어'],
-        en: ['Developers', 'Data Analysts', 'Engineers'],
-      },
-    };
-  }
-
-  return {
-    tagline: {
-      ko: `${tool.name} - ${tool.category} 분야의 스마트한 작업을 지원하는 AI 솔루션`,
-      en: `${tool.name} - Smart AI solution empowering productivity in ${getCategoryLabel(tool.category, 'en')}`,
-    },
-    highlights: {
-      ko: [
-        '반복적인 업무 절차 자동화 및 생산성 혁신',
-        '전문적인 분야 지식 기반 분석 및 최적의 대안 제시',
-        '사용자 맞춤형 설정 및 신속한 결과 도출',
-      ],
-      en: [
-        'Automates repetitive workflows to supercharge productivity',
-        'Provides domain-specific insights and optimal recommendations',
-        'Customizable settings for swift, tailored execution',
-      ],
-    },
-    useCases: {
-      ko: ['업무 프로세스 효율화', '전문 데이터 조회 및 결과 가공', '맞춤형 솔루션 구축'],
-      en: ['Streamlining business processes', 'Domain data query & result processing', 'Building tailored AI solutions'],
-    },
-    proTip: {
-      ko: '구체적인 가이드라인과 예시 입력(Few-shot)을 함께 제공하면 답변 품질이 대폭 향상됩니다.',
-      en: 'Providing clear guidelines and few-shot examples significantly improves generation quality.',
-    },
-    targetAudience: {
-      ko: ['전문가', '직장인', '스마트 워커'],
-      en: ['Experts', 'Professionals', 'Smart Workers'],
-    },
-  };
-};
 
 export const AIDetailModal: React.FC<AIDetailModalProps> = ({
   tool,
@@ -243,19 +50,15 @@ export const AIDetailModal: React.FC<AIDetailModalProps> = ({
   const badge: BadgeInfo | undefined = BADGES[tool.id];
   const { Icon: CategoryIcon, text: categoryText } = getCategoryVisual(tool.category);
 
-  const fallback = getFallbackDetails(tool);
-  const ko = TOOL_DETAILS[tool.id];
-  const rawDetails: ExtraToolDetailItem = ko
-    ? {
-        tagline: { ko: ko.tagline, en: fallback.tagline.en },
-        highlights: { ko: ko.highlights, en: fallback.highlights.en },
-        useCases: { ko: ko.useCases, en: fallback.useCases.en },
-        proTip: { ko: ko.proTip, en: fallback.proTip.en },
-        targetAudience: { ko: ko.targetAudience, en: fallback.targetAudience.en },
-      }
-    : fallback;
-  const extraDetails = getExtraDetailResolved(rawDetails, currentLang);
   const coreDesc = getToolDescription(tool, currentLang);
+  // Tools added in the browser have no detail text and show only their description.
+  const extraDetails = (currentLang === 'en' ? TOOL_DETAILS_EN : TOOL_DETAILS)[tool.id] || {
+    tagline: coreDesc,
+    highlights: [],
+    useCases: [],
+    proTip: '',
+    targetAudience: [],
+  };
 
   const handleCopyLink = () => {
     if (!tool.url) return;

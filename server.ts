@@ -1267,7 +1267,7 @@ app.post("/api/chat", async (req, res) => {
         const reply = isKo
           ? `🧰 **AI TOOLS CATALOG SUMMARY**\n\n` +
             `• **총 등록 도구 수:** ${toolsCount}개\n` +
-            `• **도구 카테고리:** 기획/글쓰기, 디자인/이미지, 디자인 생성, 영상/오디오, 업무 효율화/노코드, 코딩/개발, 챗봇/대화형 AI, 비즈니스/마케팅 등\n\n` +
+            `• **도구 카테고리:** AI 챗봇, 검색·리서치, 문서·발표, 이미지 생성, 디자인·3D, 영상 제작, AI 음성, 음악 생성, 번역·외국어, 교육·튜터, 개발·코딩, 앱·웹 만들기, 업무·생산성, 마케팅, 에이전트·자동화, 금융·투자, 법률\n\n` +
             `*관리자 콘솔의 [AI Tools] 탭에서 신규 도구 추가, 수정, 비활성화 및 삭제가 가능합니다.*`
           : `🧰 **AI TOOLS CATALOG SUMMARY**\n\n` +
             `• **Total Registered Tools:** ${toolsCount}\n` +

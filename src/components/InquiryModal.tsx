@@ -49,7 +49,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, onS
   // AI Tool specific fields if recommending an AI
   const [toolUrl, setToolUrl] = useState('');
   const [toolPrice, setToolPrice] = useState('무료/유료');
-  const [toolCategory, setToolCategory] = useState('기획/글쓰기');
+  const [toolCategory, setToolCategory] = useState('AI 챗봇');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

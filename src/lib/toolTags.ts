@@ -1,5 +1,5 @@
 import { AITool } from '../types';
-import { Language } from './translations';
+import { getCategoryLabel, Language } from './translations';
 
 interface FeatureTags {
   ko: string[];
@@ -400,6 +400,26 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
     ko: ['머신러닝 주식 분석', 'K-Score 투자 지표', '포트폴리오'],
     en: ['ML Stock Analysis', 'K-Score Metric', 'Portfolio Insights'],
   },
+  'Khanmigo': {
+    ko: ['소크라테스식 튜터', '수학·과학', '교사 도구'],
+    en: ['Socratic Tutor', 'Math & Science', 'Teacher Tools'],
+  },
+  'Synthesis Tutor': {
+    ko: ['어린이 수학', '게임형 수업', '맞춤 진도'],
+    en: ['Kids Math', 'Game-like Lessons', 'Adaptive Pace'],
+  },
+  'Harvey AI': {
+    ko: ['법률 리서치', '계약 검토', '로펌용'],
+    en: ['Legal Research', 'Contract Review', 'Law Firms'],
+  },
+  'CoCounsel (Thomson Reuters)': {
+    ko: ['판례 리서치', '문서 검토', '웨스트로 연동'],
+    en: ['Case Research', 'Document Review', 'Westlaw Data'],
+  },
+  'Spellbook': {
+    ko: ['워드 추가 기능', '위험 조항 표시', '계약서 초안'],
+    en: ['Word Add-in', 'Risky Clauses', 'Contract Drafting'],
+  },
 };
 
 /**
@@ -417,45 +437,8 @@ export function getToolFeatureTags(tool: AITool, lang: Language = 'ko'): string[
     return (lang === 'en' ? curated.en : curated.ko).slice(0, 3);
   }
 
-  // 3. Fallback: derive 2 tags cleanly from category & description keywords
-  const cat = tool.category || '';
-  const isEn = lang === 'en';
-
-  if (cat.includes('글쓰기') || cat.includes('기획')) {
-    return isEn ? ['Writing', 'Planning'] : ['글쓰기', '문서 기획'];
-  }
-  if (cat.includes('디자인') || cat.includes('이미지')) {
-    return isEn ? ['Image Generation', 'Design'] : ['이미지 생성', '그래픽 디자인'];
-  }
-  if (cat.includes('영상') || cat.includes('오디오')) {
-    return isEn ? ['Video / Audio', 'Media Gen'] : ['영상/오디오', '미디어 제작'];
-  }
-  if (cat.includes('음성') || cat.includes('TTS')) {
-    return isEn ? ['Voice TTS/STT', 'Speech AI'] : ['음성 변환', 'TTS/STT'];
-  }
-  if (cat.includes('개발') || cat.includes('코드')) {
-    return isEn ? ['Development', 'Code Assistant'] : ['개발/코딩', '코드 보조'];
-  }
-  if (cat.includes('생산성') || cat.includes('협업')) {
-    return isEn ? ['Productivity', 'Smart Workspace'] : ['생산성', '스마트 업무'];
-  }
-  if (cat.includes('마케팅') || cat.includes('분석')) {
-    return isEn ? ['Marketing', 'Data Analytics'] : ['마케팅', '데이터 분석'];
-  }
-  if (cat.includes('학술') || cat.includes('리서치')) {
-    return isEn ? ['Research', 'Deep Search'] : ['학술 리서치', '심층 검색'];
-  }
-  if (cat.includes('3D')) {
-    return isEn ? ['3D Modeling', 'Spatial Assets'] : ['3D 모델링', '공간 에셋'];
-  }
-  if (cat.includes('에이전트') || cat.includes('자동화')) {
-    return isEn ? ['Autonomous Agent', 'Automation'] : ['자율 에이전트', '업무 자동화'];
-  }
-  if (cat.includes('금융') || cat.includes('투자')) {
-    return isEn ? ['Finance', 'Investment Analytics'] : ['금융/투자', '시장 분석'];
-  }
-
-  return isEn ? ['AI Tool', 'Smart Utility'] : ['AI 도구', '스마트 유틸리티'];
+  // 3. Tools added in the browser have no curated tags: show the category name.
+  return [getCategoryLabel(tool.category, lang)];
 }
 
 /** Tools most like this one: same category counts most, then each shared feature tag. */

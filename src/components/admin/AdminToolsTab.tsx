@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { AITool, Category, PriceType } from '../../types';
 import { safeFetchJson } from '../../lib/api';
+import { CATEGORIES as CATEGORY_LIST } from '../../lib/categories';
 
 interface AdminToolsTabProps {
   currentUserEmail: string;
@@ -29,25 +30,7 @@ interface AdminToolsTabProps {
   showToast: (msg: string) => void;
 }
 
-const CATEGORIES: Category[] = [
-  '전체',
-  '기획/글쓰기',
-  '디자인/이미지',
-  '디자인 생성',
-  '영상/오디오',
-  '음성 변환(TTS/STT)',
-  '번역/어학',
-  '개발/데이터',
-  '코드 최적화',
-  '생산성/협업',
-  '마케팅/분석',
-  '학술/리서치',
-  '3D/공간',
-  '에이전트/자동화',
-  '금융/투자',
-  '교육/튜터',
-  '비즈니스/법률',
-];
+const CATEGORIES: Category[] = CATEGORY_LIST.map((c) => c.label);
 
 export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
   currentUserEmail,
@@ -79,7 +62,7 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
     useCases: string;
   }>({
     name: '',
-    category: '기획/글쓰기',
+    category: 'AI 챗봇',
     price: '무료/유료',
     url: '',
     description: '',
@@ -95,7 +78,7 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
     setEditingTool(null);
     setFormData({
       name: '',
-      category: '기획/글쓰기',
+      category: 'AI 챗봇',
       price: '무료/유료',
       url: '',
       description: '',
@@ -111,7 +94,7 @@ export const AdminToolsTab: React.FC<AdminToolsTabProps> = ({
     setEditingTool(tool);
     setFormData({
       name: tool.name || '',
-      category: tool.category || '기획/글쓰기',
+      category: tool.category || 'AI 챗봇',
       price: tool.price || '무료/유료',
       url: tool.url || '',
       description: tool.description || '',

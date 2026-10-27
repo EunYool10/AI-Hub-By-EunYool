@@ -31,7 +31,7 @@ import { TermsModal, TermsTab } from './components/TermsModal';
 import { OtherAppsModal } from './components/OtherAppsModal';
 import { HubAdminModal } from './components/HubAdminModal';
 import { SettingsModal } from './components/SettingsModal';
-import { CATEGORIES } from './lib/categories';
+import { CATEGORIES, currentCategory } from './lib/categories';
 import { getCategoryLabel } from './lib/translations';
 
 // Uid of the account whose bookmarks this browser holds; unset for bookmarks made while signed out.
@@ -39,6 +39,9 @@ const BOOKMARK_OWNER_KEY = 'aiBookmarksOwner';
 // Last tools opened in the detail window, newest first (this browser only).
 const RECENT_KEY = 'aiRecentTools';
 const RECENT_LIMIT = 8;
+
+// Tools added in this browser before the categories were renamed keep showing up under the new names.
+const withCurrentCategory = (tool: AITool): AITool => ({ ...tool, category: currentCategory(tool.category) });
 
 // #tool=<id> opens that tool's detail window, so a tool can be shared by link.
 const toolIdFromHash = () => {
@@ -118,7 +121,7 @@ export default function App() {
       const savedCustom = localStorage.getItem('aiCustomTools');
       if (savedCustom) {
         const parsedCustom: AITool[] = JSON.parse(savedCustom);
-        return [...INITIAL_AI_TOOLS, ...parsedCustom];
+        return [...INITIAL_AI_TOOLS, ...parsedCustom.map(withCurrentCategory)];
       }
     } catch (e) {
       console.error('Failed to parse custom tools from localStorage:', e);
@@ -196,7 +199,7 @@ export default function App() {
         if (saved) {
           const parsedCustom: AITool[] = JSON.parse(saved);
           if (Array.isArray(parsedCustom)) {
-            setAiTools([...INITIAL_AI_TOOLS, ...parsedCustom]);
+            setAiTools([...INITIAL_AI_TOOLS, ...parsedCustom.map(withCurrentCategory)]);
           }
         } else {
           setAiTools(INITIAL_AI_TOOLS);
