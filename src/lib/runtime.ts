@@ -1,7 +1,6 @@
 /**
  * The GitHub Pages build has no API server (VITE_STATIC_SITE=1).
- * Sign-in, notices and inquiries go to Firebase (lib/firebase.ts), the server admin console and
- * Gemini chat are off, and the assistant answers from the local catalog and live diagnostics.
+ * Sign-in, notices and inquiries go to Firebase (lib/firebase.ts); the server admin console is off.
  */
 export const IS_STATIC_SITE = (import.meta as any).env?.VITE_STATIC_SITE === '1';
 

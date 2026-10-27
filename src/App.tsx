@@ -14,7 +14,6 @@ import { GoogleLoginModal, UserProfile } from './components/GoogleLoginModal';
 import { UserProfileModal, UserProfileTab } from './components/UserProfileModal';
 import { AdminModal } from './components/AdminModal';
 import { AdminConsole } from './components/admin/AdminConsole';
-import { AIChatbot } from './components/AIChatbot';
 import { Toast } from './components/Toast';
 import { Footer } from './components/Footer';
 import { AdminStatusPanel } from './components/AdminStatusPanel';
@@ -723,26 +722,12 @@ export default function App() {
         aria-label={lang === 'ko' ? '맨 위로' : 'Back to top'}
         title={lang === 'ko' ? '맨 위로' : 'Back to top'}
         tabIndex={showBackTop ? 0 : -1}
-        className={`fixed right-5 sm:right-7 bottom-[5.75rem] sm:bottom-[6.5rem] z-[80] w-11 h-11 rounded-full border border-line bg-surface/90 backdrop-blur text-fg-2 hover:text-fg hover:border-line-strong shadow-card flex items-center justify-center transition-all duration-200 ${
+        className={`fixed right-5 sm:right-7 bottom-5 sm:bottom-7 z-[80] w-11 h-11 rounded-full border border-line bg-surface/90 backdrop-blur text-fg-2 hover:text-fg hover:border-line-strong shadow-card flex items-center justify-center transition-all duration-200 ${
           showBackTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
         }`}
       >
         <ArrowUp className="w-[18px] h-[18px]" />
       </button>
-
-      {/* Floating AI Assistant Chatbot */}
-      <AIChatbot
-        lang={lang}
-        tools={activeTools}
-        onSelectTool={(tool) => setDetailModalTool(tool)}
-        selectedCategory={selectedCategory}
-        searchQuery={searchQuery}
-        onSelectCategory={setSelectedCategory}
-        onSearch={setSearchQuery}
-        onOpenInquiryModal={() => setIsInquiryModalOpen(true)}
-        currentUser={currentUser}
-        onOpenSettings={openSettings}
-      />
 
       {/* Notice Modal */}
       <NoticeModal

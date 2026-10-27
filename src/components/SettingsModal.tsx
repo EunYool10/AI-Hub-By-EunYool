@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Monitor, Moon, Sun, X, Volume2, Palette, Languages, Database } from 'lucide-react';
+import { Monitor, Moon, Sun, X, Palette, Languages, Database } from 'lucide-react';
 import { Language } from '../lib/translations';
 import { getStoredSettings, resetStoredSettings, updateStoredSettings, ThemeMode, UserSettings } from '../lib/settings';
 import { cn } from '../lib/cn';
 import { Modal, ModalBody } from './ui/Modal';
 import { Button, IconButton } from './ui/Button';
-import { selectClass } from './ui/Field';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -73,16 +72,10 @@ function Segmented<T extends string>({ value, options, onChange }: { value: T; o
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, lang, onToast }) => {
   const isKo = lang === 'ko';
   const [settings, setSettings] = useState<UserSettings>(() => getStoredSettings());
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
     if (!isOpen) return;
     setSettings(getStoredSettings());
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-    const load = () => setVoices(window.speechSynthesis.getVoices());
-    load();
-    window.speechSynthesis.addEventListener('voiceschanged', load);
-    return () => window.speechSynthesis.removeEventListener('voiceschanged', load);
   }, [isOpen]);
 
   const update = (updater: (prev: UserSettings) => UserSettings) => setSettings(updateStoredSettings(updater));
@@ -92,7 +85,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, l
     { id: 'dark', label: isKo ? '다크' : 'Dark', icon: <Moon className="w-5 h-5" /> },
     { id: 'system', label: isKo ? '시스템' : 'System', icon: <Monitor className="w-5 h-5" /> },
   ];
-  const langVoices = voices.filter((v) => v.lang.toLowerCase().startsWith(settings.language));
 
   const clearKey = (key: string, event: string | null, message: string) => {
     try {
@@ -163,50 +155,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, l
               ]}
             />
           </Row>
-        </Section>
-
-        <Section icon={<Volume2 className="w-4 h-4" />} title={isKo ? 'AI 도우미 음성' : 'Assistant voice'}>
-          <Row label={isKo ? '답변 읽어주기' : 'Read answers aloud'} hint={isKo ? '답변마다 듣기 버튼이 생겨요' : 'Adds a listen button to answers'}>
-            <Toggle label={isKo ? '답변 읽어주기' : 'Read answers aloud'} checked={settings.tts.enabled} onChange={(v) => update((p) => ({ ...p, tts: { ...p.tts, enabled: v } }))} />
-          </Row>
-          <Row label={isKo ? '자동으로 읽기' : 'Read automatically'}>
-            <Toggle
-              label={isKo ? '자동으로 읽기' : 'Read automatically'}
-              disabled={!settings.tts.enabled}
-              checked={settings.tts.enabled && settings.tts.autoPlay}
-              onChange={(v) => update((p) => ({ ...p, tts: { ...p.tts, autoPlay: v } }))}
-            />
-          </Row>
-          <Row label={isKo ? `읽기 속도 ${settings.tts.rate.toFixed(2)}배` : `Speed ${settings.tts.rate.toFixed(2)}×`}>
-            <input
-              type="range"
-              min={0.75}
-              max={2}
-              step={0.25}
-              value={settings.tts.rate}
-              disabled={!settings.tts.enabled}
-              onChange={(e) => update((p) => ({ ...p, tts: { ...p.tts, rate: Number(e.target.value) } }))}
-              className="w-36 accent-[var(--c-accent)] disabled:opacity-40"
-              aria-label={isKo ? '읽기 속도' : 'Speed'}
-            />
-          </Row>
-          {langVoices.length > 0 && (
-            <Row label={isKo ? '목소리' : 'Voice'}>
-              <select
-                className={cn(selectClass, 'h-9 w-44 text-xs')}
-                value={settings.tts.voice}
-                disabled={!settings.tts.enabled}
-                onChange={(e) => update((p) => ({ ...p, tts: { ...p.tts, voice: e.target.value } }))}
-              >
-                <option value="">{isKo ? '기본 목소리' : 'Default'}</option>
-                {langVoices.map((v) => (
-                  <option key={v.voiceURI} value={v.voiceURI}>
-                    {v.name}
-                  </option>
-                ))}
-              </select>
-            </Row>
-          )}
         </Section>
 
         <Section icon={<Database className="w-4 h-4" />} title={isKo ? '이 기기에 저장된 정보' : 'Saved on this device'}>
