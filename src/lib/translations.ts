@@ -277,7 +277,7 @@ export const UI_TEXT = {
     submitBtn: { ko: '문의 제출하기 🚀', en: 'Submit Inquiry 🚀' },
     submitting: { ko: '전송 중...', en: 'Submitting...' },
     submittedTitle: { ko: '문의 접수 완료!', en: 'Inquiry Submitted!' },
-    submittedDesc: { ko: '문의 내역이 저장되었으며, deer123424@gmail.com 담당자에게 성공적으로 전달 되었습니다.', en: 'Your inquiry has been logged and sent to deer123424@gmail.com.' },
+    submittedDesc: { ko: '문의 내역이 저장되었으며, eunyool100208@gmail.com 담당자에게 성공적으로 전달 되었습니다.', en: 'Your inquiry has been logged and sent to eunyool100208@gmail.com.' },
     successTitle: { ko: '문의가 접수되었습니다!', en: 'Inquiry Submitted!' },
     successDesc: { ko: '소중한 의견 감사드리며 빠르게 확인 후 연락드리겠습니다.', en: 'Thank you for your valuable message. We will review and contact you soon.' },
     openMailApp: { ko: '메일 앱으로 직접 열기', en: 'Open in Mail App' },
@@ -332,8 +332,8 @@ export const UI_TEXT = {
       en: 'Your browser does not support speech recognition. Please use Chrome or Edge.',
     },
     errorReply: {
-      ko: '응답을 가져오는 중 오류가 발생했습니다. 담당자 이메일(deer123424@gmail.com)로 언제든 편하게 문의해주세요!',
-      en: 'An error occurred while fetching the response. Please contact us anytime at deer123424@gmail.com!',
+      ko: '응답을 가져오는 중 오류가 발생했습니다. 담당자 이메일(eunyool100208@gmail.com)로 언제든 편하게 문의해주세요!',
+      en: 'An error occurred while fetching the response. Please contact us anytime at eunyool100208@gmail.com!',
     },
     fallbackDefault: {
       ko: '안녕하세요! 원하시는 AI 도구가 있으시면 말씀해 주세요.',

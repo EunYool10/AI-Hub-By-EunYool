@@ -1,4 +1,4 @@
-export type ThemeMode = 'dark' | 'light' | 'rainbow' | 'system';
+export type ThemeMode = 'dark' | 'light' | 'system';
 
 export interface TTSSettings {
   enabled: boolean;
@@ -42,24 +42,18 @@ export const applyTheme = (theme: ThemeMode): void => {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
 
-  let effectiveTheme: 'dark' | 'light' | 'rainbow' = 'dark';
+  let effectiveTheme: 'dark' | 'light' = 'dark';
   if (theme === 'system') {
     const isDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     effectiveTheme = isDark ? 'dark' : 'light';
-  } else if (theme === 'light' || theme === 'rainbow' || theme === 'dark') {
+  } else if (theme === 'light' || theme === 'dark') {
     effectiveTheme = theme;
   }
 
   root.setAttribute('data-theme', effectiveTheme);
 
   root.classList.remove('light', 'dark', 'theme-rainbow');
-  if (effectiveTheme === 'light') {
-    root.classList.add('light');
-  } else if (effectiveTheme === 'rainbow') {
-    root.classList.add('dark', 'theme-rainbow');
-  } else {
-    root.classList.add('dark');
-  }
+  root.classList.add(effectiveTheme);
 
   const themeColorMeta = document.querySelector('meta[name="theme-color"]');
   if (themeColorMeta) {
@@ -89,7 +83,7 @@ export const getStoredSettings = (): UserSettings => {
 
     const parsed = JSON.parse(saved);
     const validTheme: ThemeMode =
-      parsed.theme === 'light' || parsed.theme === 'rainbow' || parsed.theme === 'system'
+      parsed.theme === 'light' || parsed.theme === 'system'
         ? parsed.theme
         : 'dark';
 

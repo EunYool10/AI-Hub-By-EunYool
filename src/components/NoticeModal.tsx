@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Megaphone, ArrowLeft, ChevronRight, Bell, Pin, Loader2 } from 'lucide-react';
 import { NoticeItem } from '../types';
 import { safeFetchJson } from '../lib/api';
+import { IS_STATIC_SITE } from '../lib/runtime';
+import { listNotices } from '../lib/firebase';
 import { cn } from '../lib/cn';
 import { Modal, ModalBody, ModalHeader } from './ui/Modal';
 import { Button, IconButton } from './ui/Button';
@@ -37,6 +39,11 @@ export const NoticeModal: React.FC<NoticeModalProps> = ({ isOpen, onClose, lang,
 
   const loadNotices = async () => {
     setIsLoading(true);
+    if (IS_STATIC_SITE) {
+      setNotices(await listNotices().catch(() => []));
+      setIsLoading(false);
+      return;
+    }
     const result = await safeFetchJson<{ notices: NoticeItem[] }>('/api/notices');
     if (result.ok && result.data?.notices && Array.isArray(result.data.notices)) {
       setNotices(result.data.notices);

@@ -858,7 +858,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <Palette className="w-4 h-4 text-brand" />
                   <span>{UI_TEXT.settings.themeLabel[lang]}</span>
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => handleUpdateSettings((p) => ({ ...p, theme: 'dark' }))}
@@ -883,21 +883,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   >
                     <Sun className="w-4 h-4 text-amber-400" />
                     <span className="text-xs">{UI_TEXT.settings.themeLight[lang]}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleUpdateSettings((p) => ({ ...p, theme: 'rainbow' }))}
-                    className={`p-3 rounded-xl text-xs font-bold border flex flex-col items-center gap-1.5 transition-all cursor-pointer relative overflow-hidden ${
-                      settings.theme === 'rainbow'
-                        ? 'bg-gradient-to-r from-red-500/20 via-green-500/20 to-purple-500/20 border-purple-400 text-fg shadow-lg ring-1 ring-purple-400/50'
-                        : 'bg-surface border-line text-muted hover:text-fg'
-                    }`}
-                  >
-                    <Palette className="w-4 h-4 text-pink-400 animate-pulse" />
-                    <span className="text-xs bg-gradient-to-r from-red-400 via-green-400 to-purple-400 bg-clip-text text-transparent font-extrabold">
-                      {UI_TEXT.settings.themeRainbow[lang]}
-                    </span>
                   </button>
 
                   <button

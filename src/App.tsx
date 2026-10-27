@@ -24,6 +24,13 @@ import { getStoredUser, saveStoredUser, clearStoredUser } from './lib/authStorag
 import { getStoredSettings, updateStoredSettings, UserSettings } from './lib/settings';
 import { safeFetchJson } from './lib/api';
 import { IS_STATIC_SITE } from './lib/runtime';
+import { toolMatches } from './lib/search';
+import { finishKakaoLogin, listNotices, signOutHub, watchSession } from './lib/firebase';
+import { LoginModal } from './components/LoginModal';
+import { TermsModal, TermsTab } from './components/TermsModal';
+import { OtherAppsModal } from './components/OtherAppsModal';
+import { HubAdminModal } from './components/HubAdminModal';
+import { SettingsModal } from './components/SettingsModal';
 import { CATEGORIES } from './lib/categories';
 import { getCategoryLabel } from './lib/translations';
 
@@ -64,6 +71,11 @@ export default function App() {
   const [profileModalTab, setProfileModalTab] = useState<UserProfileTab>('profile');
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [isAdminConsoleActive, setIsAdminConsoleActive] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [termsTab, setTermsTab] = useState<TermsTab | null>(null);
+  const [isOtherAppsOpen, setIsOtherAppsOpen] = useState(false);
+  const [isHubAdminOpen, setIsHubAdminOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAdminViewEnabled, setIsAdminViewEnabled] = useState(false);
   const [detailModalTool, setDetailModalTool] = useState<AITool | null>(null);
 
@@ -230,7 +242,9 @@ export default function App() {
     syncSettings();
 
     // The static site has no server to ask for notices or the session role.
-    if (!IS_STATIC_SITE) {
+    if (IS_STATIC_SITE) {
+      loadStaticNotices();
+    } else {
       // Fetch initial notices
       safeFetchJson<{ notices: NoticeItem[] }>('/api/notices').then((res) => {
         if (res.ok && res.data?.notices && Array.isArray(res.data.notices)) {
@@ -288,6 +302,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    if (IS_STATIC_SITE) signOutHub();
     setCurrentUser(null);
     clearStoredUser();
     showToast('로그아웃 되었습니다.');
@@ -394,14 +409,7 @@ export default function App() {
     const q = searchQuery.toLowerCase().trim();
 
     return activeTools.filter((item) => {
-      const matchesSearch =
-        !q ||
-        item.name.toLowerCase().includes(q) ||
-        item.description.toLowerCase().includes(q) ||
-        (item.descriptionEn && item.descriptionEn.toLowerCase().includes(q)) ||
-        (Array.isArray(item.tags) && item.tags.some((t) => t.toLowerCase().includes(q))) ||
-        item.category.toLowerCase().includes(q) ||
-        getCategoryLabel(item.category, 'en').toLowerCase().includes(q);
+      const matchesSearch = toolMatches(item, q);
 
       const matchesPrice =
         selectedPrice === 'all' || item.price === selectedPrice;
@@ -506,10 +514,23 @@ export default function App() {
     setShowBookmarksOnly(false);
   };
 
-  const openSettings = () => {
-    setProfileModalTab('general');
-    setIsProfileModalOpen(true);
-  };
+  const openSettings = () => setIsSettingsOpen(true);
+
+  // Static site: Firebase holds the session (Google popup or the Kakao redirect) and the notices.
+  function loadStaticNotices() {
+    listNotices()
+      .then(setNotices)
+      .catch((e) => console.error('[NOTICES]', e));
+  }
+
+  useEffect(() => {
+    if (!IS_STATIC_SITE) return;
+    finishKakaoLogin().catch((e) => showToast(e.message || '카카오 로그인에 실패했어요.'));
+    return watchSession((user, notice) => {
+      setCurrentUser(user);
+      if (notice) showToast(notice);
+    });
+  }, []);
 
   // If Full Admin Console is active and user is admin
   if (isAdminConsoleActive && currentUser?.isAdmin) {
@@ -549,13 +570,18 @@ export default function App() {
         onToggleLang={handleToggleLang}
         onOpenNoticeModal={() => setIsNoticeModalOpen(true)}
         onOpenInquiryModal={() => setIsInquiryModalOpen(true)}
-        onOpenGoogleLogin={IS_STATIC_SITE ? undefined : () => setIsGoogleLoginOpen(true)}
-        onOpenProfileModal={() => {
-          setProfileModalTab('profile');
-          setIsProfileModalOpen(true);
-        }}
-        onOpenAdminCenter={() => setIsAdminModalOpen(true)}
-        onOpenAdminConsole={() => setIsAdminConsoleActive(true)}
+        onOpenGoogleLogin={() => (IS_STATIC_SITE ? setIsLoginOpen(true) : setIsGoogleLoginOpen(true))}
+        onOpenProfileModal={
+          IS_STATIC_SITE
+            ? undefined
+            : () => {
+                setProfileModalTab('profile');
+                setIsProfileModalOpen(true);
+              }
+        }
+        onOpenAdminCenter={() => (IS_STATIC_SITE ? setIsHubAdminOpen(true) : setIsAdminModalOpen(true))}
+        onOpenAdminConsole={IS_STATIC_SITE ? undefined : () => setIsAdminConsoleActive(true)}
+        onOpenOtherApps={() => setIsOtherAppsOpen(true)}
         onLogout={handleLogout}
         onOpenSettings={openSettings}
         hasNotices={notices.length > 0}
@@ -569,9 +595,12 @@ export default function App() {
       <main className="flex-1">
         <Hero
           lang={lang}
-          totalCount={activeTools.length}
-          categoryCount={CATEGORIES.length - 1}
-          freeCount={freeToolsCount}
+          tools={activeTools}
+          onSelectTool={setDetailModalTool}
+          onSelectCategory={(category) => {
+            setSelectedCategory(category);
+            scrollToDirectory();
+          }}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onSubmitSearch={scrollToDirectory}
@@ -712,10 +741,7 @@ export default function App() {
         onSearch={setSearchQuery}
         onOpenInquiryModal={() => setIsInquiryModalOpen(true)}
         currentUser={currentUser}
-        onOpenSettings={() => {
-          setProfileModalTab('chatbot');
-          setIsProfileModalOpen(true);
-        }}
+        onOpenSettings={openSettings}
       />
 
       {/* Notice Modal */}
@@ -724,7 +750,7 @@ export default function App() {
         onClose={() => setIsNoticeModalOpen(false)}
         lang={lang}
         isAdmin={currentUser?.isAdmin}
-        onOpenAdminModal={() => setIsAdminModalOpen(true)}
+        onOpenAdminModal={() => (IS_STATIC_SITE ? setIsHubAdminOpen(true) : setIsAdminModalOpen(true))}
       />
 
       {/* AI Tool Detail Modal */}
@@ -752,6 +778,7 @@ export default function App() {
         onSuccess={showToast}
         onAddCustomTool={handleAddTool}
         lang={lang}
+        currentUser={currentUser}
       />
 
       {/* Google Login Modal */}
@@ -810,8 +837,29 @@ export default function App() {
         onOpenNoticeModal={() => setIsNoticeModalOpen(true)}
         onOpenRandomModal={() => setIsRandomModalOpen(true)}
         onOpenSettings={openSettings}
+        onOpenTerms={setTermsTab}
+        onOpenOtherApps={() => setIsOtherAppsOpen(true)}
         lang={lang}
       />
+
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} lang={lang} onToast={showToast} />
+      <OtherAppsModal isOpen={isOtherAppsOpen} onClose={() => setIsOtherAppsOpen(false)} lang={lang} />
+      <TermsModal isOpen={termsTab !== null} tab={termsTab || 'terms'} onTabChange={setTermsTab} onClose={() => setTermsTab(null)} lang={lang} />
+      {IS_STATIC_SITE && (
+        <>
+          <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} lang={lang} onOpenTerms={setTermsTab} />
+          {currentUser?.isAdmin && (
+            <HubAdminModal
+              isOpen={isHubAdminOpen}
+              onClose={() => setIsHubAdminOpen(false)}
+              currentUser={currentUser}
+              lang={lang}
+              onToast={showToast}
+              onNoticesChanged={loadStaticNotices}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }

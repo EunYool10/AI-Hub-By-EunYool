@@ -15,6 +15,7 @@ import {
   Languages,
   X,
   ChevronRight,
+  LayoutGrid,
 } from 'lucide-react';
 import { UserProfile } from '../types';
 import { UI_TEXT } from '../lib/translations';
@@ -34,6 +35,7 @@ interface HeaderProps {
   onToggleLang: () => void;
   onOpenNoticeModal: () => void;
   onOpenInquiryModal: () => void;
+  onOpenOtherApps: () => void;
   /** Left out on the static site, where there is no server to sign in against. */
   onOpenGoogleLogin?: () => void;
   onOpenProfileModal?: () => void;
@@ -74,6 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleLang,
   onOpenNoticeModal,
   onOpenInquiryModal,
+  onOpenOtherApps,
   onOpenGoogleLogin,
   onOpenProfileModal,
   onOpenAdminCenter,
@@ -186,6 +189,10 @@ export const Header: React.FC<HeaderProps> = ({
             <button type="button" onClick={onOpenInquiryModal} className={navButton}>
               <MessageSquare className="w-4 h-4 text-muted" />
               {UI_TEXT.header.inquiry[lang]}
+            </button>
+            <button type="button" onClick={onOpenOtherApps} className={navButton}>
+              <LayoutGrid className="w-4 h-4 text-muted" />
+              {isKo ? '다른 앱' : 'More apps'}
             </button>
           </nav>
 
@@ -302,9 +309,11 @@ export const Header: React.FC<HeaderProps> = ({
                       </div>
                     </div>
                     <div className="p-1.5 text-sm">
-                      <MenuItem icon={<User className="w-4 h-4" />} onClick={runAndClose(onOpenProfileModal)}>
-                        {isKo ? '내 프로필' : 'My profile'}
-                      </MenuItem>
+                      {onOpenProfileModal && (
+                        <MenuItem icon={<User className="w-4 h-4" />} onClick={runAndClose(onOpenProfileModal)}>
+                          {isKo ? '내 프로필' : 'My profile'}
+                        </MenuItem>
+                      )}
                       {onOpenSettings && (
                         <MenuItem icon={<Settings className="w-4 h-4" />} onClick={runAndClose(onOpenSettings)}>
                           {isKo ? '환경 설정' : 'Preferences'}
@@ -317,7 +326,7 @@ export const Header: React.FC<HeaderProps> = ({
                       )}
                       {currentUser.isAdmin && (
                         <MenuItem icon={<Shield className="w-4 h-4" />} onClick={runAndClose(onOpenAdminCenter)}>
-                          {isKo ? '빠른 관리 패널' : 'Quick admin panel'}
+                          {isKo ? '관리자 센터' : 'Admin center'}
                         </MenuItem>
                       )}
                       <div className="my-1.5 h-px bg-line" />
@@ -399,6 +408,9 @@ export const Header: React.FC<HeaderProps> = ({
             <SheetItem icon={<MessageSquare className="w-[18px] h-[18px]" />} onClick={runAndClose(onOpenInquiryModal)}>
               {UI_TEXT.header.inquiry[lang]}
             </SheetItem>
+            <SheetItem icon={<LayoutGrid className="w-[18px] h-[18px]" />} onClick={runAndClose(onOpenOtherApps)}>
+              {isKo ? '개발자의 다른 앱' : 'More apps by the developer'}
+            </SheetItem>
             {onOpenSettings && (
               <SheetItem icon={<Settings className="w-[18px] h-[18px]" />} onClick={runAndClose(onOpenSettings)}>
                 {UI_TEXT.settings.title[lang]}
@@ -421,7 +433,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </SheetItem>
               )}
               <SheetItem icon={<Shield className="w-[18px] h-[18px]" />} onClick={runAndClose(onOpenAdminCenter)}>
-                {isKo ? '빠른 관리 패널' : 'Quick admin panel'}
+                {isKo ? '관리자 센터' : 'Admin center'}
               </SheetItem>
             </div>
           )}

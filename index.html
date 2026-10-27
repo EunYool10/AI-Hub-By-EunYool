@@ -21,7 +21,7 @@
         var root = document.documentElement;
         try {
           var s = JSON.parse(localStorage.getItem('ai_hub_global_settings') || '{}');
-          var theme = s.theme || 'dark';
+          var theme = s.theme === 'light' || s.theme === 'system' ? s.theme : 'dark';
           if (theme === 'system') {
             theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
           }

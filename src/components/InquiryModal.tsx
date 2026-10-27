@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  AlertTriangle,
   Send,
   Mail,
   CheckCircle2,
@@ -15,6 +16,8 @@ import {
 } from 'lucide-react';
 import { safeFetchJson } from '../lib/api';
 import { IS_STATIC_SITE } from '../lib/runtime';
+import { submitInquiry } from '../lib/firebase';
+import { UserProfile } from '../types';
 import { Language, UI_TEXT, getCategoryLabel } from '../lib/translations';
 import { CATEGORIES } from '../lib/categories';
 import { cn } from '../lib/cn';
@@ -28,12 +31,14 @@ interface InquiryModalProps {
   onSuccess: (message: string) => void;
   onAddCustomTool: (tool: { name: string; category: string; description: string; url: string; price: string; isCustom: boolean }) => void;
   lang?: Language;
+  /** Static site: signed-in users file inquiries straight to the admin center. */
+  currentUser?: UserProfile | null;
 }
 
-const CONTACT_EMAIL = 'deer123424@gmail.com';
+const CONTACT_EMAIL = 'eunyool100208@gmail.com';
 const TYPE_RECOMMEND = 'AI 도구 추천/등록 요청';
 
-export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, onSuccess, onAddCustomTool, lang = 'ko' }) => {
+export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, onSuccess, onAddCustomTool, lang = 'ko', currentUser }) => {
   const isKo = lang === 'ko';
   const [inquiryType, setInquiryType] = useState<string>(TYPE_RECOMMEND);
   const [name, setName] = useState('');
@@ -53,6 +58,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, onS
   const [submittedData, setSubmittedData] = useState<{
     mailtoUrl: string;
     targetEmail: string;
+    saved?: boolean;
   } | null>(null);
 
   const isRecommend = inquiryType === TYPE_RECOMMEND;
@@ -68,8 +74,20 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, onS
       : message.trim();
 
     try {
-      // Without a server (GitHub Pages) the inquiry goes out as a prepared mail draft.
-      if (IS_STATIC_SITE) throw new Error('No inquiry server on the static site');
+      // Without a server (GitHub Pages) signed-in users file to the admin center; guests get a mail draft.
+      if (IS_STATIC_SITE) {
+        if (!currentUser) throw new Error('Signed out: send by mail');
+        await submitInquiry({
+          type: inquiryType,
+          title: title.trim(),
+          message: fullMessage,
+          name: name.trim() || currentUser.displayName,
+          email: email.trim() || currentUser.email,
+        });
+        setSubmittedData({ mailtoUrl: '', targetEmail: CONTACT_EMAIL, saved: true });
+        onSuccess(isKo ? '문의가 접수되었어요. 확인 후 연락드릴게요.' : 'Your inquiry was received.');
+        return;
+      }
 
       const response = await safeFetchJson<{ mailtoUrl: string; targetEmail: string; error?: string }>('/api/inquiry', {
         method: 'POST',
@@ -156,6 +174,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, onS
     { id: TYPE_RECOMMEND, label: isKo ? 'AI 도구 제안' : 'Suggest a tool', icon: Lightbulb },
     { id: '일반 문의', label: isKo ? '일반 문의' : 'General', icon: MessageSquare },
     { id: '오류/개선 제보', label: isKo ? '오류·개선' : 'Bug / Idea', icon: Bug },
+    { id: '불편/컴플레인', label: isKo ? '불편·컴플레인' : 'Complaint', icon: AlertTriangle },
   ];
 
   return (
@@ -178,7 +197,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, onS
           <ModalBody className="space-y-5">
             <fieldset>
               <legend className="mb-2 text-sm font-medium text-fg-2">{UI_TEXT.inquiryModal.typeLabel[lang]}</legend>
-              <div className="grid grid-cols-3 gap-2" role="radiogroup">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" role="radiogroup">
                 {types.map(({ id, label, icon: TypeIcon }) => {
                   const isActive = inquiryType === id;
                   return (
@@ -327,7 +346,13 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, onS
           <h3 id="inquiry-title" className="mt-5 text-xl font-bold tracking-tight text-fg">
             {UI_TEXT.inquiryModal.submittedTitle[lang]}
           </h3>
-          <p className="mt-2 text-sm text-muted max-w-sm mx-auto leading-relaxed">{UI_TEXT.inquiryModal.submittedDesc[lang]}</p>
+          <p className="mt-2 text-sm text-muted max-w-sm mx-auto leading-relaxed">
+            {submittedData.saved
+              ? isKo
+                ? '관리자 센터로 접수되었어요. 답변은 남겨 주신 이메일로 보내 드려요.'
+                : 'Sent to the admin team. We will reply by email.'
+              : UI_TEXT.inquiryModal.submittedDesc[lang]}
+          </p>
 
           <div className="mt-6 p-4 rounded-xl bg-surface-2 border border-line text-left space-y-1.5">
             <p className="text-xs text-muted">To: {submittedData.targetEmail}</p>
@@ -338,11 +363,13 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, onS
           </div>
 
           <div className="mt-6 flex flex-col sm:flex-row gap-2">
-            <LinkButton href={submittedData.mailtoUrl} target="_blank" rel="noopener noreferrer" variant="primary" className="flex-1">
-              <Mail className="w-4 h-4" />
-              {UI_TEXT.inquiryModal.openMailApp[lang]}
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </LinkButton>
+            {!submittedData.saved && (
+              <LinkButton href={submittedData.mailtoUrl} target="_blank" rel="noopener noreferrer" variant="primary" className="flex-1">
+                <Mail className="w-4 h-4" />
+                {UI_TEXT.inquiryModal.openMailApp[lang]}
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </LinkButton>
+            )}
             <Button variant="secondary" onClick={handleReset} className="sm:w-28">
               {UI_TEXT.inquiryModal.close[lang]}
             </Button>

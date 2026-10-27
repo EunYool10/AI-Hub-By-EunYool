@@ -361,7 +361,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
         {activeTab === 'inquiries' && (
           <div className="flex-1 overflow-y-auto space-y-3 pr-1 no-scrollbar">
             <div className="flex items-center justify-between text-xs text-muted mb-1">
-              <span>수신처: deer123424@gmail.com</span>
+              <span>수신처: eunyool100208@gmail.com</span>
               <button
                 onClick={fetchInquiries}
                 className="flex items-center gap-1 text-mint hover:underline cursor-pointer"

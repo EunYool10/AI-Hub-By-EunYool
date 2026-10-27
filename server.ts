@@ -66,6 +66,7 @@ const ADMIN_ACCOUNTS_DB = new Set([
   "ayun24song@gmail.com",
   "teamdevstudiont@gmail.com",
   "deer123424@gmail.com",
+  "eunyool100208@gmail.com",
 ]);
 
 // Core Protected Admin Accounts (Immune to suspension/demotion)
@@ -73,6 +74,7 @@ const PROTECTED_ADMIN_ACCOUNTS = new Set([
   "ayun24song@gmail.com",
   "teamdevstudiont@gmail.com",
   "deer123424@gmail.com",
+  "eunyool100208@gmail.com",
 ]);
 
 // Registered Users Store (In-Memory with persistent dynamic updates)
@@ -1787,12 +1789,12 @@ app.post("/api/inquiry", (req, res) => {
     };
 
     inquiries.push(newInquiry);
-    console.log(`[INQUIRY RECEIVED for deer123424@gmail.com]`, newInquiry);
+    console.log(`[INQUIRY RECEIVED for eunyool100208@gmail.com]`, newInquiry);
 
     // Build mailto link for direct sending fallback
     const mailtoSubject = encodeURIComponent(`[AI Hub 문의] [${newInquiry.type}] ${newInquiry.title}`);
     const mailtoBody = encodeURIComponent(
-      `안녕하세요, AI Hub 담당자님 (deer123424@gmail.com).\n\n` +
+      `안녕하세요, AI Hub 담당자님 (eunyool100208@gmail.com).\n\n` +
       `[문의자 정보]\n` +
       `- 이름/성함: ${newInquiry.name}\n` +
       `- 회신 이메일: ${newInquiry.email}\n` +
@@ -1803,14 +1805,14 @@ app.post("/api/inquiry", (req, res) => {
       `전송 시각: ${new Date().toLocaleString('ko-KR')}`
     );
 
-    const mailtoUrl = `mailto:deer123424@gmail.com?subject=${mailtoSubject}&body=${mailtoBody}`;
+    const mailtoUrl = `mailto:eunyool100208@gmail.com?subject=${mailtoSubject}&body=${mailtoBody}`;
 
     res.json({
       success: true,
-      message: "문의사항이 성공적으로 접수되었습니다. (담당자: deer123424@gmail.com)",
+      message: "문의사항이 성공적으로 접수되었습니다. (담당자: eunyool100208@gmail.com)",
       inquiry: newInquiry,
       mailtoUrl,
-      targetEmail: "deer123424@gmail.com",
+      targetEmail: "eunyool100208@gmail.com",
     });
   } catch (error: any) {
     console.error("Inquiry API Error:", error);

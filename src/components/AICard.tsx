@@ -48,8 +48,8 @@ export const AICard: React.FC<AICardProps> = ({
           className="w-11 h-11 rounded-xl"
         />
         <div className="min-w-0 flex-1 pt-0.5">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <h3 className="min-w-0 text-[0.9375rem] font-semibold leading-snug text-fg truncate">
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 min-w-0">
+            <h3 className="min-w-0 text-[0.9375rem] font-semibold leading-snug text-fg break-keep [overflow-wrap:anywhere]">
               {/* Stretched button: makes the whole card open the detail view */}
               <button
                 type="button"
@@ -63,9 +63,9 @@ export const AICard: React.FC<AICardProps> = ({
             </h3>
             {badge && <ToolBadge badge={badge} lang={lang} />}
           </div>
-          <p className="mt-1 flex items-center gap-1.5 text-xs text-muted min-w-0">
-            <Icon className={cn('w-3.5 h-3.5 shrink-0', text)} aria-hidden="true" />
-            <span className="truncate">{getCategoryLabel(tool.category, lang)}</span>
+          <p className="mt-1 flex items-start gap-1.5 text-xs text-muted min-w-0">
+            <Icon className={cn('w-3.5 h-3.5 shrink-0 mt-px', text)} aria-hidden="true" />
+            <span className="break-keep">{getCategoryLabel(tool.category, lang)}</span>
           </p>
         </div>
 
@@ -84,7 +84,7 @@ export const AICard: React.FC<AICardProps> = ({
         </button>
       </div>
 
-      <p className="mt-4 text-sm leading-relaxed text-fg-2 line-clamp-3">{description}</p>
+      <p className="mt-4 text-sm leading-relaxed text-fg-2 break-keep [overflow-wrap:anywhere]">{description}</p>
 
       {featureTags.length > 0 && (
         <ul className="mt-3.5 flex flex-wrap gap-1.5" aria-label={isKo ? '특징' : 'Features'}>

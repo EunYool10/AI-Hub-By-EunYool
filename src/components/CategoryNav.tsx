@@ -53,7 +53,7 @@ export const CategorySidebar: React.FC<CategoryNavProps> = ({
                 >
                   {isActive && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-accent" aria-hidden="true" />}
                   <Icon className={cn('w-4 h-4 shrink-0', text, !isActive && 'opacity-80 group-hover:opacity-100')} />
-                  <span className="flex-1 truncate">{getCategoryLabel(cat.label, lang)}</span>
+                  <span className="flex-1 min-w-0 break-keep">{getCategoryLabel(cat.label, lang)}</span>
                   <span className={cn('text-xs tabular-nums', isActive ? 'text-fg-2' : 'text-subtle')}>{count}</span>
                 </button>
               </li>
@@ -179,10 +179,10 @@ export const CategoryChips: React.FC<Pick<CategoryNavProps, 'activeCategory' | '
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-fg truncate">{getCategoryLabel(cat.label, lang)}</span>
+                      <span className="text-sm font-semibold text-fg break-keep">{getCategoryLabel(cat.label, lang)}</span>
                       <span className="text-xs tabular-nums text-subtle">{counts[cat.label] ?? 0}</span>
                     </span>
-                    <span className="block text-xs text-muted truncate mt-0.5">{desc ? (isKo ? desc.descKo : desc.descEn) : ''}</span>
+                    <span className="block text-xs text-muted break-keep mt-0.5">{desc ? (isKo ? desc.descKo : desc.descEn) : ''}</span>
                   </span>
                   {isActive && <Check className="w-4 h-4 text-brand shrink-0" />}
                 </button>

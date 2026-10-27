@@ -1,13 +1,13 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
 import { Language } from '../lib/translations';
+import { AITool, Category } from '../types';
 import { SearchBar, TRENDING_KEYWORDS } from './SearchBar';
 
 interface HeroProps {
   lang: Language;
-  totalCount: number;
-  categoryCount: number;
-  freeCount: number;
+  tools: AITool[];
+  onSelectTool: (tool: AITool) => void;
+  onSelectCategory: (category: Category) => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   onSubmitSearch: () => void;
@@ -17,9 +17,9 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({
   lang,
-  totalCount,
-  categoryCount,
-  freeCount,
+  tools,
+  onSelectTool,
+  onSelectCategory,
   searchQuery,
   onSearchChange,
   onSubmitSearch,
@@ -29,10 +29,10 @@ export const Hero: React.FC<HeroProps> = ({
   const isKo = lang === 'ko';
 
   return (
-    <section className="relative isolate -mt-16 pt-16 overflow-hidden">
+    <section className="relative isolate z-20 -mt-16 pt-16">
       {/* Backdrop (masked so the glow fades out before the section edge) */}
       <div
-        className="absolute inset-0 -z-10 pointer-events-none [mask-image:linear-gradient(to_bottom,#000_55%,transparent)]"
+        className="absolute inset-0 -z-10 overflow-hidden pointer-events-none [mask-image:linear-gradient(to_bottom,#000_55%,transparent)]"
         aria-hidden="true"
       >
         <div className="absolute inset-0 bg-grid [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,#000_40%,transparent_100%)]" />
@@ -40,26 +40,7 @@ export const Hero: React.FC<HeroProps> = ({
       </div>
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-10 sm:pt-16 pb-10 sm:pb-14 text-center">
-        <div className="inline-flex items-center gap-2 h-8 pl-2 pr-3.5 rounded-full border border-line bg-surface/70 backdrop-blur text-xs sm:text-sm text-fg-2">
-          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-accent text-accent-fg">
-            <Sparkles className="w-3 h-3" />
-          </span>
-          {isKo ? (
-            <span>
-              <strong className="font-semibold text-fg tabular-nums">{totalCount}</strong>개 AI 도구 ·{' '}
-              <strong className="font-semibold text-fg tabular-nums">{categoryCount}</strong>개 분야 ·{' '}
-              무료 <strong className="font-semibold text-fg tabular-nums">{freeCount}</strong>개
-            </span>
-          ) : (
-            <span>
-              <strong className="font-semibold text-fg tabular-nums">{totalCount}</strong> AI tools ·{' '}
-              <strong className="font-semibold text-fg tabular-nums">{categoryCount}</strong> categories ·{' '}
-              <strong className="font-semibold text-fg tabular-nums">{freeCount}</strong> free
-            </span>
-          )}
-        </div>
-
-        <h1 className="mt-5 sm:mt-6 font-display text-[2rem] leading-[1.15] sm:text-5xl sm:leading-[1.1] font-bold tracking-[-0.03em] text-fg text-balance-ko">
+        <h1 className="font-display text-[2rem] leading-[1.15] sm:text-5xl sm:leading-[1.1] font-bold tracking-[-0.03em] text-fg text-balance-ko">
           {isKo ? (
             <>
               필요한 AI를
@@ -92,6 +73,9 @@ export const Hero: React.FC<HeroProps> = ({
             onSubmit={onSubmitSearch}
             lang={lang}
             inputRef={searchInputRef}
+            tools={tools}
+            onSelectTool={onSelectTool}
+            onSelectCategory={onSelectCategory}
           />
         </div>
 

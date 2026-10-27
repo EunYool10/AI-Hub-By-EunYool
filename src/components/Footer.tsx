@@ -8,6 +8,8 @@ interface FooterProps {
   onOpenNoticeModal?: () => void;
   onOpenRandomModal?: () => void;
   onOpenSettings?: () => void;
+  onOpenTerms?: (tab: 'terms' | 'privacy') => void;
+  onOpenOtherApps?: () => void;
   lang?: Language;
 }
 
@@ -16,6 +18,8 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenNoticeModal,
   onOpenRandomModal,
   onOpenSettings,
+  onOpenTerms,
+  onOpenOtherApps,
   lang = 'ko',
 }) => {
   const isKo = lang === 'ko';
@@ -56,6 +60,11 @@ export const Footer: React.FC<FooterProps> = ({
                   {UI_TEXT.settings.title[lang]}
                 </button>
               </li>
+              <li>
+                <button type="button" onClick={onOpenOtherApps} className={link}>
+                  {isKo ? '개발자의 다른 앱' : 'More apps by the developer'}
+                </button>
+              </li>
             </ul>
           </nav>
 
@@ -69,9 +78,9 @@ export const Footer: React.FC<FooterProps> = ({
                 </button>
               </li>
               <li>
-                <a href="mailto:deer123424@gmail.com" className={`${link} inline-flex items-center gap-1.5 break-all`}>
+                <a href="mailto:eunyool100208@gmail.com" className={`${link} inline-flex items-center gap-1.5 break-all`}>
                   <Mail className="w-3.5 h-3.5 shrink-0" />
-                  deer123424@gmail.com
+                  eunyool100208@gmail.com
                 </a>
               </li>
             </ul>
@@ -79,7 +88,15 @@ export const Footer: React.FC<FooterProps> = ({
         </div>
 
         <div className="mt-10 pt-6 border-t border-line flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-subtle">
-          <span>{UI_TEXT.footer.copyright[lang]}</span>
+          <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span>{UI_TEXT.footer.copyright[lang]}</span>
+            <button type="button" onClick={() => onOpenTerms?.('terms')} className="hover:text-fg transition-colors">
+              {isKo ? '이용약관' : 'Terms'}
+            </button>
+            <button type="button" onClick={() => onOpenTerms?.('privacy')} className="font-semibold hover:text-fg transition-colors">
+              {isKo ? '개인정보 처리방침' : 'Privacy'}
+            </button>
+          </span>
           <span>
             {UI_TEXT.footer.dev[lang]} <span className="text-muted font-medium">{UI_TEXT.footer.devName[lang]}</span>
           </span>

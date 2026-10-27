@@ -1,0 +1,108 @@
+rules_version = '2';
+
+// AI Hub (database ai-studio-aihubbyyool-…): notices, accounts, inquiries.
+// Deployed by hand to this database only. Keep ADMIN in step with src/lib/authStorage.ts.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in [
+          'eunyool100208@gmail.com',
+          'deer123424@gmail.com',
+          'ayun24song@gmail.com',
+          'teamdevstudiont@gmail.com'
+        ];
+    }
+
+    function str(v, min, max) {
+      return v is string && v.size() >= min && v.size() <= max;
+    }
+
+    function notSuspended() {
+      let path = /databases/$(database)/documents/users/$(request.auth.uid);
+      return !exists(path) || get(path).data.status != 'suspended';
+    }
+
+    match /notices/{id} {
+      function validNotice(d) {
+        return str(d.title, 1, 100)
+          && str(d.content, 1, 5000)
+          && d.category in ['NOTICE', 'UPDATE', 'IMPORTANT']
+          && d.pinned is bool
+          && str(d.author, 1, 60)
+          && d.updatedAt == request.time;
+      }
+
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['title', 'content', 'category', 'pinned', 'author', 'createdAt', 'updatedAt'])
+        && validNotice(request.resource.data)
+        && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'content', 'category', 'pinned', 'updatedAt'])
+        && validNotice(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /users/{uid} {
+      function profileOk(d) {
+        return str(d.name, 1, 60) && str(d.photo, 0, 2048);
+      }
+
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'photo', 'email', 'provider', 'status', 'createdAt', 'lastLoginAt'])
+        && request.resource.data.uid == uid
+        && profileOk(request.resource.data)
+        && request.resource.data.status == 'active'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.lastLoginAt == request.time
+        && (
+          (request.resource.data.provider == 'google'
+            && request.auth.token.firebase.sign_in_provider == 'google.com'
+            && request.resource.data.email == request.auth.token.email)
+          || (request.resource.data.provider == 'kakao'
+            && request.auth.token.firebase.sign_in_provider == 'anonymous'
+            && str(request.resource.data.email, 0, 120))
+        );
+      // Owners refresh their name, photo and last login; admins change status and the private memo.
+      allow update: if (signedIn()
+          && request.auth.uid == uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'photo', 'lastLoginAt'])
+          && profileOk(request.resource.data)
+          && request.resource.data.lastLoginAt == request.time)
+        || (isAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'memo'])
+          && request.resource.data.status in ['active', 'suspended']
+          && str(request.resource.data.get('memo', ''), 0, 1000));
+      allow delete: if isAdmin();
+    }
+
+    match /inquiries/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if signedIn()
+        && notSuspended()
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'email', 'type', 'title', 'message', 'status', 'memo', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && str(request.resource.data.name, 0, 40)
+        && str(request.resource.data.email, 0, 120)
+        && str(request.resource.data.type, 1, 30)
+        && str(request.resource.data.title, 1, 100)
+        && str(request.resource.data.message, 1, 3000)
+        && request.resource.data.status == 'open'
+        && request.resource.data.memo == ''
+        && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'memo'])
+        && request.resource.data.status in ['open', 'in_progress', 'done']
+        && str(request.resource.data.memo, 0, 1000);
+      allow delete: if isAdmin();
+    }
+  }
+}

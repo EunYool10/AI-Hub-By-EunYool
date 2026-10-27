@@ -7,6 +7,7 @@ const ADMIN_EMAILS = [
   'ayun24song@gmail.com',
   'teamdevstudiont@gmail.com',
   'deer123424@gmail.com',
+  'eunyool100208@gmail.com',
 ];
 
 export function isDesignatedAdminEmail(email?: string | null): boolean {
