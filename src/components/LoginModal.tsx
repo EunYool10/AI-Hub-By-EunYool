@@ -25,7 +25,13 @@ const KakaoGlyph: React.FC = () => (
   </svg>
 );
 
-/** Social sign-in for the static site: Google, and Kakao once its app key is set in lib/firebase.ts. */
+const NaverGlyph: React.FC = () => (
+  <svg viewBox="0 0 24 24" className="w-4 h-4" aria-hidden="true">
+    <path fill="#fff" d="M16.27 12.85 7.38 0H0v24h7.73V11.16L16.62 24H24V0h-7.73z" />
+  </svg>
+);
+
+/** Social sign-in for the static site: Google, Kakao (once its app key is set in lib/firebase.ts), Naver shown as coming soon. */
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, lang, onOpenTerms }) => {
   const isKo = lang === 'ko';
   const [busy, setBusy] = useState<'google' | 'kakao' | null>(null);
@@ -73,8 +79,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, lang, o
         <h2 id="login-title" className="mt-4 text-xl font-bold tracking-tight text-fg">
           {isKo ? 'AI Hub 시작하기' : 'Sign in to AI Hub'}
         </h2>
-        <p className="mt-1.5 text-sm text-muted">
-          {isKo ? '로그인하면 공지 알림과 문의 접수를 이용할 수 있어요.' : 'Sign in to send inquiries and follow notices.'}
+        <p className="mt-1.5 text-sm text-muted text-balance-ko">
+          {isKo ? '로그인하면 북마크를 여러 기기에서 보고, 문의를 바로 보낼 수 있어요.' : 'Sign in to keep bookmarks on every device and send inquiries.'}
         </p>
 
         <div className="mt-7 space-y-2.5">
@@ -91,6 +97,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, lang, o
             {busy === 'kakao' ? <Loader2 className="w-5 h-5 animate-spin" /> : <KakaoGlyph />}
             {isKo ? '카카오로 계속하기' : 'Continue with Kakao'}
             {!kakaoReady && <span className="text-xs font-medium opacity-70">({isKo ? '준비 중' : 'coming soon'})</span>}
+          </button>
+          <button type="button" disabled className={`${button} bg-[#03C75A] text-white`}>
+            <NaverGlyph />
+            {isKo ? '네이버로 계속하기' : 'Continue with Naver'}
+            <span className="text-xs font-medium opacity-80">({isKo ? '준비 중' : 'coming soon'})</span>
           </button>
         </div>
 

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   MessageSquare,
   Crown,
+  LogIn,
   LogOut,
   Megaphone,
   Settings,
@@ -24,7 +25,7 @@ import { cn } from '../lib/cn';
 import { AIHubBrandLogo } from './AIHubBrandLogo';
 import { Button, IconButton } from './ui/Button';
 import { Modal, ModalBody } from './ui/Modal';
-import { Avatar, GoogleGlyph } from './ui/Identity';
+import { Avatar } from './ui/Identity';
 
 interface HeaderProps {
   totalCount: number;
@@ -345,7 +346,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className="h-9 px-2.5 sm:px-3.5"
                 aria-label={UI_TEXT.header.login[lang]}
               >
-                <GoogleGlyph />
+                <LogIn className="w-4 h-4" />
                 <span className="hidden sm:inline">{isKo ? '로그인' : 'Sign in'}</span>
               </Button>
             )}
@@ -394,9 +395,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           ) : onOpenGoogleLogin && (
             <Button variant="primary" size="lg" className="w-full" onClick={runAndClose(onOpenGoogleLogin)}>
-              <span className="w-6 h-6 rounded-full bg-white inline-flex items-center justify-center">
-                <GoogleGlyph />
-              </span>
+              <LogIn className="w-5 h-5" />
               {UI_TEXT.header.login[lang]}
             </Button>
           )}
