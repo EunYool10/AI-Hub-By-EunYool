@@ -140,7 +140,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, onS
         mailtoUrl: `mailto:${CONTACT_EMAIL}?subject=${mailtoSubject}&body=${mailtoBody}`,
         targetEmail: CONTACT_EMAIL,
       });
-      onSuccess(isKo ? `문의사항 접수 준비 완료 (${CONTACT_EMAIL})` : `Inquiry ready to send (${CONTACT_EMAIL})`);
+      onSuccess(isKo ? '메일 앱에서 보내기를 누르면 전달돼요.' : `Inquiry ready to send (${CONTACT_EMAIL})`);
     } finally {
       setIsSubmitting(false);
     }
@@ -187,7 +187,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, onS
             title={isKo ? '문의 · AI 도구 제안' : 'Contact · Suggest a tool'}
             description={
               isKo
-                ? '궁금한 점이나 추가했으면 하는 AI 도구를 알려주세요. 담당자 메일로 바로 전달됩니다.'
+                ? (IS_STATIC_SITE && !currentUser ? '궁금한 점, 불편한 점, 추가했으면 하는 AI 도구를 알려 주세요. 로그인하면 사이트에서 바로 접수되고, 아니면 메일로 보낼 수 있어요.' : '궁금한 점, 불편한 점, 추가했으면 하는 AI 도구를 알려 주세요. 확인 후 연락드릴게요.')
                 : 'Questions or a tool we should add? Your message goes straight to our inbox.'
             }
             onClose={handleClose}

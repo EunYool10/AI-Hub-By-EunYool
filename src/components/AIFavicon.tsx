@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles } from 'lucide-react';
-import { getOfficialLogoSources } from '../lib/officialLogos';
+import { extractDomain, getOfficialLogoSources } from '../lib/officialLogos';
+import { TOOL_LOGOS } from '../data/toolLogos';
 
 export interface AIFaviconProps {
   url: string;
@@ -23,8 +24,10 @@ export const AIFavicon: React.FC<AIFaviconProps> = ({
 }) => {
   const [sourceIndex, setSourceIndex] = useState(0);
 
-  // Re-evaluate image source chain whenever url, name or customIcon changes
+  // Official icon saved from the tool's own site comes first; the remote chain is the fallback.
   const sources = getOfficialLogoSources(name, url, customIcon);
+  const local = !customIcon && TOOL_LOGOS[extractDomain(url)];
+  if (local) sources.unshift(`${(import.meta as any).env.BASE_URL}logos/${local}`);
 
   useEffect(() => {
     setSourceIndex(0);

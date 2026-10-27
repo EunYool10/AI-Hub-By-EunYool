@@ -28,17 +28,13 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
     ko: ['실시간 X 데이터', '최신 트렌드', '대화형 AI'],
     en: ['Real-time X Data', 'Trends', 'Conversational'],
   },
-  'Kimi Chat': {
+  'Kimi': {
     ko: ['초장문 컨텍스트', '웹 서칭', '문서 리서치'],
     en: ['Long Context', 'Web Search', 'Research'],
   },
   'Perplexity Pages': {
     ko: ['리포트 생성', '구조화 문서', '웹 공유'],
     en: ['Report Generator', 'Structured Docs', 'Web Share'],
-  },
-  'Typewriter AI': {
-    ko: ['소설/시나리오', '스토리 구성', '캐릭터 설정'],
-    en: ['Novels & Scripts', 'Storytelling', 'Plot Creation'],
   },
   'Jasper AI': {
     ko: ['마케팅 카피', '브랜드 보이스', '광고 기획'],
@@ -51,10 +47,6 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
   'Mistral AI': {
     ko: ['경량 오픈소스', '빠른 응답', '기업 구축'],
     en: ['Lightweight LLM', 'Fast Response', 'Enterprise'],
-  },
-  'HyperCLOVA X': {
-    ko: ['네이버 한국어', '국내 맥락', '비즈니스 LLM'],
-    en: ['Naver Korean LLM', 'Domestic Context', 'Business AI'],
   },
   'Copy.ai': {
     ko: ['세일즈 카피', '100+ 템플릿', '이메일 작성'],
@@ -75,10 +67,6 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
   'Figma AI': {
     ko: ['UI 와이어프레임', '자동 레이아웃', '디자인 생성'],
     en: ['UI Wireframe', 'Auto Layout', 'Design Gen'],
-  },
-  'DALL·E 3': {
-    ko: ['프롬프트 정확도', '이미지 생성', 'OpenAI'],
-    en: ['Prompt Accuracy', 'Image Gen', 'OpenAI'],
   },
   'Canva AI': {
     ko: ['간편 디자인', '배경 제거', '자동 레이아웃'],
@@ -104,7 +92,7 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
     ko: ['초현실적 사실감', '텍스트 렌더링', '차세대 이미지'],
     en: ['Ultra Realism', 'Text Accuracy', 'Next-Gen Image'],
   },
-  'Galileo AI': {
+  'Stitch (구 Galileo AI)': {
     ko: ['UI 생성', 'Figma 연동', '모바일/웹 화면'],
     en: ['UI Generation', 'Figma Export', 'Mobile/Web Screens'],
   },
@@ -116,15 +104,7 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
     ko: ['실시간 드로잉', 'AI 캔버스', '고화질 업스케일'],
     en: ['Real-time Draw', 'AI Canvas', 'Upscaling'],
   },
-  'Visual Electric': {
-    ko: ['무한 캔버스', '비주얼 무드보드', '크리에이티브 생성'],
-    en: ['Infinite Canvas', 'Moodboard Gen', 'Creative Flow'],
-  },
-  'Sora': {
-    ko: ['텍스트→비디오', '물리 법칙 구현', '시네마틱 영상'],
-    en: ['Text-to-Video', 'Physics Aware', 'Cinematic HD'],
-  },
-  'Runway Gen-3': {
+  'Runway': {
     ko: ['영상 생성', '카메라 무빙 제어', '모션 브러시'],
     en: ['Video Generation', 'Camera Control', 'Motion Brush'],
   },
@@ -188,10 +168,6 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
     ko: ['텍스트 음성 변환', 'PDF/웹 오디오북', '셀럽 보이스'],
     en: ['Text-to-Speech', 'PDF Audiobook', 'Celebrity Voices'],
   },
-  'Play.ht': {
-    ko: ['스튜디오급 TTS', '900+ 음성', '오디오북 제작'],
-    en: ['Studio TTS', '900+ Voices', 'Audiobook Gen'],
-  },
   'OpenVoice (MyShell)': {
     ko: ['3초 음성 복제', '음색/억양 보존', '클로닝 엔진'],
     en: ['3s Voice Cloning', 'Tone Preservation', 'Voice Engine'],
@@ -231,10 +207,6 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
   'GitHub Copilot': {
     ko: ['코드 자동완성', 'IDE 플러그인', '인라인 제안'],
     en: ['Code Auto-complete', 'IDE Plugin', 'Inline Suggestions'],
-  },
-  'Phind': {
-    ko: ['개발자 검색엔진', '기술 문서 서칭', '코드 솔루션'],
-    en: ['Developer Search', 'Tech Docs', 'Code Solutions'],
   },
   'Bolt.new': {
     ko: ['인브라우저 VM', '풀스택 배포', '원스톱 앱 빌더'],
@@ -352,7 +324,7 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
     ko: ['광고 배너 자동화', '전환율 최적화', '카피라이팅'],
     en: ['Ad Banners', 'Conversion Boost', 'Creative Copy'],
   },
-  'Surfer SEO': {
+  'Surfer': {
     ko: ['SEO 점수 측정', '검색엔진 상위노출', '콘텐츠 가이드'],
     en: ['SEO Scoring', 'Search Ranking', 'Content Editor'],
   },
@@ -404,14 +376,6 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
     ko: ['초고속 3D 생성', '메타버스 오브젝트', '프롭 모델링'],
     en: ['Fast 3D Pipeline', 'Metaverse Props', 'Mesh Gen'],
   },
-  'Luma Genie': {
-    ko: ['일상어 3D 모델링', '디테일 메쉬', 'Luma AI'],
-    en: ['Natural Language 3D', 'Detailed Mesh', 'Luma AI'],
-  },
-  'CSM (Common Sense Machines)': {
-    ko: ['2D 단면→3D 메쉬', '공간 좌표 재구성', '메쉬 스캐너'],
-    en: ['2D to 3D Mesh', 'Spatial Reconstruction', 'Mesh Scanner'],
-  },
   'Manus / Devin': {
     ko: ['자율 AI 에이전트', '엔드투엔드 개발', '자율 웹서칭'],
     en: ['Autonomous Agent', 'End-to-End Dev', 'Auto Browsing'],
@@ -420,15 +384,11 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
     ko: ['노코드 워크플로우', '비즈니스 자동화', 'API 연동'],
     en: ['No-code Workflow', 'Business Automation', 'API Integration'],
   },
-  'Operator by OpenAI': {
-    ko: ['자율 브라우저 조작', '웹 예약/양식 자동화', 'OpenAI'],
-    en: ['Browser Operator', 'Web Form Automation', 'OpenAI'],
-  },
   'AutoGPT': {
     ko: ['목표 기반 자율 실행', '오픈소스 에이전트', '하위 과업 생성'],
     en: ['Goal-driven Execution', 'Open-source Agent', 'Subtask Loop'],
   },
-  'FinChat.io': {
+  'Fiscal.ai (구 FinChat)': {
     ko: ['기업 재무제표 분석', '어닝콜 대본 검색', '주가 지표'],
     en: ['Financial Analytics', 'Earnings Call Transcripts', 'Stock Metrics'],
   },
@@ -439,10 +399,6 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
   'Kavout AI': {
     ko: ['머신러닝 주식 분석', 'K-Score 투자 지표', '포트폴리오'],
     en: ['ML Stock Analysis', 'K-Score Metric', 'Portfolio Insights'],
-  },
-  'BloombergGPT': {
-    ko: ['금융 특화 LLM', '블룸버그 데이터셋', '시장 분석'],
-    en: ['Finance Specialized LLM', 'Bloomberg Dataset', 'Market AI'],
   },
 };
 
