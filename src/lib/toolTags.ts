@@ -316,10 +316,6 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
     ko: ['스마트 슬라이드', '자동 황금비율 디자인', '발표 자료'],
     en: ['Smart Slides', 'Auto Proportions', 'Presentation Decks'],
   },
-  'Anysummary': {
-    ko: ['영상/오디오 요약', '타임라인 리포트', '핵심 추출'],
-    en: ['Media Summary', 'Timeline Reports', 'Key Takeaways'],
-  },
   'AdCreative.ai': {
     ko: ['광고 배너 자동화', '전환율 최적화', '카피라이팅'],
     en: ['Ad Banners', 'Conversion Boost', 'Creative Copy'],

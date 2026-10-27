@@ -169,7 +169,7 @@ export const UI_TEXT = {
     inquiry: { ko: '문의하기', en: 'Contact Us' },
     admin: { ko: '관리자 센터', en: 'Admin Center' },
     logout: { ko: '로그아웃', en: 'Sign Out' },
-    login: { ko: '구글 로그인', en: 'Google Sign In' },
+    login: { ko: '로그인', en: 'Sign in' },
   },
   controls: {
     searchPlaceholder: {

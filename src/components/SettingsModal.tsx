@@ -11,6 +11,9 @@ interface SettingsModalProps {
   onClose: () => void;
   lang: Language;
   onToast: (message: string) => void;
+  /** Empties the bookmark list, including the account copy when signed in. */
+  onClearBookmarks: () => void;
+  bookmarksInAccount: boolean;
 }
 
 const Section: React.FC<{ icon: React.ReactNode; title: string; children: React.ReactNode }> = ({ icon, title, children }) => (
@@ -69,7 +72,7 @@ function Segmented<T extends string>({ value, options, onChange }: { value: T; o
   );
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, lang, onToast }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, lang, onToast, onClearBookmarks, bookmarksInAccount }) => {
   const isKo = lang === 'ko';
   const [settings, setSettings] = useState<UserSettings>(() => getStoredSettings());
 
@@ -86,11 +89,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, l
     { id: 'system', label: isKo ? '시스템' : 'System', icon: <Monitor className="w-5 h-5" /> },
   ];
 
-  const clearKey = (key: string, event: string | null, message: string) => {
+  const clearKey = (key: string, message: string) => {
     try {
       localStorage.removeItem(key);
     } catch {}
-    if (event) window.dispatchEvent(new Event(event));
     onToast(message);
   };
 
@@ -159,14 +161,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, l
 
         <Section icon={<Database className="w-4 h-4" />} title={isKo ? '이 기기에 저장된 정보' : 'Saved on this device'}>
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" onClick={() => clearKey('ai_hub_recent_searches', null, isKo ? '최근 검색어를 지웠어요.' : 'Recent searches cleared.')}>
+            <Button size="sm" onClick={() => clearKey('ai_hub_recent_searches', isKo ? '최근 검색어를 지웠어요.' : 'Recent searches cleared.')}>
               {isKo ? '최근 검색어 지우기' : 'Clear recent searches'}
             </Button>
             <Button
               size="sm"
               onClick={() => {
-                if (window.confirm(isKo ? '즐겨찾기를 모두 지울까요?' : 'Remove all bookmarks?')) {
-                  clearKey('aiBookmarksHub', 'aihub_bookmarks_changed', isKo ? '즐겨찾기를 모두 지웠어요.' : 'Bookmarks cleared.');
+                const question = bookmarksInAccount
+                  ? isKo ? '계정에 저장된 즐겨찾기까지 모두 지울까요?' : 'Remove all bookmarks, including the ones saved to your account?'
+                  : isKo ? '즐겨찾기를 모두 지울까요?' : 'Remove all bookmarks?';
+                if (window.confirm(question)) {
+                  onClearBookmarks();
+                  onToast(isKo ? '즐겨찾기를 모두 지웠어요.' : 'Bookmarks cleared.');
                 }
               }}
             >

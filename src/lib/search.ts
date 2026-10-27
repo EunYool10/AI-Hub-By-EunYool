@@ -24,6 +24,12 @@ export const CATEGORY_HINTS: Record<string, string[]> = {
 
 const FREE_WORDS = ['무료', '공짜', 'free'];
 
+// Everyday words with a space ("바이브 코딩", "자료 조사") and their categories. They are matched whole, not word by word.
+const HINT_PHRASES = new Map<string, Set<string>>();
+for (const [category, words] of Object.entries(CATEGORY_HINTS)) {
+  for (const w of words) if (w.includes(' ')) HINT_PHRASES.set(w, (HINT_PHRASES.get(w) || new Set<string>()).add(category));
+}
+
 export const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '');
 
 /** Categories whose everyday words appear in the query, with how many words matched. */
@@ -43,9 +49,24 @@ function fieldsOf(tool: AITool): string[] {
     .map((f) => String(f).toLowerCase());
 }
 
+/** Everyday phrases in the query, and the words outside them ("바이브 코딩 무료" → ["바이브 코딩"], ["무료"]). */
+function termsOf(q: string): { phrases: string[]; words: string[] } {
+  const inPhrase = new Array<boolean>(q.length).fill(false);
+  const phrases = [...HINT_PHRASES.keys()].filter((p) => {
+    const at = q.indexOf(p);
+    if (at >= 0) inPhrase.fill(true, at, at + p.length);
+    return at >= 0;
+  });
+  const words = [...q.matchAll(/\S+/g)]
+    .filter((m) => !inPhrase.slice(m.index, m.index + m[0].length).includes(true))
+    .map((m) => m[0]);
+  return { phrases, words };
+}
+
 /**
  * True when every word of the query fits the tool: by text (spaces ignored, so "chat gpt" finds ChatGPT),
- * by an everyday category word ("그림" → 이미지 생성), or by "무료" for free and freemium tools.
+ * by an everyday category word or phrase ("그림" → 이미지 생성, "바이브 코딩" → 앱·웹 만들기),
+ * or by "무료" for free and freemium tools.
  */
 export function toolMatches(tool: AITool, query: string): boolean {
   const q = query.toLowerCase().trim();
@@ -54,11 +75,15 @@ export function toolMatches(tool: AITool, query: string): boolean {
   const whole = normalize(q);
   // Spaces are ignored only for names ("chat gpt" → ChatGPT); in descriptions "app that" must not match "ppt".
   if (normalize(tool.name).includes(whole) || fields.some((f) => f.includes(q))) return true;
-  return q.split(/\s+/).every((word) => {
-    if (FREE_WORDS.includes(word)) return tool.price !== '유료';
-    if (fields.some((f) => f.includes(word))) return true;
-    return categoriesForQuery(word).has(tool.category);
-  });
+  const { phrases, words } = termsOf(q);
+  return (
+    phrases.every((p) => fields.some((f) => f.includes(p)) || HINT_PHRASES.get(p)!.has(tool.category)) &&
+    words.every((word) => {
+      if (FREE_WORDS.includes(word)) return tool.price !== '유료';
+      if (fields.some((f) => f.includes(word))) return true;
+      return categoriesForQuery(word).has(tool.category);
+    })
+  );
 }
 
 /** Matching tools, best first: name start, name, tag, everyday category word, description. */

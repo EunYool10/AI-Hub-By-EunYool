@@ -939,7 +939,14 @@ export default function App() {
         lang={lang}
       />
 
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} lang={lang} onToast={showToast} />
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        lang={lang}
+        onToast={showToast}
+        onClearBookmarks={() => commitBookmarks([])}
+        bookmarksInAccount={IS_STATIC_SITE && Boolean(currentUser)}
+      />
       <OtherAppsModal isOpen={isOtherAppsOpen} onClose={() => setIsOtherAppsOpen(false)} lang={lang} />
       <TermsModal isOpen={termsTab !== null} tab={termsTab || 'terms'} onTabChange={setTermsTab} onClose={() => setTermsTab(null)} lang={lang} />
       {IS_STATIC_SITE && (
