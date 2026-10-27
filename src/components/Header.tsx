@@ -382,7 +382,8 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={runAndClose(onOpenProfileModal)}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-2 border border-line text-left"
+              disabled={!onOpenProfileModal}
+              className="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-2 border border-line text-left disabled:cursor-default"
             >
               <Avatar user={currentUser} className="w-10 h-10 text-base" />
               <span className="min-w-0 flex-1">

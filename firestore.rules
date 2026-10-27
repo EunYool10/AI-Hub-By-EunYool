@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// AI Hub (database ai-studio-aihubbyyool-…): notices, accounts, inquiries.
+// AI Hub (database ai-studio-aihubbyyool-…): notices, accounts, bookmarks, inquiries.
 // Deployed by hand to this database only. Keep ADMIN in step with src/lib/authStorage.ts.
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -82,6 +82,24 @@ service cloud.firestore {
           && request.resource.data.status in ['active', 'suspended']
           && str(request.resource.data.get('memo', ''), 0, 1000));
       allow delete: if isAdmin();
+    }
+
+    // Bookmarked tool ids of one account, e.g. '3,75,102'. Only the owner reads and writes them.
+    match /bookmarks/{uid} {
+      function activeAccount() {
+        let path = /databases/$(database)/documents/users/$(request.auth.uid);
+        return exists(path) && get(path).data.status == 'active';
+      }
+
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn()
+        && request.auth.uid == uid
+        && activeAccount()
+        && request.resource.data.keys().hasOnly(['ids', 'updatedAt'])
+        && str(request.resource.data.ids, 0, 5000)
+        && request.resource.data.ids.matches('^([0-9]{1,15}(,[0-9]{1,15})*)?$')
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isAdmin() || (signedIn() && request.auth.uid == uid);
     }
 
     match /inquiries/{id} {

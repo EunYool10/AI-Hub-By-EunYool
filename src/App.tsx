@@ -24,7 +24,7 @@ import { getStoredSettings, updateStoredSettings, UserSettings } from './lib/set
 import { safeFetchJson } from './lib/api';
 import { IS_STATIC_SITE } from './lib/runtime';
 import { toolMatches } from './lib/search';
-import { finishKakaoLogin, listNotices, signOutHub, watchSession } from './lib/firebase';
+import { finishKakaoLogin, listNotices, loadBookmarks, saveBookmarks, signOutHub, watchSession } from './lib/firebase';
 import { LoginModal } from './components/LoginModal';
 import { TermsModal, TermsTab } from './components/TermsModal';
 import { OtherAppsModal } from './components/OtherAppsModal';
@@ -32,6 +32,15 @@ import { HubAdminModal } from './components/HubAdminModal';
 import { SettingsModal } from './components/SettingsModal';
 import { CATEGORIES } from './lib/categories';
 import { getCategoryLabel } from './lib/translations';
+
+// Uid of the account whose bookmarks this browser holds; unset for bookmarks made while signed out.
+const BOOKMARK_OWNER_KEY = 'aiBookmarksOwner';
+
+// #tool=<id> opens that tool's detail window, so a tool can be shared by link.
+const toolIdFromHash = () => {
+  const m = /^#tool=(\d+)$/.exec(window.location.hash);
+  return m ? Number(m[1]) : null;
+};
 
 export default function App() {
   // Google Logged In User State with resilient localStorage restoration
@@ -307,25 +316,59 @@ export default function App() {
     showToast('로그아웃 되었습니다.');
   };
 
-  const handleToggleBookmark = (id: number) => {
-    setBookmarks((prev) => {
-      let updated: number[];
-      if (prev.includes(id)) {
-        updated = prev.filter((bId) => bId !== id);
-        showToast(lang === 'en' ? 'Bookmark removed' : '북마크가 해제되었습니다');
-      } else {
-        updated = [...prev, id];
-        showToast(lang === 'en' ? '⭐ Bookmark added!' : '⭐ 북마크 등록 완료!');
-      }
-      try {
-        localStorage.setItem('aiBookmarksHub', JSON.stringify(updated));
-        window.dispatchEvent(new CustomEvent('aihub_bookmarks_changed', { detail: updated }));
-      } catch (e) {
-        console.error('Failed to save bookmarks:', e);
-      }
-      return updated;
-    });
+  // Account the bookmarks are saved to (static site, once its list has loaded).
+  const bookmarkUidRef = useRef<string | null>(null);
+
+  const commitBookmarks = (updated: number[], toAccount = true) => {
+    setBookmarks(updated);
+    try {
+      localStorage.setItem('aiBookmarksHub', JSON.stringify(updated));
+      window.dispatchEvent(new CustomEvent('aihub_bookmarks_changed', { detail: updated }));
+    } catch (e) {
+      console.error('Failed to save bookmarks:', e);
+    }
+    if (toAccount && bookmarkUidRef.current) saveBookmarks(updated);
   };
+
+  const handleToggleBookmark = (id: number) => {
+    if (bookmarks.includes(id)) {
+      commitBookmarks(bookmarks.filter((bId) => bId !== id));
+      showToast(lang === 'en' ? 'Bookmark removed' : '북마크가 해제되었습니다');
+    } else {
+      commitBookmarks([...bookmarks, id]);
+      showToast(lang === 'en' ? '⭐ Bookmark added!' : '⭐ 북마크 등록 완료!');
+    }
+  };
+
+  // Signed in: the account's list replaces this browser's copy, and bookmarks made while signed out join it.
+  async function syncAccountBookmarks(uid: string) {
+    try {
+      const saved = await loadBookmarks();
+      const local = JSON.parse(localStorage.getItem('aiBookmarksHub') || '[]');
+      const guestIds: number[] =
+        Array.isArray(local) && !localStorage.getItem(BOOKMARK_OWNER_KEY) ? local.filter((id) => !saved.includes(id)) : [];
+      localStorage.setItem(BOOKMARK_OWNER_KEY, uid);
+      bookmarkUidRef.current = uid;
+      commitBookmarks([...saved, ...guestIds], guestIds.length > 0);
+      if (guestIds.length) {
+        showToast(lang === 'en' ? 'Bookmarks on this device were saved to your account' : `이 기기의 북마크 ${guestIds.length}개를 계정에 저장했어요`);
+      }
+    } catch (e) {
+      console.error('[BOOKMARKS] load failed', e);
+    }
+  }
+
+  // Signed out: the account's copy leaves this browser.
+  function dropAccountBookmarks() {
+    bookmarkUidRef.current = null;
+    try {
+      if (!localStorage.getItem(BOOKMARK_OWNER_KEY)) return;
+      localStorage.removeItem(BOOKMARK_OWNER_KEY);
+    } catch {
+      return;
+    }
+    commitBookmarks([], false);
+  }
 
   const handleAddTool = (newToolData: Omit<AITool, 'id'>) => {
     const newTool: AITool = {
@@ -360,16 +403,7 @@ export default function App() {
       }
       return updated;
     });
-    setBookmarks((prev) => {
-      const updated = prev.filter((bId) => bId !== id);
-      try {
-        localStorage.setItem('aiBookmarksHub', JSON.stringify(updated));
-        window.dispatchEvent(new CustomEvent('aihub_bookmarks_changed', { detail: updated }));
-      } catch (e) {
-        console.error('Failed to save bookmarks:', e);
-      }
-      return updated;
-    });
+    if (bookmarks.includes(id)) commitBookmarks(bookmarks.filter((bId) => bId !== id));
     showToast('AI 도구가 삭제되었습니다.');
   };
 
@@ -528,8 +562,39 @@ export default function App() {
     return watchSession((user, notice) => {
       setCurrentUser(user);
       if (notice) showToast(notice);
+      if (user) syncAccountBookmarks(user.uid);
+      else dropAccountBookmarks();
     });
   }, []);
+
+  // The address follows the open detail window, so it can be copied and shared.
+  const openToolDetail = (tool: AITool) => {
+    setDetailModalTool(tool);
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#tool=${tool.id}`);
+  };
+
+  const closeToolDetail = () => {
+    setDetailModalTool(null);
+    if (toolIdFromHash() !== null) window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  };
+
+  // Opens the tool a shared link points at, on load and whenever the address changes.
+  useEffect(() => {
+    const openFromHash = () => {
+      const id = toolIdFromHash();
+      if (id === null) return;
+      const tool = activeTools.find((t) => t.id === id);
+      if (tool) {
+        setDetailModalTool(tool);
+      } else {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        showToast(lang === 'en' ? 'That tool is no longer listed.' : '목록에 없는 AI 도구예요.');
+      }
+    };
+    openFromHash();
+    window.addEventListener('hashchange', openFromHash);
+    return () => window.removeEventListener('hashchange', openFromHash);
+  }, [activeTools]);
 
   // If Full Admin Console is active and user is admin
   if (isAdminConsoleActive && currentUser?.isAdmin) {
@@ -595,7 +660,7 @@ export default function App() {
         <Hero
           lang={lang}
           tools={activeTools}
-          onSelectTool={setDetailModalTool}
+          onSelectTool={openToolDetail}
           onSelectCategory={(category) => {
             setSelectedCategory(category);
             scrollToDirectory();
@@ -672,8 +737,8 @@ export default function App() {
                     <p className="mt-2 text-sm text-muted max-w-sm leading-relaxed">
                       {showBookmarksOnly && activeBookmarksCount === 0
                         ? lang === 'ko'
-                          ? '카드의 ☆ 버튼을 눌러 자주 쓰는 도구를 모아 보세요.'
-                          : 'Tap ☆ on any card to save tools you use often.'
+                          ? `카드의 ☆ 버튼을 눌러 자주 쓰는 도구를 모아 보세요.${IS_STATIC_SITE && !currentUser ? ' 로그인하면 다른 기기에서도 볼 수 있어요.' : ''}`
+                          : `Tap ☆ on any card to save tools you use often.${IS_STATIC_SITE && !currentUser ? ' Sign in to see them on your other devices.' : ''}`
                         : lang === 'ko'
                           ? '검색어나 필터를 바꿔 보세요. 찾는 도구가 목록에 없다면 제안해 주세요.'
                           : 'Try a different search or filter — or suggest the tool you are looking for.'}
@@ -702,7 +767,7 @@ export default function App() {
                             ? () => handleDeleteTool(tool.id)
                             : undefined
                         }
-                        onOpenDetail={(t) => setDetailModalTool(t)}
+                        onOpenDetail={openToolDetail}
                         index={index}
                         lang={lang}
                       />
@@ -742,9 +807,10 @@ export default function App() {
       <AIDetailModal
         tool={detailModalTool}
         isOpen={Boolean(detailModalTool)}
-        onClose={() => setDetailModalTool(null)}
+        onClose={closeToolDetail}
         isBookmarked={detailModalTool ? bookmarks.includes(detailModalTool.id) : false}
         onToggleBookmark={handleToggleBookmark}
+        onToast={showToast}
         lang={lang}
       />
 

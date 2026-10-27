@@ -12,7 +12,7 @@ interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   lang: Language;
-  onOpenTerms: (tab: 'terms' | 'privacy') => void;
+  onOpenTerms: (tab: 'terms' | 'policy' | 'privacy') => void;
 }
 
 const KakaoGlyph: React.FC = () => (
@@ -103,11 +103,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, lang, o
         <p className="mt-6 text-xs leading-relaxed text-subtle">
           {isKo ? (
             <>
-              계속하면{' '}
+              계속하면 만 14세 이상이며{' '}
               <button type="button" onClick={() => onOpenTerms('terms')} className="underline underline-offset-2 hover:text-fg">
                 이용약관
               </button>
-              과{' '}
+              ,{' '}
+              <button type="button" onClick={() => onOpenTerms('policy')} className="underline underline-offset-2 hover:text-fg">
+                운영정책
+              </button>
+              ,{' '}
               <button type="button" onClick={() => onOpenTerms('privacy')} className="underline underline-offset-2 hover:text-fg">
                 개인정보 처리방침
               </button>
@@ -115,7 +119,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, lang, o
             </>
           ) : (
             <>
-              By continuing you agree to the{' '}
+              By continuing you confirm you are 14 or older and agree to the{' '}
               <button type="button" onClick={() => onOpenTerms('terms')} className="underline underline-offset-2 hover:text-fg">
                 Terms
               </button>{' '}

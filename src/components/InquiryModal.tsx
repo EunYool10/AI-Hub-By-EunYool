@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   AlertTriangle,
   Send,
@@ -62,6 +62,13 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, onS
   } | null>(null);
 
   const isRecommend = inquiryType === TYPE_RECOMMEND;
+
+  // Signed-in users don't retype their name and reply address.
+  useEffect(() => {
+    if (!isOpen || !currentUser) return;
+    setName((v) => v || currentUser.displayName || '');
+    setEmail((v) => v || currentUser.email || '');
+  }, [isOpen, currentUser]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

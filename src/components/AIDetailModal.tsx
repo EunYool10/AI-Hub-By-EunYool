@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Star, Copy, Check, Sparkles, Zap, Lightbulb, Users, Globe, ArrowUpRight } from 'lucide-react';
+import { X, Star, Copy, Check, Sparkles, Zap, Lightbulb, Users, Globe, ArrowUpRight, Link2 } from 'lucide-react';
 import { AITool, BadgeInfo } from '../types';
 import { BADGES } from '../data/aiToolsData';
 import { TOOL_DETAILS } from '../data/toolDetails';
@@ -17,6 +17,7 @@ interface AIDetailModalProps {
   onClose: () => void;
   isBookmarked: boolean;
   onToggleBookmark: (id: number) => void;
+  onToast?: (message: string) => void;
   lang?: Language;
 }
 
@@ -220,12 +221,15 @@ export const AIDetailModal: React.FC<AIDetailModalProps> = ({
   onClose,
   isBookmarked,
   onToggleBookmark,
+  onToast,
   lang = 'ko',
 }) => {
   const [copied, setCopied] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   useEffect(() => {
     setCopied(false);
+    setShareCopied(false);
   }, [tool?.id]);
 
   if (!tool) return null;
@@ -260,6 +264,19 @@ export const AIDetailModal: React.FC<AIDetailModalProps> = ({
     );
   };
 
+  // Link back to this hub with the detail window open (see toolIdFromHash in App).
+  const handleCopyShareLink = () => {
+    const link = `${window.location.origin}${window.location.pathname}#tool=${tool.id}`;
+    navigator.clipboard?.writeText(link).then(
+      () => {
+        setShareCopied(true);
+        window.setTimeout(() => setShareCopied(false), 2000);
+        onToast?.(isKo ? '공유 링크를 복사했어요' : 'Share link copied');
+      },
+      () => onToast?.(isKo ? '링크를 복사하지 못했어요' : 'Could not copy the link')
+    );
+  };
+
   const hasHighlights = extraDetails.highlights && extraDetails.highlights.length > 0;
   const hasUseCases = extraDetails.useCases && extraDetails.useCases.length > 0;
   const hasProTip = Boolean(extraDetails.proTip && extraDetails.proTip.trim());
@@ -273,6 +290,18 @@ export const AIDetailModal: React.FC<AIDetailModalProps> = ({
       {/* Header */}
       <div className="relative px-5 sm:px-7 pt-4 sm:pt-6 pb-5 border-b border-line shrink-0">
         <div className="absolute right-3 top-3 sm:right-4 sm:top-4 flex items-center gap-1">
+          <button
+            type="button"
+            onClick={handleCopyShareLink}
+            aria-label={isKo ? '공유 링크 복사' : 'Copy share link'}
+            title={isKo ? '공유 링크 복사' : 'Copy share link'}
+            className={cn(
+              'w-9 h-9 inline-flex items-center justify-center rounded-lg transition-colors',
+              shareCopied ? 'text-mint' : 'text-muted hover:text-fg hover:bg-fg/[0.07]'
+            )}
+          >
+            {shareCopied ? <Check className="w-[18px] h-[18px]" /> : <Link2 className="w-[18px] h-[18px]" />}
+          </button>
           <button
             type="button"
             onClick={() => onToggleBookmark(tool.id)}
@@ -291,7 +320,7 @@ export const AIDetailModal: React.FC<AIDetailModalProps> = ({
           </IconButton>
         </div>
 
-        <div className="flex items-start gap-4 pr-20">
+        <div className="flex items-start gap-4 pr-28">
           <AIFavicon
             url={tool.url}
             name={tool.name}

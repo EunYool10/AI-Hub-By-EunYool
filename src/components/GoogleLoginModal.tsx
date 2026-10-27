@@ -82,6 +82,14 @@ export const GoogleLoginModal: React.FC<GoogleLoginModalProps> = ({
     let isMounted = true;
 
     const initializeClient = async () => {
+      // The Google script is only needed here, so it loads when this window first opens.
+      if (!document.querySelector('script[src*="accounts.google.com/gsi/client"]')) {
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        document.head.appendChild(script);
+      }
+
       let clientId =
         (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID ||
         '711747484809-0u95nfple024afln320mt1cglk268oi5.apps.googleusercontent.com';

@@ -200,7 +200,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             setActiveIndex(-1);
           }}
           onKeyDown={handleKeyDown}
-          placeholder={isKo ? '도구 이름이나 하고 싶은 일 (예: 그림, 영상 편집, 무료 번역)' : 'Tool name or task (e.g. images, video editing)'}
+          placeholder={isKo ? '도구 이름, 하고 싶은 일 검색' : 'Search tools or tasks'}
           enterKeyHint="search"
           className="w-full h-full bg-transparent pl-13 pr-24 text-base text-fg placeholder:text-subtle focus:outline-none [&::-webkit-search-cancel-button]:hidden"
         />

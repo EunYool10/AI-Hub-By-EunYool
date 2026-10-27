@@ -94,7 +94,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             </span>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-fg truncate">{title}</h2>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-fg break-keep">{title}</h2>
                 <span
                   className="inline-flex items-center h-6 px-2 rounded-md bg-fg/[0.07] text-xs font-semibold tabular-nums text-muted"
                   aria-label={isKo ? `${resultCount}개` : `${resultCount} results`}
@@ -102,13 +102,13 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                   {resultCount}
                 </span>
               </div>
-              {description && <p className="mt-0.5 text-sm text-muted truncate">{description}</p>}
+              {description && <p className="mt-0.5 text-sm text-muted break-keep">{description}</p>}
             </div>
           </div>
         </div>
 
         {/* Controls */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 pb-0.5">
+        <div className="flex flex-wrap items-center gap-2">
           <div role="radiogroup" aria-label={isKo ? '가격 필터' : 'Price filter'} className="flex items-center p-1 h-10 rounded-xl bg-surface-2 border border-line shrink-0">
             {PRICE_OPTIONS.map((opt) => {
               const isActive = selectedPrice === opt.value;

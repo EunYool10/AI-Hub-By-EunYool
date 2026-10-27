@@ -173,9 +173,11 @@ export function watchSession(onChange: (user: UserProfile | null, notice?: strin
       }
       const kakao = isKakao ? JSON.parse(sessionStorage.getItem(KAKAO_PROFILE_KEY) || '{}') : {};
       sessionStorage.removeItem(KAKAO_PROFILE_KEY);
+      // Same limits as firestore.rules (name ≤ 60, photo ≤ 2048), or the write is refused and sign-in fails.
+      const photo = (isKakao ? kakao.photo : fbUser.photoURL) || '';
       const fresh = {
-        name: (isKakao ? kakao.name : fbUser.displayName) || (fbUser.email || '').split('@')[0] || '사용자',
-        photo: (isKakao ? kakao.photo : fbUser.photoURL) || '',
+        name: ((isKakao ? kakao.name : fbUser.displayName) || (fbUser.email || '').split('@')[0] || '사용자').slice(0, 60),
+        photo: photo.length <= 2048 ? photo : '',
       };
       if (!snap.exists()) {
         await setDoc(ref, {
@@ -252,6 +254,45 @@ export async function listUsers(): Promise<HubUser[]> {
 }
 
 export const updateUser = (uid: string, patch: { status?: HubUser['status']; memo?: string }) => updateDoc(doc(db, 'users', uid), patch);
+
+// ── Bookmarks ────────────────────────────────────────────────────────
+// One document per account: bookmarks/{uid} = { ids: '3,75,102', updatedAt }. A plain id list keeps the rule to one regex.
+
+const BOOKMARK_LIMIT = 300;
+
+export async function loadBookmarks(): Promise<number[]> {
+  const uid = auth.currentUser?.uid;
+  if (!uid) throw new Error('signed out');
+  const snap = await getDoc(doc(db, 'bookmarks', uid));
+  const ids = String(snap.data()?.ids || '');
+  return ids ? ids.split(',').map(Number) : [];
+}
+
+let queuedBookmarks: number[] | null = null;
+let savingBookmarks = false;
+
+/** Saves the latest list. Calls made during a save collapse into one more write, so writes never land out of order. */
+export function saveBookmarks(ids: number[]): void {
+  queuedBookmarks = ids;
+  if (savingBookmarks) return;
+  savingBookmarks = true;
+  (async () => {
+    while (queuedBookmarks) {
+      const next = queuedBookmarks;
+      queuedBookmarks = null;
+      const uid = auth.currentUser?.uid;
+      if (!uid) break;
+      const clean = next.filter((id) => Number.isSafeInteger(id) && id >= 0).slice(-BOOKMARK_LIMIT);
+      try {
+        await setDoc(doc(db, 'bookmarks', uid), { ids: clean.join(','), updatedAt: serverTimestamp() });
+      } catch (e) {
+        console.error('[BOOKMARKS] save failed', e);
+      }
+    }
+    queuedBookmarks = null;
+    savingBookmarks = false;
+  })();
+}
 
 // ── Inquiries ────────────────────────────────────────────────────────
 

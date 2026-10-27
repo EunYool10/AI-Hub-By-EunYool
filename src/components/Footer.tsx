@@ -8,7 +8,7 @@ interface FooterProps {
   onOpenNoticeModal?: () => void;
   onOpenRandomModal?: () => void;
   onOpenSettings?: () => void;
-  onOpenTerms?: (tab: 'terms' | 'privacy') => void;
+  onOpenTerms?: (tab: 'terms' | 'policy' | 'privacy') => void;
   onOpenOtherApps?: () => void;
   lang?: Language;
 }
@@ -92,6 +92,9 @@ export const Footer: React.FC<FooterProps> = ({
             <span>{UI_TEXT.footer.copyright[lang]}</span>
             <button type="button" onClick={() => onOpenTerms?.('terms')} className="hover:text-fg transition-colors">
               {isKo ? '이용약관' : 'Terms'}
+            </button>
+            <button type="button" onClick={() => onOpenTerms?.('policy')} className="hover:text-fg transition-colors">
+              {isKo ? '운영정책' : 'Policy'}
             </button>
             <button type="button" onClick={() => onOpenTerms?.('privacy')} className="font-semibold hover:text-fg transition-colors">
               {isKo ? '개인정보 처리방침' : 'Privacy'}
