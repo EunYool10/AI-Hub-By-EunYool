@@ -22,6 +22,13 @@ const CATEGORY_META: Record<NoticeItem['category'], { ko: string; en: string; cl
   NOTICE: { ko: '안내', en: 'Notice', cls: 'text-amber-400 bg-amber-400/12' },
 };
 
+// Firebase gives ISO times; show the reader's local date (2026.10.28). Other strings pass through.
+const noticeDate = (s: string) => {
+  const d = new Date(s);
+  if (!s.includes('T') || Number.isNaN(d.getTime())) return s;
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+};
+
 const CategoryBadge: React.FC<{ category: NoticeItem['category']; lang: 'ko' | 'en' }> = ({ category, lang }) => {
   const meta = CATEGORY_META[category] || CATEGORY_META.NOTICE;
   return (
@@ -102,7 +109,7 @@ export const NoticeModal: React.FC<NoticeModalProps> = ({ isOpen, onClose, lang,
           <ModalBody className="px-5 sm:px-8 py-6 animate-in fade-in duration-150">
             <div className="flex items-center gap-2 flex-wrap text-xs text-muted">
               <CategoryBadge category={selectedNotice.category} lang={lang} />
-              <time className="tabular-nums">{selectedNotice.createdAt}</time>
+              <time dateTime={selectedNotice.createdAt} className="tabular-nums">{noticeDate(selectedNotice.createdAt)}</time>
               <span aria-hidden="true">·</span>
               <span>{selectedNotice.author || (isKo ? '관리자' : 'Admin')}</span>
             </div>
@@ -168,7 +175,7 @@ export const NoticeModal: React.FC<NoticeModalProps> = ({ isOpen, onClose, lang,
                         <div className="flex items-center gap-2 text-xs text-muted">
                           {item.isPinned && <Pin className="w-3.5 h-3.5 text-brand" aria-label={isKo ? '고정됨' : 'Pinned'} />}
                           <CategoryBadge category={item.category} lang={lang} />
-                          <time className="tabular-nums">{item.createdAt}</time>
+                          <time dateTime={item.createdAt} className="tabular-nums">{noticeDate(item.createdAt)}</time>
                         </div>
                         <h3 className="mt-1.5 text-[0.9375rem] font-semibold text-fg line-clamp-1 group-hover:text-brand transition-colors">
                           {item.title}
