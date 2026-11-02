@@ -32,10 +32,6 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
     ko: ['초장문 컨텍스트', '웹 서칭', '문서 리서치'],
     en: ['Long Context', 'Web Search', 'Research'],
   },
-  'Perplexity Pages': {
-    ko: ['리포트 생성', '구조화 문서', '웹 공유'],
-    en: ['Report Generator', 'Structured Docs', 'Web Share'],
-  },
   'Jasper AI': {
     ko: ['마케팅 카피', '브랜드 보이스', '광고 기획'],
     en: ['Marketing Copy', 'Brand Voice', 'Ad Campaign'],
@@ -212,17 +208,13 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
     ko: ['인브라우저 VM', '풀스택 배포', '원스톱 앱 빌더'],
     en: ['In-browser VM', 'Fullstack Deploy', 'One-stop Builder'],
   },
-  'Windsurf': {
-    ko: ['Cascade 에이전트', '멀티파일 코딩', '차세대 IDE'],
-    en: ['Cascade Agent', 'Multi-file Coding', 'Next-gen IDE'],
+  'Devin Desktop (구 Windsurf)': {
+    ko: ['에이전트 관리', '멀티파일 코딩', 'AI 코드 에디터'],
+    en: ['Agent Command Center', 'Multi-file Coding', 'AI Code Editor'],
   },
   'Replit AI': {
     ko: ['클라우드 IDE', '협업 코딩', '원클릭 배포'],
     en: ['Cloud IDE', 'Collaborative Coding', 'One-click Deploy'],
-  },
-  'Tabnine': {
-    ko: ['프라이빗 보안', '사내 코드 학습', '코드 완성'],
-    en: ['Enterprise Security', 'Private Training', 'Code Completion'],
   },
   'Claude Code': {
     ko: ['터미널 에이전트', '멀티파일 수정', '자율 코딩'],
@@ -344,9 +336,9 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
     ko: ['실시간 출처 검색', '정확한 팩트체크', '대화형 검색엔진'],
     en: ['Cited Sources', 'Fact-checking', 'Answer Engine'],
   },
-  'NotebookLM': {
-    ko: ['구글 연구 노트', '2인 AI 팟캐스트', '문서 기반 분석'],
-    en: ['Google Research Note', 'Audio Deep Dive', 'Source-grounded'],
+  'Gemini Notebook (구 NotebookLM)': {
+    ko: ['구글 AI 노트', '오디오·영상 요약', '자료 기반 답변'],
+    en: ['Google AI Notebook', 'Audio & Video Overviews', 'Source-grounded'],
   },
   'Elicit': {
     ko: ['논문 데이터베이스', '학술 연구 보조', '실증 결과 요약'],
@@ -372,13 +364,21 @@ const CURATED_TOOL_TAGS: Record<string, FeatureTags> = {
     ko: ['초고속 3D 생성', '메타버스 오브젝트', '프롭 모델링'],
     en: ['Fast 3D Pipeline', 'Metaverse Props', 'Mesh Gen'],
   },
-  'Manus / Devin': {
-    ko: ['자율 AI 에이전트', '엔드투엔드 개발', '자율 웹서칭'],
-    en: ['Autonomous Agent', 'End-to-End Dev', 'Auto Browsing'],
+  'Manus': {
+    ko: ['자율 AI 에이전트', '웹 리서치', '문서 자동 작성'],
+    en: ['Autonomous Agent', 'Web Research', 'Auto Documents'],
   },
-  'n8n / Make': {
-    ko: ['노코드 워크플로우', '비즈니스 자동화', 'API 연동'],
-    en: ['No-code Workflow', 'Business Automation', 'API Integration'],
+  'Devin': {
+    ko: ['AI 소프트웨어 엔지니어', 'PR 자동 생성', '개발 작업 위임'],
+    en: ['AI Software Engineer', 'Auto Pull Requests', 'Task Delegation'],
+  },
+  'n8n': {
+    ko: ['워크플로우 자동화', '오픈소스', '직접 설치'],
+    en: ['Workflow Automation', 'Open Source', 'Self-hosted'],
+  },
+  'Make': {
+    ko: ['노코드 자동화', '앱 연동', '시나리오 편집기'],
+    en: ['No-code Automation', 'App Integration', 'Visual Scenarios'],
   },
   'AutoGPT': {
     ko: ['목표 기반 자율 실행', '오픈소스 에이전트', '하위 과업 생성'],

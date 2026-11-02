@@ -1,0 +1,42 @@
+name: Check tool links
+
+# Every Monday 09:00 KST: open every tool's website and report dead, parked or moved ones in an issue.
+on:
+  schedule:
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - id: run
+        run: |
+          set +e
+          node --max-http-header-size=262144 scripts/check-links.mjs > report.md
+          echo "problems=$?" >> "$GITHUB_OUTPUT"
+          cat report.md
+      # One open issue labelled link-check at a time: new findings are added as comments, and it closes once all is well.
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          PROBLEMS: ${{ steps.run.outputs.problems }}
+        run: |
+          gh label create link-check --color d93f0b --description "Weekly tool link check" 2>/dev/null || true
+          open=$(gh issue list --label link-check --state open --json number --jq '.[0].number')
+          if [ "$PROBLEMS" != "0" ]; then
+            if [ -n "$open" ]; then
+              gh issue comment "$open" --body-file report.md
+            else
+              gh issue create --title "도구 링크 점검: 확인이 필요한 사이트가 있어요" --label link-check --body-file report.md
+            fi
+          elif [ -n "$open" ]; then
+            gh issue close "$open" --comment "다시 확인해 보니 모든 사이트가 정상이에요."
+          fi

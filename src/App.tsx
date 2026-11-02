@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { Suspense, lazy, useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { ArrowUp, SearchX, RotateCcw, Lightbulb } from 'lucide-react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
@@ -10,13 +10,10 @@ import { AIDetailModal } from './components/AIDetailModal';
 import { NoticeModal } from './components/NoticeModal';
 import { RandomModal } from './components/RandomModal';
 import { InquiryModal } from './components/InquiryModal';
-import { GoogleLoginModal, UserProfile } from './components/GoogleLoginModal';
-import { UserProfileModal, UserProfileTab } from './components/UserProfileModal';
-import { AdminModal } from './components/AdminModal';
-import { AdminConsole } from './components/admin/AdminConsole';
+import type { UserProfile } from './components/GoogleLoginModal';
+import type { UserProfileTab } from './components/UserProfileModal';
 import { Toast } from './components/Toast';
 import { Footer } from './components/Footer';
-import { AdminStatusPanel } from './components/AdminStatusPanel';
 import { INITIAL_AI_TOOLS } from './data/aiToolsData';
 import { AITool, Category, NoticeItem } from './types';
 import { getStoredUser, saveStoredUser, clearStoredUser } from './lib/authStorage';
@@ -25,14 +22,21 @@ import { safeFetchJson } from './lib/api';
 import { IS_STATIC_SITE } from './lib/runtime';
 import { toolMatches } from './lib/search';
 import { getSimilarTools } from './lib/toolTags';
-import { finishKakaoLogin, listNotices, loadBookmarks, saveBookmarks, signOutHub, watchSession } from './lib/firebase';
+import { deleteAccount, finishKakaoLogin, listNotices, loadBookmarks, saveBookmarks, signOutHub, watchSession } from './lib/firebase';
 import { LoginModal } from './components/LoginModal';
 import { TermsModal, TermsTab } from './components/TermsModal';
 import { OtherAppsModal } from './components/OtherAppsModal';
-import { HubAdminModal } from './components/HubAdminModal';
 import { SettingsModal } from './components/SettingsModal';
 import { CATEGORIES, currentCategory } from './lib/categories';
 import { getCategoryLabel } from './lib/translations';
+
+// Admin and old server-mode screens load only when opened, so visitors download less.
+const GoogleLoginModal = lazy(() => import('./components/GoogleLoginModal').then((m) => ({ default: m.GoogleLoginModal })));
+const UserProfileModal = lazy(() => import('./components/UserProfileModal').then((m) => ({ default: m.UserProfileModal })));
+const AdminModal = lazy(() => import('./components/AdminModal').then((m) => ({ default: m.AdminModal })));
+const AdminConsole = lazy(() => import('./components/admin/AdminConsole').then((m) => ({ default: m.AdminConsole })));
+const AdminStatusPanel = lazy(() => import('./components/AdminStatusPanel').then((m) => ({ default: m.AdminStatusPanel })));
+const HubAdminModal = lazy(() => import('./components/HubAdminModal').then((m) => ({ default: m.HubAdminModal })));
 
 // Uid of the account whose bookmarks this browser holds; unset for bookmarks made while signed out.
 const BOOKMARK_OWNER_KEY = 'aiBookmarksOwner';
@@ -319,9 +323,9 @@ export default function App() {
     saveStoredUser(user);
 
     if (user.isAdmin) {
-      showToast(`👑 관리자 계정(${user.email})으로 로그인 되었습니다.`);
+      showToast(lang === 'en' ? `👑 Signed in as admin (${user.email})` : `👑 관리자 계정(${user.email})으로 로그인 되었습니다.`);
     } else {
-      showToast(`Google 로그인 완료 (${user.displayName || user.email.split('@')[0]})`);
+      showToast(lang === 'en' ? `Signed in (${user.displayName || user.email.split('@')[0]})` : `Google 로그인 완료 (${user.displayName || user.email.split('@')[0]})`);
     }
   };
 
@@ -329,7 +333,7 @@ export default function App() {
     if (IS_STATIC_SITE) signOutHub();
     setCurrentUser(null);
     clearStoredUser();
-    showToast('로그아웃 되었습니다.');
+    showToast(lang === 'en' ? 'Signed out.' : '로그아웃 되었습니다.');
   };
 
   // Account the bookmarks are saved to (static site, once its list has loaded).
@@ -404,7 +408,7 @@ export default function App() {
       return updated;
     });
 
-    showToast(`✨ '${newTool.name}' 도구가 목록에 등록되었습니다!`);
+    showToast(lang === 'en' ? `✨ '${newTool.name}' was added to the list.` : `✨ '${newTool.name}' 도구가 목록에 등록되었습니다!`);
   };
 
   const handleDeleteTool = (id: number) => {
@@ -420,7 +424,7 @@ export default function App() {
       return updated;
     });
     if (bookmarks.includes(id)) commitBookmarks(bookmarks.filter((bId) => bId !== id));
-    showToast('AI 도구가 삭제되었습니다.');
+    showToast(lang === 'en' ? 'Tool removed.' : 'AI 도구가 삭제되었습니다.');
   };
 
   const handleUpdateAllTools = (updatedTools: AITool[]) => {
@@ -600,10 +604,20 @@ export default function App() {
 
   useEffect(() => {
     if (!IS_STATIC_SITE) return;
-    finishKakaoLogin().catch((e) => showToast(e.message || '카카오 로그인에 실패했어요.'));
+    finishKakaoLogin().catch((e) =>
+      showToast(
+        e?.message === 'expired'
+          ? lang === 'en' ? 'The Kakao sign-in request expired. Please try again.' : '카카오 로그인 요청이 만료되었어요. 다시 시도해 주세요.'
+          : lang === 'en' ? 'Kakao sign-in failed.' : '카카오 로그인에 실패했어요.'
+      )
+    );
     return watchSession((user, notice) => {
       setCurrentUser(user);
-      if (notice) showToast(notice);
+      if (notice === 'suspended') {
+        showToast(lang === 'en' ? 'This account is suspended under our policy. Contact eunyool100208@gmail.com.' : '운영 정책에 따라 이용이 정지된 계정이에요. 문의는 eunyool100208@gmail.com 으로 보내 주세요.');
+      } else if (notice === 'failed') {
+        showToast(lang === 'en' ? 'Could not load your account. Please try again later.' : '로그인 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.');
+      }
       if (user) syncAccountBookmarks(user.uid);
       else dropAccountBookmarks();
     });
@@ -642,6 +656,7 @@ export default function App() {
   if (isAdminConsoleActive && currentUser?.isAdmin) {
     return (
       <div className="min-h-screen bg-bg text-fg ">
+        <Suspense fallback={null}>
         <AdminConsole
           currentUser={currentUser}
           lang={lang}
@@ -653,6 +668,7 @@ export default function App() {
           onLogout={handleLogout}
           showToast={showToast}
         />
+        </Suspense>
         <Toast message={toastMessage} />
       </div>
     );
@@ -878,15 +894,19 @@ export default function App() {
         currentUser={currentUser}
       />
 
+      <Suspense fallback={null}>
       {/* Google Login Modal */}
+      {isGoogleLoginOpen && (
       <GoogleLoginModal
         isOpen={isGoogleLoginOpen}
         onClose={() => setIsGoogleLoginOpen(false)}
         onLoginSuccess={handleLoginSuccess}
         lang={lang}
       />
+      )}
 
       {/* Integrated User Profile & Preferences Modal */}
+      {isProfileModalOpen && (
       <UserProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
@@ -902,8 +922,10 @@ export default function App() {
         lang={lang}
         onLangChange={(newLang) => setLang(newLang)}
       />
+      )}
 
       {/* Admin Dashboard Center Modal */}
+      {isAdminModalOpen && (
       <AdminModal
         isOpen={isAdminModalOpen}
         onClose={() => setIsAdminModalOpen(false)}
@@ -915,18 +937,26 @@ export default function App() {
         onSelectCategory={(cat) => setSelectedCategory(cat as Category)}
         onOpenAdminConsole={() => setIsAdminConsoleActive(true)}
       />
+      )}
+
+      {/* Admin Status Panel Overlay (Main Layout Level for Admin Users) */}
+      {currentUser?.isAdmin && isAdminViewEnabled && (
+        <AdminStatusPanel isOpen onClose={() => setIsAdminViewEnabled(false)} lang={lang} />
+      )}
+      {IS_STATIC_SITE && currentUser?.isAdmin && isHubAdminOpen && (
+        <HubAdminModal
+          isOpen
+          onClose={() => setIsHubAdminOpen(false)}
+          currentUser={currentUser}
+          lang={lang}
+          onToast={showToast}
+          onNoticesChanged={loadStaticNotices}
+        />
+      )}
+      </Suspense>
 
       {/* Toast Notification */}
       <Toast message={toastMessage} />
-
-      {/* Admin Status Panel Overlay (Main Layout Level for Admin Users) */}
-      {currentUser?.isAdmin && (
-        <AdminStatusPanel
-          isOpen={isAdminViewEnabled}
-          onClose={() => setIsAdminViewEnabled(false)}
-          lang={lang}
-        />
-      )}
 
       {/* Footer */}
       <Footer
@@ -946,22 +976,13 @@ export default function App() {
         onToast={showToast}
         onClearBookmarks={() => commitBookmarks([])}
         bookmarksInAccount={IS_STATIC_SITE && Boolean(currentUser)}
+        onDeleteAccount={IS_STATIC_SITE && currentUser ? deleteAccount : undefined}
       />
       <OtherAppsModal isOpen={isOtherAppsOpen} onClose={() => setIsOtherAppsOpen(false)} lang={lang} />
       <TermsModal isOpen={termsTab !== null} tab={termsTab || 'terms'} onTabChange={setTermsTab} onClose={() => setTermsTab(null)} lang={lang} />
       {IS_STATIC_SITE && (
         <>
           <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} lang={lang} onOpenTerms={setTermsTab} />
-          {currentUser?.isAdmin && (
-            <HubAdminModal
-              isOpen={isHubAdminOpen}
-              onClose={() => setIsHubAdminOpen(false)}
-              currentUser={currentUser}
-              lang={lang}
-              onToast={showToast}
-              onNoticesChanged={loadStaticNotices}
-            />
-          )}
         </>
       )}
     </div>

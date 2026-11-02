@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { X, Star, Copy, Check, Sparkles, Zap, Lightbulb, Users, Globe, ArrowUpRight, Link2, Shapes, ChevronRight } from 'lucide-react';
 import { AITool, BadgeInfo } from '../types';
-import { BADGES } from '../data/aiToolsData';
+import { BADGES, INITIAL_AI_TOOLS, TOOL_INFO_CHECKED } from '../data/aiToolsData';
+import { IS_STATIC_SITE } from '../lib/runtime';
 import { TOOL_DETAILS } from '../data/toolDetails';
 import { TOOL_DETAILS_EN } from '../data/toolDetailsEn';
 import { getCategoryVisual } from '../lib/categories';
@@ -71,9 +72,13 @@ export const AIDetailModal: React.FC<AIDetailModalProps> = ({
     );
   };
 
-  // Link back to this hub with the detail window open (see toolIdFromHash in App).
+  // Link back to this hub with the detail window open (see toolIdFromHash in App). On the static site, listed
+  // tools get tool/<id>/, a page built by vite.config.ts that shows the tool in link previews and forwards to #tool=<id>.
   const handleCopyShareLink = () => {
-    const link = `${window.location.origin}${window.location.pathname}#tool=${tool.id}`;
+    const link =
+      IS_STATIC_SITE && INITIAL_AI_TOOLS.some((t) => t.id === tool.id)
+        ? `${window.location.origin}${(import.meta as any).env.BASE_URL}tool/${tool.id}/`
+        : `${window.location.origin}${window.location.pathname}#tool=${tool.id}`;
     navigator.clipboard?.writeText(link).then(
       () => {
         setShareCopied(true);
@@ -253,6 +258,12 @@ export const AIDetailModal: React.FC<AIDetailModalProps> = ({
             </div>
           </section>
         )}
+
+        <p className="text-xs text-subtle leading-relaxed">
+          {isKo
+            ? `설명과 가격은 ${new Date(`${TOOL_INFO_CHECKED}T00:00:00`).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}에 공식 사이트를 보고 정리했어요. 그 뒤에 바뀌었을 수 있으니 이용 전에 공식 사이트에서 확인해 주세요.`
+            : `Description and price as checked on the official site on ${new Date(`${TOOL_INFO_CHECKED}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}. They may have changed since, so check the official site before you sign up.`}
+        </p>
       </ModalBody>
 
       {/* Footer */}

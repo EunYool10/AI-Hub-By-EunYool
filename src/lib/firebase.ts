@@ -1,8 +1,10 @@
 import { initializeApp } from 'firebase/app';
 import {
   GoogleAuthProvider,
+  deleteUser,
   getAuth,
   onAuthStateChanged,
+  reauthenticateWithPopup,
   signInAnonymously,
   signInWithPopup,
   signOut,
@@ -21,6 +23,7 @@ import {
   serverTimestamp,
   setDoc,
   updateDoc,
+  writeBatch,
   type Timestamp,
 } from 'firebase/firestore/lite';
 import { NoticeItem, UserProfile } from '../types';
@@ -129,7 +132,7 @@ export async function finishKakaoLogin(): Promise<'none' | 'ok'> {
   const state = params.get('state');
   if (!code || !state) return 'none';
   window.history.replaceState(null, '', window.location.pathname + window.location.hash);
-  if (state !== sessionStorage.getItem(KAKAO_STATE_KEY)) throw new Error('카카오 로그인 요청이 만료되었어요. 다시 시도해 주세요.');
+  if (state !== sessionStorage.getItem(KAKAO_STATE_KEY)) throw new Error('expired');
   sessionStorage.removeItem(KAKAO_STATE_KEY);
 
   const tokenRes = await fetch('https://kauth.kakao.com/oauth/token', {
@@ -138,7 +141,7 @@ export async function finishKakaoLogin(): Promise<'none' | 'ok'> {
     body: new URLSearchParams({ grant_type: 'authorization_code', client_id: KAKAO_REST_API_KEY, redirect_uri: kakaoRedirectUri(), code }),
   });
   const token = await tokenRes.json();
-  if (!tokenRes.ok || !token.access_token) throw new Error('카카오 로그인에 실패했어요.');
+  if (!tokenRes.ok || !token.access_token) throw new Error('failed');
   const meRes = await fetch('https://kapi.kakao.com/v2/user/me', { headers: { Authorization: `Bearer ${token.access_token}` } });
   const me = await meRes.json();
   const profile = me?.kakao_account?.profile || {};
@@ -160,7 +163,9 @@ export const signOutHub = () => signOut(auth);
  * Follows the Firebase session: creates the user document on first sign-in, refreshes lastLoginAt,
  * and signs suspended accounts straight back out.
  */
-export function watchSession(onChange: (user: UserProfile | null, notice?: string) => void): () => void {
+export type SessionNotice = 'suspended' | 'failed';
+
+export function watchSession(onChange: (user: UserProfile | null, notice?: SessionNotice) => void): () => void {
   return onAuthStateChanged(auth, async (fbUser) => {
     if (!fbUser) return onChange(null);
     try {
@@ -193,7 +198,7 @@ export function watchSession(onChange: (user: UserProfile | null, notice?: strin
       } else {
         if (snap.data().status === 'suspended') {
           await signOut(auth);
-          return onChange(null, '운영 정책에 따라 이용이 정지된 계정이에요. 문의는 eunyool100208@gmail.com 으로 보내 주세요.');
+          return onChange(null, 'suspended');
         }
         await updateDoc(ref, { ...(isKakao ? {} : fresh), lastLoginAt: serverTimestamp() });
       }
@@ -201,7 +206,7 @@ export function watchSession(onChange: (user: UserProfile | null, notice?: strin
       onChange(toProfile({ ...data, createdAt: iso(data.createdAt), lastLoginAt: iso(data.lastLoginAt) }, isKakao ? '' : fbUser.email || ''));
     } catch (e) {
       console.error('[AUTH] session sync failed', e);
-      onChange(null, '로그인 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.');
+      onChange(null, 'failed');
     }
   });
 }
@@ -297,10 +302,30 @@ export function saveBookmarks(ids: number[]): void {
 
 // ── Inquiries ────────────────────────────────────────────────────────
 
+export const INQUIRY_LIMIT = { perDay: 5, gapMs: 60_000 };
+
+/**
+ * Files an inquiry. firestore.rules allow one a minute and five a day per account, so the counter in
+ * inquiryLimits/{uid} is written in the same batch; a refused batch throws Error('rate-limit').
+ */
 export async function submitInquiry(input: { type: string; title: string; message: string; name: string; email: string }): Promise<void> {
   const uid = auth.currentUser?.uid;
   if (!uid) throw new Error('signed out');
-  await addDoc(collection(db, 'inquiries'), {
+  const limitRef = doc(db, 'inquiryLimits', uid);
+  const limit = (await getDoc(limitRef)).data();
+  const now = Date.now();
+  const sameDay = !!limit && now < limit.windowStart.toMillis() + 86_400_000;
+  if ((limit && now < limit.lastAt.toMillis() + INQUIRY_LIMIT.gapMs) || (sameDay && limit.count >= INQUIRY_LIMIT.perDay)) {
+    throw new Error('rate-limit');
+  }
+  const batch = writeBatch(db);
+  batch.set(
+    limitRef,
+    sameDay
+      ? { lastAt: serverTimestamp(), windowStart: limit.windowStart, count: limit.count + 1 }
+      : { lastAt: serverTimestamp(), windowStart: serverTimestamp(), count: 1 }
+  );
+  batch.set(doc(collection(db, 'inquiries')), {
     uid,
     name: input.name.slice(0, 40),
     email: input.email.slice(0, 120),
@@ -311,6 +336,27 @@ export async function submitInquiry(input: { type: string; title: string; messag
     memo: '',
     createdAt: serverTimestamp(),
   });
+  try {
+    await batch.commit();
+  } catch (e: any) {
+    // The rules refuse the batch when the server clock says the limit is reached.
+    throw new Error(String(e?.code || '').includes('permission-denied') ? 'rate-limit' : 'failed');
+  }
+}
+
+// ── Account deletion ─────────────────────────────────────────────────
+
+/**
+ * Deletes the signed-in member: bookmarks, profile, then the sign-in account. Google asks for a fresh
+ * sign-in first. Inquiries stay for the period in the privacy policy.
+ */
+export async function deleteAccount(): Promise<void> {
+  const user = auth.currentUser;
+  if (!user) throw new Error('signed out');
+  if (!user.isAnonymous) await reauthenticateWithPopup(user, new GoogleAuthProvider());
+  await deleteDoc(doc(db, 'bookmarks', user.uid));
+  await deleteDoc(doc(db, 'users', user.uid));
+  await deleteUser(user);
 }
 
 export async function listInquiries(): Promise<HubInquiry[]> {

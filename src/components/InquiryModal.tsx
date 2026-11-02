@@ -136,6 +136,14 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose, onS
       }
     } catch (err) {
       console.error(err);
+      if (err instanceof Error && err.message === 'rate-limit') {
+        setErrorMessage(
+          isKo
+            ? '문의는 1분에 1건, 하루 5건까지 보낼 수 있어요. 급한 내용은 eunyool100208@gmail.com 으로 보내 주세요.'
+            : 'You can send one inquiry a minute and five a day. For urgent matters email eunyool100208@gmail.com.'
+        );
+        return;
+      }
       // Fallback offline submit
       const mailtoSubject = encodeURIComponent(`[AI Hub Inquiry] [${inquiryType}] ${title}`);
       const mailtoBody = encodeURIComponent(

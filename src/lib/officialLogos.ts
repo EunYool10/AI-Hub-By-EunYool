@@ -26,7 +26,6 @@ export const OFFICIAL_BRAND_REGISTRY: Record<string, { slug?: string; officialUr
   'kimi': { domain: 'kimi.moonshot.cn' },
   'kimi chat': { domain: 'kimi.moonshot.cn' },
   'perplexity': { slug: 'perplexity', domain: 'perplexity.ai' },
-  'perplexity pages': { slug: 'perplexity', domain: 'perplexity.ai' },
   'deepseek': { slug: 'deepseek', domain: 'deepseek.com' },
   'mistral': { slug: 'mistral', domain: 'mistral.ai' },
   'mistral ai': { slug: 'mistral', domain: 'mistral.ai' },
@@ -102,7 +101,7 @@ export const OFFICIAL_BRAND_REGISTRY: Record<string, { slug?: string; officialUr
   'github copilot': { slug: 'githubcopilot', domain: 'github.com' },
   'phind': { domain: 'phind.com' },
   'bolt.new': { domain: 'bolt.new' },
-  'windsurf': { domain: 'windsurf.com' },
+  'devin desktop (구 windsurf)': { domain: 'devin.ai' },
   'replit': { slug: 'replit', domain: 'replit.com' },
   'replit ai': { slug: 'replit', domain: 'replit.com' },
   'tabnine': { domain: 'tabnine.com' },
@@ -115,8 +114,8 @@ export const OFFICIAL_BRAND_REGISTRY: Record<string, { slug?: string; officialUr
   'bito ai': { domain: 'bito.ai' },
 
   // 7. Productivity & Workspace
-  'notion': { slug: 'notion', domain: 'notion.so' },
-  'notion ai': { slug: 'notion', domain: 'notion.so' },
+  'notion': { slug: 'notion', domain: 'notion.com' },
+  'notion ai': { slug: 'notion', domain: 'notion.com' },
   'granola': { domain: 'granola.ai' },
   'wispr flow': { domain: 'play.wispr.ai' },
   'heptabase': { domain: 'heptabase.com' },
@@ -144,7 +143,7 @@ export const OFFICIAL_BRAND_REGISTRY: Record<string, { slug?: string; officialUr
   'murf ai': { domain: 'murf.ai' },
 
   // 9. Research & Academia
-  'notebooklm': { domain: 'notebooklm.google' },
+  'gemini notebook (구 notebooklm)': { domain: 'notebook.google' },
   'elicit': { domain: 'elicit.com' },
   'consensus': { domain: 'consensus.app' },
   'scite ai': { domain: 'scite.ai' },
@@ -157,8 +156,10 @@ export const OFFICIAL_BRAND_REGISTRY: Record<string, { slug?: string; officialUr
   'csm (common sense machines)': { domain: 'csm.ai' },
 
   // 11. Agents & Automation
-  'manus / devin': { domain: 'manus.im' },
-  'n8n / make': { slug: 'n8n', domain: 'n8n.io' },
+  'manus': { domain: 'manus.im' },
+  'devin': { domain: 'devin.ai' },
+  'n8n': { slug: 'n8n', domain: 'n8n.io' },
+  'make': { slug: 'make', domain: 'make.com' },
   'operator by openai': { slug: 'openai', domain: 'openai.com' },
   'autogpt': { domain: 'agpt.co' },
 
@@ -169,10 +170,10 @@ export const OFFICIAL_BRAND_REGISTRY: Record<string, { slug?: string; officialUr
   'bloomberggpt': { slug: 'bloomberg', domain: 'bloomberg.com' },
   'khanmigo': { slug: 'khanacademy', domain: 'khanacademy.org' },
   'socratic by google': { domain: 'socratic.org' },
-  'synthesis tutor': { domain: 'synthesis.is' },
+  'synthesis tutor': { domain: 'synthesis.com' },
   'harvey ai': { domain: 'harvey.ai' },
   'casetext cocounsel': { domain: 'casetext.com' },
-  'spellbook': { domain: 'spellbook.legal' },
+  'spellbook': { domain: 'spellbook.com' },
 };
 
 /**

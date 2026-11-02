@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// AI Hub (database ai-studio-aihubbyyool-…): notices, accounts, bookmarks, inquiries.
+// AI Hub (database ai-studio-aihubbyyool-…): notices, accounts, bookmarks, inquiries and their rate limit.
 // Deployed by hand to this database only. Keep ADMIN in step with src/lib/authStorage.ts.
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -23,9 +23,10 @@ service cloud.firestore {
       return v is string && v.size() >= min && v.size() <= max;
     }
 
-    function notSuspended() {
+    // Signed in with a member document that is not suspended.
+    function activeAccount() {
       let path = /databases/$(database)/documents/users/$(request.auth.uid);
-      return !exists(path) || get(path).data.status != 'suspended';
+      return exists(path) && get(path).data.status == 'active';
     }
 
     match /notices/{id} {
@@ -81,16 +82,12 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'memo'])
           && request.resource.data.status in ['active', 'suspended']
           && str(request.resource.data.get('memo', ''), 0, 1000));
-      allow delete: if isAdmin();
+      // Members can delete their own account (회원 탈퇴), unless it is suspended: that record is kept for a year.
+      allow delete: if isAdmin() || (signedIn() && request.auth.uid == uid && resource.data.status != 'suspended');
     }
 
     // Bookmarked tool ids of one account, e.g. '3,75,102'. Only the owner reads and writes them.
     match /bookmarks/{uid} {
-      function activeAccount() {
-        let path = /databases/$(database)/documents/users/$(request.auth.uid);
-        return exists(path) && get(path).data.status == 'active';
-      }
-
       allow read: if signedIn() && request.auth.uid == uid;
       allow create, update: if signedIn()
         && request.auth.uid == uid
@@ -102,10 +99,33 @@ service cloud.firestore {
       allow delete: if isAdmin() || (signedIn() && request.auth.uid == uid);
     }
 
+    // Inquiry counter per account: one inquiry a minute, five a day. Members cannot delete it to reset.
+    match /inquiryLimits/{uid} {
+      function windowOpen() {
+        return resource != null && request.time < resource.data.windowStart + duration.value(1, 'd');
+      }
+
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['lastAt', 'windowStart', 'count'])
+        && request.resource.data.lastAt == request.time
+        && (resource == null || request.time > resource.data.lastAt + duration.value(1, 'm'))
+        && (windowOpen()
+          ? request.resource.data.windowStart == resource.data.windowStart
+            && request.resource.data.count == resource.data.count + 1
+            && request.resource.data.count <= 5
+          : request.resource.data.windowStart == request.time
+            && request.resource.data.count == 1);
+      allow delete: if isAdmin();
+    }
+
     match /inquiries/{id} {
       allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      // Must be written together with this account's counter (see inquiryLimits).
       allow create: if signedIn()
-        && notSuspended()
+        && activeAccount()
+        && getAfter(/databases/$(database)/documents/inquiryLimits/$(request.auth.uid)).data.lastAt == request.time
         && request.resource.data.keys().hasOnly(['uid', 'name', 'email', 'type', 'title', 'message', 'status', 'memo', 'createdAt'])
         && request.resource.data.uid == request.auth.uid
         && str(request.resource.data.name, 0, 40)

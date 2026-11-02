@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Monitor, Moon, Sun, X, Palette, Languages, Database } from 'lucide-react';
+import { Monitor, Moon, Sun, X, Palette, Languages, Database, UserX } from 'lucide-react';
 import { Language } from '../lib/translations';
 import { getStoredSettings, resetStoredSettings, updateStoredSettings, ThemeMode, UserSettings } from '../lib/settings';
 import { cn } from '../lib/cn';
@@ -14,6 +14,8 @@ interface SettingsModalProps {
   /** Empties the bookmark list, including the account copy when signed in. */
   onClearBookmarks: () => void;
   bookmarksInAccount: boolean;
+  /** Set while signed in on the static site: deletes the account (회원 탈퇴). */
+  onDeleteAccount?: () => Promise<void>;
 }
 
 const Section: React.FC<{ icon: React.ReactNode; title: string; children: React.ReactNode }> = ({ icon, title, children }) => (
@@ -72,7 +74,7 @@ function Segmented<T extends string>({ value, options, onChange }: { value: T; o
   );
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, lang, onToast, onClearBookmarks, bookmarksInAccount }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, lang, onToast, onClearBookmarks, bookmarksInAccount, onDeleteAccount }) => {
   const isKo = lang === 'ko';
   const [settings, setSettings] = useState<UserSettings>(() => getStoredSettings());
 
@@ -190,6 +192,35 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, l
             </Button>
           </div>
         </Section>
+
+        {onDeleteAccount && (
+          <Section icon={<UserX className="w-4 h-4" />} title={isKo ? '계정' : 'Account'}>
+            <p className="text-sm text-muted leading-relaxed">
+              {isKo
+                ? '탈퇴하면 회원 정보와 계정에 저장된 즐겨찾기가 바로 삭제되고 되돌릴 수 없어요. 보낸 문의는 개인정보 처리방침에 따라 처리 후 1년 동안 보관돼요.'
+                : 'Deleting your account removes your profile and saved bookmarks right away and cannot be undone. Inquiries you sent are kept for one year after they are handled, as the privacy policy says.'}
+            </p>
+            <Button
+              size="sm"
+              variant="danger"
+              className="mt-3"
+              onClick={async () => {
+                if (!window.confirm(isKo ? '정말 탈퇴할까요? 되돌릴 수 없어요.' : 'Delete your account? This cannot be undone.')) return;
+                try {
+                  await onDeleteAccount();
+                  onToast(isKo ? '탈퇴가 완료되었어요. 그동안 이용해 주셔서 감사해요.' : 'Your account was deleted.');
+                  onClose();
+                } catch (e: any) {
+                  const code = String(e?.code || '');
+                  if (code.includes('popup-closed') || code.includes('cancelled-popup')) return;
+                  onToast(isKo ? '탈퇴하지 못했어요. 잠시 후 다시 시도하거나 eunyool100208@gmail.com 으로 요청해 주세요.' : 'Could not delete the account. Try again or email eunyool100208@gmail.com.');
+                }
+              }}
+            >
+              {isKo ? '회원 탈퇴' : 'Delete account'}
+            </Button>
+          </Section>
+        )}
       </ModalBody>
     </Modal>
   );
